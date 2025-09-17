@@ -91,9 +91,12 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
                             {advertiser.isVerified && <CheckCircle className="h-4 w-4 text-yellow-500" />}
                         </div>
                     </div>
-                    <div className="text-xs text-muted-foreground space-y-1 pl-10">
-                        <p>{advertiser.orders} orders</p>
-                        <p>{advertiser.completion.toFixed(2)}% completion</p>
+                    <div className="text-xs text-muted-foreground space-y-1.5 pl-10">
+                        <div className="flex items-center gap-2">
+                            <span>{advertiser.orders} orders</span>
+                            <span className="w-px h-3 bg-border" />
+                            <span>{advertiser.completion.toFixed(2)}% completion</span>
+                        </div>
                         <div className="flex items-center gap-1">
                             <ThumbsUp className="h-3 w-3" />
                             <span>{advertiser.rating.toFixed(2)}%</span>
@@ -115,10 +118,11 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
                 </div>
 
                 {/* Payment */}
-                <div className='text-xs'>
+                <div className='md:col-span-1 text-xs'>
                     <p className="text-xs text-muted-foreground md:hidden">Payment Methods</p>
                     {advertiser.payments.map(p => <p key={p}>{p}</p>)}
                 </div>
+
 
                 {/* Trade */}
                 <div className="flex flex-col items-start md:items-end">
