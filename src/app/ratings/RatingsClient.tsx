@@ -157,7 +157,7 @@ export default function RatingsClient() {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="p-2 text-xs bg-background/90 border rounded-none text-foreground">
+        <div className="p-2 text-xs bg-background/90 border-none text-foreground">
           <p>{`Time: ${label}`}</p>
           <p className="text-green-500">{`Open: ${data.open.toFixed(4)}`}</p>
           <p className="text-green-500">{`High: ${data.high.toFixed(4)}`}</p>
@@ -202,9 +202,9 @@ export default function RatingsClient() {
                 </div>
             </header>
             <Separator />
-            <div className="w-full bg-transparent p-0 sm:p-1 h-[250px]">
+            <div className="w-full bg-transparent p-2 h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                    <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis 
                             dataKey="time" 
@@ -236,14 +236,15 @@ export default function RatingsClient() {
                             const candleWidth = 4;
                             const candleX = x + width/2 - candleWidth/2;
                              
-                            const highY = Math.min(y, y + height);
-                             const lowY = Math.max(y, y + height);
-                             const bodyY = isUp ? y + height : y;
-                             const bodyHeight = height;
+                            const highY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.high) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+                            const lowY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.low) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+                            
+                            const bodyY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - Math.max(payload.open, payload.close)) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+                            const bodyHeight = (Math.abs(payload.open - payload.close) / (chartDomain[1] - chartDomain[0])) * (height || 1);
 
                             return <>
                                <line x1={candleX + candleWidth/2} y1={highY} x2={candleX + candleWidth/2} y2={lowY} stroke={color} strokeWidth={1}/>
-                               <rect x={candleX} y={bodyY} width={candleWidth} height={Math.abs(bodyHeight)} fill={color} />
+                               <rect x={candleX} y={bodyY} width={candleWidth} height={bodyHeight} fill={color} />
                             </>
                         }} />
 
@@ -336,7 +337,3 @@ export default function RatingsClient() {
     </div>
   );
 }
-
-    
-
-    
