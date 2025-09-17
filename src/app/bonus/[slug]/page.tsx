@@ -51,11 +51,6 @@ const gameDetails: { [key: string]: { name: string; description: string, icon: R
     description: 'Spin the wheel for a chance to win big!',
     icon: <Disc className="h-6 w-6" />
   },
-  'coin-flip': {
-    name: 'Coin Flip',
-    description: 'A quick bonus! Flip a coin to test your luck.',
-    icon: <CircleDollarSign className="h-6 w-6" />
-  },
   'lucky-dice': {
     name: 'Lucky Dice',
     description: 'Roll the dice and win rewards based on your roll.',
@@ -78,7 +73,7 @@ const AviatorGame = () => {
     const [betAmount, setBetAmount] = useState(10);
     const [balance, setBalance] = useState(0);
     const [cashOutMultiplier, setCashOutMultiplier] = useState(0);
-    const [pathData, setPathData] = useState({ path: '', point: { x: 0, y: 100 } });
+    const [pathData, setPathData] = useState({ path: 'M 0 100', point: { x: 0, y: 100 } });
     
     const [autoBetEnabled, setAutoBetEnabled] = useState(false);
     const [autoCashoutEnabled, setAutoCashoutEnabled] = useState(false);
@@ -177,6 +172,10 @@ const AviatorGame = () => {
             
             const path = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
             
+            if (typeof document === 'undefined') {
+                return { path: 'M 0 100', point: { x: 0, y: 100 } };
+            }
+
             const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             tempPath.setAttribute('d', path);
             const pathLength = tempPath.getTotalLength();
@@ -188,9 +187,7 @@ const AviatorGame = () => {
             return { path: subPath, point };
         };
         
-        if (typeof document !== 'undefined') {
-            setPathData(getPathData(planeX));
-        }
+        setPathData(getPathData(planeX));
 
     }, [planeX]);
 
@@ -606,17 +603,6 @@ const CoinFlipGame = () => {
     const [choice, setChoice] = useState<'heads' | 'tails' | null>(null);
     const [result, setResult] = useState<'heads' | 'tails' | null>(null);
     const [flipping, setFlipping] = useState(false);
-    const [balance, setBalance] = useState(0);
-
-    const refreshBalance = useCallback(() => {
-        setBalance(getCurrency());
-    }, []);
-
-    useEffect(() => {
-        refreshBalance();
-        window.addEventListener('storage', refreshBalance);
-        return () => window.removeEventListener('storage', refreshBalance);
-    }, [refreshBalance]);
 
     const handleFlip = () => {
         if (!choice || flipping) return;
@@ -643,7 +629,6 @@ const CoinFlipGame = () => {
                     description: `It was ${outcome}.`,
                 });
             }
-            refreshBalance();
         }, 2500); // Increased duration for better animation feel
     }
 
@@ -886,3 +871,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
+
+    
