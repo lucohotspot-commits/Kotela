@@ -6,7 +6,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Gamepad2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,39 +35,46 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-       <header className="absolute top-0 right-0 p-4 flex items-center gap-2 z-10">
-        <div className="text-right">
-          <p className="text-xs text-muted-foreground">My Points</p>
-          <p className="text-xl font-bold text-primary">{currency.toLocaleString()}</p>
+      <header className="sticky top-0 z-20 w-full bg-background/80 backdrop-blur-sm">
+        <div className="container mx-auto flex h-16 items-center justify-between p-4">
+          <div className="flex items-center gap-2">
+            <Gamepad2 className="h-7 w-7 text-primary" />
+            <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">
+              Kotela
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">My Points</p>
+              <p className="text-lg font-bold text-primary">{currency.toLocaleString()}</p>
+            </div>
+            <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <ShoppingCart className="mr-2" /> Store
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-[90vh] sm:max-h-[800px]">
+                <DialogHeader>
+                  <DialogTitle className='flex items-center gap-2'>
+                    <ShoppingCart />
+                    Boost Store
+                  </DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="h-full -mx-6">
+                  <div className="px-6 pb-6">
+                    <Store onPurchase={refreshData} />
+                  </div>
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
-        <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <ShoppingCart className="mr-2" /> Store
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-[90vh] sm:max-h-[800px]">
-            <DialogHeader>
-              <DialogTitle className='flex items-center gap-2'>
-                <ShoppingCart />
-                Boost Store
-              </DialogTitle>
-            </DialogHeader>
-            <ScrollArea className="h-full -mx-6">
-              <div className="px-6 pb-6">
-                <Store onPurchase={refreshData} />
-              </div>
-            </ScrollArea>
-          </DialogContent>
-        </Dialog>
       </header>
 
-      <main className="flex-grow flex flex-col items-center justify-center p-4 pt-20 sm:pt-4">
+      <main className="flex-grow flex flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
-            Kotela
-          </h1>
-          <p className="mt-2 text-base text-muted-foreground max-w-prose">
+          <p className="mt-2 text-sm text-muted-foreground max-w-prose">
             Tap once to start the game. Use boosts to get a high score!
           </p>
         </div>
