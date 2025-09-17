@@ -59,9 +59,7 @@ export function Store({ onPurchase }: StoreProps) {
   };
 
   const startWatchingAd = (boost: {id: string, adUrl?: string}) => {
-    setAdBoost(boost);
     setIsWatchingAd(true);
-    // Simulate watching an ad
     setTimeout(() => {
       if (boost) {
         addBoost(boost.id, 1);
@@ -72,9 +70,8 @@ export function Store({ onPurchase }: StoreProps) {
         });
       }
       // Automatically close and reset after timeout
-      setAdBoost(null);
-      setIsWatchingAd(false);
-    }, 10000); // 10-second ad simulation
+      closeAdDialog();
+    }, 30000); // 30-second ad simulation
   };
   
   const closeAdDialog = () => {
@@ -159,4 +156,3 @@ export function Store({ onPurchase }: StoreProps) {
     </div>
   );
 }
-
