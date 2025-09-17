@@ -220,9 +220,9 @@ export default function RatingsClient() {
                 </div>
             </div>
 
-            <div className="w-full bg-transparent p-2 h-[250px] py-4">
+            <div className="w-full bg-transparent h-[250px] py-4">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis 
                             dataKey="time" 
@@ -240,7 +240,6 @@ export default function RatingsClient() {
                             axisLine={false}
                             tickMargin={8}
                             tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
-                            width={50}
                             className="text-xs fill-muted-foreground"
                         />
                         <YAxis yAxisId="volume" orientation="right" domain={[0, 'dataMax * 4']} tickLine={false} axisLine={false} tick={false} />
@@ -361,9 +360,3 @@ export default function RatingsClient() {
     </div>
   );
 }
-
-    
-
-    
-
-    
