@@ -300,7 +300,7 @@ export default function WithdrawPage() {
                 </CardContent>
                 <CardFooter>
                     <Button className="w-full" size="lg" onClick={handleWithdraw} disabled={isRateLimited}>
-                        Withdraw
+                        Submit Withdraw
                         <ArrowRight className="ml-2" />
                     </Button>
                 </CardFooter>
