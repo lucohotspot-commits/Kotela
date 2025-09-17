@@ -1,116 +1,109 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
-import { getCurrency, getScores, getInventory } from '@/lib/storage';
+import { getCurrency } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Coins, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Trophy } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 export default function ProfilePage() {
   const [currency, setCurrency] = useState(0);
-  const [totalGames, setTotalGames] = useState(0);
-  const [highScore, setHighScore] = useState(0);
-  const [inventory, setInventory] = useState<{ [key: string]: number }>({});
+  const { toast } = useToast();
 
   useEffect(() => {
-    const scores = getScores();
     setCurrency(getCurrency());
-    setInventory(getInventory());
-    setTotalGames(scores.length);
-    setHighScore(scores.length > 0 ? scores[0].score : 0);
   }, []);
+  
+  const walletAddress = "0x1a2b3c4d5e6f7g8h9i0j...";
+
+  const handleCopyAddress = () => {
+    navigator.clipboard.writeText(walletAddress);
+    toast({
+      title: "Copied!",
+      description: "Wallet address copied to clipboard.",
+    });
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl font-bold text-primary">My Wallet</h1>
+        <div className="flex items-center gap-2">
+          <Button>
+            <Upload className="mr-2" />
+            Deposit
+          </Button>
+          <Button variant="outline">
+            <Download className="mr-2" />
+            Withdraw
+          </Button>
+          <Button variant="outline">
+            <Send className="mr-2" />
+            Send
+          </Button>
+          <Button variant="outline">
+            <Replace className="mr-2" />
+            Transfer
+          </Button>
+        </div>
+      </div>
+
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row items-center gap-4">
-          <Avatar className="h-24 w-24">
-            <AvatarImage src="https://picsum.photos/seed/user-avatar/100" alt="User Avatar" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-          <div className="text-center sm:text-left">
-            <CardTitle className="text-3xl">Player One</CardTitle>
-            <CardDescription>Expert Miner</CardDescription>
+        <CardHeader>
+          <CardDescription>Estimated Balance</CardDescription>
+          <div className="flex items-end justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-3xl font-bold">{currency.toLocaleString()} KTC</span>
+              </div>
+              <Eye className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-primary" />
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">Total Coins</p>
-              <div className="flex items-center justify-center gap-1 text-2xl font-bold">
-                <Coins className="h-6 w-6 text-yellow-500" />
-                {currency.toLocaleString()}
-              </div>
-            </div>
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">High Score</p>
-               <div className="flex items-center justify-center gap-1 text-2xl font-bold">
-                <Trophy className="h-6 w-6 text-yellow-500" />
-                {highScore.toLocaleString()}
-              </div>
-            </div>
-            <div className="p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground">Games Played</p>
-              <p className="text-2xl font-bold">{totalGames}</p>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Rocket /> My Boosts
-          </CardTitle>
-          <CardDescription>Your current collection of power-ups.</CardDescription>
+            <CardTitle>Wallet Address</CardTitle>
+            <CardDescription>Use this address to receive KTC tokens.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Rocket className="w-6 h-6 text-yellow-500" />
-              <div>
-                <span className="font-bold">Rocket</span>
-                <p className="text-sm text-muted-foreground">x {inventory.rocket || 0}</p>
-              </div>
+            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <span className="font-mono text-sm text-muted-foreground">{walletAddress}</span>
+                <Button variant="ghost" size="icon" onClick={handleCopyAddress}>
+                    <Copy className="h-4 w-4" />
+                </Button>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Bomb className="w-6 h-6 text-red-500" />
-              <div>
-                <span className="font-bold">Missile</span>
-                <p className="text-sm text-muted-foreground">x {inventory.missile || 0}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Clock className="w-6 h-6 text-blue-500" />
-              <div>
-                <span className="font-bold">Extra Time</span>
-                <p className="text-sm text-muted-foreground">x {inventory.extraTime || 0}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Snowflake className="w-6 h-6 text-cyan-400" />
-              <div>
-                <span className="font-bold">Freeze Time</span>
-                <p className="text-sm text-muted-foreground">x {inventory.freezeTime || 0}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Zap className="w-6 h-6 text-purple-500" />
-              <div>
-                <span className="font-bold">Frenzy</span>
-                <p className="text-sm text-muted-foreground">x {inventory.frenzy || 0}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Gift className="w-6 h-6 text-green-500" />
-              <div>
-                <span className="font-bold">Coin Bomb</span>
-                <p className="text-sm text-muted-foreground">x {inventory.scoreBomb || 0}</p>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
+      
+      <div className="space-y-2">
+        <h3 className="text-lg font-semibold">Account</h3>
+        <Card>
+          <div className="divide-y">
+            <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">Identity Verification</span>
+              </div>
+               <div className="flex items-center gap-2 text-yellow-600">
+                <span className="text-sm">Unverified</span>
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            </div>
+             <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
+              <div className="flex items-center gap-3">
+                <Settings className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">Settings</span>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+        </Card>
+      </div>
+
     </div>
   );
 }
+
