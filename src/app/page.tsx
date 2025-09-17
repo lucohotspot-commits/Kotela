@@ -32,13 +32,13 @@ export default function Home() {
     refreshData();
   }, [refreshData]);
 
-  const handleGameEnd = () => {
+  const handleGameEnd = useCallback(() => {
     refreshData();
-  };
+  }, [refreshData]);
 
-  const handlePurchase = () => {
+  const handlePurchase = useCallback(() => {
     refreshData();
-  };
+  }, [refreshData]);
 
   return (
     <div className="flex flex-col min-h-screen">
