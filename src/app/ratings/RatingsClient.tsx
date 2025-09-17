@@ -182,61 +182,61 @@ export default function RatingsClient() {
     return null;
   };
   
-  const ChartComponent = ({ isExpanded = false }: { isExpanded?: boolean }) => (
+  const chartElement = (
     <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={chartData}>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis 
-                dataKey="time" 
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
-                className="text-xs fill-muted-foreground"
-            />
-            <YAxis 
-                yAxisId="price"
-                orientation="right"
-                domain={chartDomain}
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
-                className="text-xs fill-muted-foreground"
-            />
-            <YAxis yAxisId="volume" orientation="right" domain={[0, 'dataMax * 4']} tickLine={false} axisLine={false} tick={false} />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-            
-            {chartType === 'candlestick' ? (
-                 <Bar yAxisId="price" dataKey="close" barSize={1} shape={(props) => {
-                    const { x, y, width, height, payload } = props;
-                    if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
-                    const isUp = payload.close > payload.open;
-                    const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-5))';
-                    const candleWidth = 4;
-                    const candleX = x + width/2 - candleWidth/2;
-                        
-                    const highY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.high) / (chartDomain[1] - chartDomain[0])) * (height || 0);
-                    const lowY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.low) / (chartDomain[1] - chartDomain[0])) * (height || 0);
-                    
-                    const bodyY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - Math.max(payload.open, payload.close)) / (chartDomain[1] - chartDomain[0])) * (height || 0);
-                    const bodyHeight = (Math.abs(payload.open - payload.close) / (chartDomain[1] - chartDomain[0])) * (height || 1);
+      <ComposedChart data={chartData}>
+        <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+        <XAxis
+          dataKey="time"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
+          className="text-xs fill-muted-foreground"
+        />
+        <YAxis
+          yAxisId="price"
+          orientation="right"
+          domain={chartDomain}
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
+          className="text-xs fill-muted-foreground"
+        />
+        <YAxis yAxisId="volume" orientation="right" domain={[0, 'dataMax * 4']} tickLine={false} axisLine={false} tick={false} />
+        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
 
-                    return <>
-                        <line x1={candleX + candleWidth/2} y1={highY} x2={candleX + candleWidth/2} y2={lowY} stroke={color} strokeWidth={1}/>
-                        <rect x={candleX} y={bodyY} width={candleWidth} height={bodyHeight} fill={color} />
-                    </>
-                }} />
-            ) : (
-                <Line yAxisId="price" type="monotone" dataKey="close" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-            )}
+        {chartType === 'candlestick' ? (
+          <Bar yAxisId="price" dataKey="close" barSize={1} shape={(props) => {
+            const { x, y, width, height, payload } = props;
+            if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
+            const isUp = payload.close > payload.open;
+            const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-5))';
+            const candleWidth = 4;
+            const candleX = x + width / 2 - candleWidth / 2;
 
-            <Bar yAxisId="volume" dataKey="volume" barSize={10} >
-                {chartData.map((entry, index) => (
-                <rect key={`cell-${index}`} fill={entry.close > entry.open ? 'hsla(var(--chart-2), 0.4)' : 'hsla(var(--chart-5), 0.4)'}/>
-                ))}
-            </Bar>
-        </ComposedChart>
+            const highY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.high) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+            const lowY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.low) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+
+            const bodyY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - Math.max(payload.open, payload.close)) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+            const bodyHeight = (Math.abs(payload.open - payload.close) / (chartDomain[1] - chartDomain[0])) * (height || 1);
+
+            return <>
+              <line x1={candleX + candleWidth / 2} y1={highY} x2={candleX + candleWidth / 2} y2={lowY} stroke={color} strokeWidth={1} />
+              <rect x={candleX} y={bodyY} width={candleWidth} height={bodyHeight} fill={color} />
+            </>
+          }} />
+        ) : (
+          <Line yAxisId="price" type="monotone" dataKey="close" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+        )}
+
+        <Bar yAxisId="volume" dataKey="volume" barSize={10} >
+          {chartData.map((entry, index) => (
+            <rect key={`cell-${index}`} fill={entry.close > entry.open ? 'hsla(var(--chart-2), 0.4)' : 'hsla(var(--chart-5), 0.4)'} />
+          ))}
+        </Bar>
+      </ComposedChart>
     </ResponsiveContainer>
   );
 
@@ -294,14 +294,14 @@ export default function RatingsClient() {
                             <DialogHeader className="sr-only">
                                 <DialogTitle>Expanded Chart View</DialogTitle>
                             </DialogHeader>
-                            <ChartComponent isExpanded={true} />
+                            {chartElement}
                         </DialogContent>
                     </Dialog>
                 </div>
             </div>
 
             <div className="w-full bg-transparent h-[250px] py-4 pl-4 pr-0">
-                <ChartComponent />
+                {chartElement}
             </div>
             
             <Separator />
