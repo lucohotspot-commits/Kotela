@@ -58,15 +58,15 @@ export function Store({ onPurchase }: StoreProps) {
     }
   };
 
-  const startWatchingAd = (boost: {id: string, adUrl?: string}) => {
+  const startWatchingAd = () => {
     setIsWatchingAd(true);
     setTimeout(() => {
-      if (boost) {
-        addBoost(boost.id, 1);
+      if (adBoost) {
+        addBoost(adBoost.id, 1);
         onPurchase();
         toast({
           title: "Reward Claimed!",
-          description: `You got an ${boosts.find(b => b.id === boost.id)?.name}.`,
+          description: `You got an ${boosts.find(b => b.id === adBoost.id)?.name}.`,
         });
       }
       // Automatically close and reset after timeout
@@ -132,7 +132,10 @@ export function Store({ onPurchase }: StoreProps) {
                         )}
                         <AlertDialogFooter>
                           <AlertDialogCancel onClick={closeAdDialog} disabled={isWatchingAd}>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => adBoost && startWatchingAd(adBoost)} disabled={isWatchingAd}>
+                          <AlertDialogAction onClick={(e) => {
+                            e.preventDefault();
+                            startWatchingAd();
+                          }} disabled={isWatchingAd}>
                             {isWatchingAd ? "Claiming Reward..." : "Watch Now"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
