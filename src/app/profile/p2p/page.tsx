@@ -213,6 +213,9 @@ export default function P2PTransferPage() {
                                 <SelectItem value="sepa">SEPA</SelectItem>
                                 <SelectItem value="zen">ZEN</SelectItem>
                                 <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                <SelectItem value="pesapal">Pesapal</SelectItem>
+                                <SelectItem value="jpesa">Jpesa</SelectItem>
+                                <SelectItem value="transid">TransID</SelectItem>
                             </SelectContent>
                         </Select>
                         <Select defaultValue="all">
