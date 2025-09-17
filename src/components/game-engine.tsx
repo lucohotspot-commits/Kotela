@@ -45,19 +45,16 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     return 1;
   }, [activeBoost]);
 
-  // Auto-tap / Score increment logic
   useEffect(() => {
     if (gameState !== 'playing' || activeEffect === 'timeFreeze') return;
 
     let scoreInterval: NodeJS.Timeout;
 
     if (activeEffect === 'frenzy') {
-      // Frenzy taps super fast
       scoreInterval = setInterval(() => {
         setScore(s => s + 5 * scoreIncrement);
       }, 100);
     } else {
-      // Normal auto-tap
       scoreInterval = setInterval(() => {
         setScore(s => s + scoreIncrement);
       }, 200);
@@ -73,11 +70,9 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
       if (timeBoostUsed) {
         setTimeLeft(gameDuration);
       }
-      setScore(s => s + scoreIncrement); // Give points for the first tap
     }
-  }, [gameState, scoreIncrement, timeBoostUsed, gameDuration]);
+  }, [gameState, timeBoostUsed, gameDuration]);
 
-  // Timer logic
   useEffect(() => {
     if (gameState !== "playing" || activeEffect === 'timeFreeze') return;
 
@@ -93,7 +88,6 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     return () => clearInterval(timerId);
   }, [gameState, timeLeft, activeEffect]);
   
-  // Boost timer logic
   useEffect(() => {
     if (activeEffect && boostTimeLeft > 0 && gameState === 'playing') {
       const boostTimerId = setInterval(() => {
@@ -106,7 +100,6 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     }
   }, [activeEffect, boostTimeLeft, gameState]);
 
-  // Game end logic
   useEffect(() => {
     if (gameState === "ended") {
       addScore(score);
@@ -180,13 +173,6 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     setActiveEffect(null);
   };
 
-  const tapAreaText = useMemo(() => {
-    if (gameState === "idle") return "Tap to Start";
-    if (gameState === "ended") return "Game Over";
-    if (activeEffect === 'frenzy') return "Frenzy!";
-    return "Tapping...";
-  }, [gameState, activeEffect]);
-
   const CIRCLE_RADIUS = 100;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
   const progressOffset =
@@ -219,32 +205,15 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     }
   
     return (
-      <span className={`flex items-center gap-1 font-bold text-xs ${boostTextColor}`}>
+      <span className={`absolute -bottom-6 flex items-center gap-1 font-bold text-xs ${boostTextColor}`}>
         {icon}
         {text}
       </span>
     );
   };
 
-
   return (
     <div className="w-full max-w-md flex flex-col items-center gap-6">
-      <div className="relative w-full flex flex-col items-center gap-2">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Score</h2>
-        <h1
-          className={`font-headline text-7xl font-bold transition-colors duration-150 ${boostTextColor}`}
-        >
-          {score.toLocaleString()}
-        </h1>
-        <div className="w-full mt-2">
-          <p className="text-center text-xs text-muted-foreground mt-1 flex items-center justify-center gap-2">
-            <TimerIcon className="h-4 w-4" />
-            <span>{timeLeft}s remaining</span>
-            <BoostStatus />
-          </p>
-        </div>
-      </div>
-
       <div className="relative w-56 h-56 flex items-center justify-center">
         <svg className={`absolute w-[224px] h-[224px] -rotate-90 transition-all duration-300 ${gameState === 'playing' ? 'animate-glow' : ''}`} style={{ filter: `drop-shadow(0 0 5px hsl(var(--primary)))`}}>
           <circle
@@ -270,12 +239,34 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
         <button
           onClick={handleTap}
           disabled={gameState !== 'idle'}
-          className="relative w-48 h-48 bg-primary rounded-full text-primary-foreground flex flex-col items-center justify-center text-xl font-bold transition-all duration-300 ease-in-out shadow-lg hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:scale-100 disabled:cursor-not-allowed group data-[state=playing]:animate-pulse-subtle"
-          aria-label={tapAreaText}
+          className="relative w-48 h-48 bg-background rounded-full text-foreground flex flex-col items-center justify-center text-xl font-bold transition-all duration-300 ease-in-out shadow-lg hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:scale-100 disabled:cursor-not-allowed group data-[state=playing]:bg-background/80"
+          aria-label="Game button"
           data-state={gameState}
         >
-          <Hand className="w-12 h-12 mb-2 transition-transform group-hover:scale-110 group-active:scale-90" />
-          <span className="text-lg">{tapAreaText}</span>
+          {gameState === 'idle' && (
+            <div className='text-center'>
+              <Hand className="w-12 h-12 mb-2 transition-transform group-hover:scale-110 group-active:scale-90 inline-block" />
+              <span className="text-lg font-semibold">Tap to Start</span>
+            </div>
+          )}
+          {gameState === 'playing' && (
+            <div className="text-center">
+              <div className="text-xs uppercase text-muted-foreground">Score</div>
+              <div className={`text-6xl font-bold ${boostTextColor}`}>{score.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
+                <TimerIcon className="h-3 w-3" />
+                <span>{timeLeft}s remaining</span>
+              </div>
+              <BoostStatus />
+            </div>
+          )}
+          {gameState === 'ended' && (
+            <div className='text-center'>
+              <div className="text-xs uppercase text-muted-foreground">Game Over</div>
+              <div className={`text-5xl font-bold ${boostTextColor}`}>{score.toLocaleString()}</div>
+              <div className="text-xs text-muted-foreground mt-1">Final Score</div>
+            </div>
+          )}
         </button>
       </div>
 
