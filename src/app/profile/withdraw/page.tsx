@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass, Smartphone, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass, Smartphone, CheckCircle, Clock, XCircle, ChevronLeft } from 'lucide-react';
 import { getCurrency, spendCurrency, getWithdrawals, addWithdrawal, type Withdrawal } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -50,6 +50,9 @@ export default function WithdrawPage() {
     const [isRateLimited, setIsRateLimited] = useState(false);
     const [cooldown, setCooldown] = useState(0);
     const { toast } = useToast();
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const itemsPerPage = 5;
     
     const selectedPaymentOption = paymentOptions.find(p => p.id === paymentMethod);
 
@@ -192,6 +195,13 @@ export default function WithdrawPage() {
         return <Badge variant="outline" className={cn('gap-1 font-normal', className)}>{icon}{text}</Badge>;
     };
 
+    const paginatedWithdrawals = useMemo(() => {
+        const startIndex = currentPage * itemsPerPage;
+        return withdrawals.slice(startIndex, startIndex + itemsPerPage);
+    }, [currentPage, withdrawals]);
+    
+    const totalPages = Math.ceil(withdrawals.length / itemsPerPage);
+
     return (
         <div className="w-full max-w-5xl mx-auto space-y-6">
             <Breadcrumb>
@@ -208,7 +218,7 @@ export default function WithdrawPage() {
                 </BreadcrumbList>
             </Breadcrumb>
             
-            <Card>
+            <Card className="flex flex-col">
                 <CardHeader>
                     <CardTitle className='flex items-center gap-2'>
                         <Download />
@@ -216,7 +226,7 @@ export default function WithdrawPage() {
                     </CardTitle>
                     <CardDescription>Transfer coins from your Kotela wallet to an external account.</CardDescription>
                 </CardHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x">
+                <div className="grid grid-cols-1 md:grid-cols-2 md:divide-x flex-grow">
                     <CardContent className="space-y-6 pt-0">
                         {isRateLimited && (
                             <Alert variant="destructive">
@@ -351,44 +361,71 @@ export default function WithdrawPage() {
                             <ArrowRight className="ml-2" />
                         </Button>
                     </CardContent>
-                     <div className="md:pl-6 pt-6 md:pt-0">
+                     <div className="md:pl-6 pt-6 md:pt-0 flex flex-col">
                         {withdrawals.length > 0 ? (
-                            <div>
+                            <div className='flex flex-col flex-grow'>
                                 <h3 className="text-lg font-semibold px-6 md:px-0">Account Debit Notes</h3>
                                 <p className="text-sm text-muted-foreground mb-4 px-6 md:px-0">Your recent withdrawal requests and their status.</p>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="text-xs">Date</TableHead>
-                                            <TableHead className="text-xs">Amount</TableHead>
-                                            <TableHead className="text-xs">Method</TableHead>
-                                            <TableHead className="text-right text-xs">Status</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {withdrawals.map((w) => (
-                                            <TableRow key={w.id}>
-                                                <TableCell className="text-xs text-muted-foreground">
-                                                    {new Date(w.date).toLocaleString([], { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                                                </TableCell>
-                                                <TableCell className="font-semibold text-sm">
-                                                    {w.amount.toLocaleString()} KTC
-                                                </TableCell>
-                                                <TableCell className="text-xs text-muted-foreground">
-                                                    {w.paymentMethod.type}
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <StatusBadge status={w.status} />
-                                                </TableCell>
+                                <div className="flex-grow">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="text-xs">Date</TableHead>
+                                                <TableHead className="text-xs">Amount</TableHead>
+                                                <TableHead className="text-xs">Method</TableHead>
+                                                <TableHead className="text-right text-xs">Status</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {paginatedWithdrawals.map((w) => (
+                                                <TableRow key={w.id}>
+                                                    <TableCell className="text-xs text-muted-foreground">
+                                                        {new Date(w.date).toLocaleString([], { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                    </TableCell>
+                                                    <TableCell className="font-semibold text-sm">
+                                                        {w.amount.toLocaleString()} KTC
+                                                    </TableCell>
+                                                    <TableCell className="text-xs text-muted-foreground">
+                                                        {w.paymentMethod.type}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <StatusBadge status={w.status} />
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
                             </div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-center p-6">
                                 <h3 className="text-lg font-semibold">No Withdrawals Yet</h3>
                                 <p className="text-sm text-muted-foreground">Your withdrawal history will appear here.</p>
+                            </div>
+                        )}
+                         { totalPages > 1 && (
+                            <div className="flex justify-between items-center p-2 border-t mt-auto">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => p - 1)}
+                                    disabled={currentPage === 0}
+                                >
+                                    <ChevronLeft className="mr-1" />
+                                    Prev
+                                </Button>
+                                <span className="text-sm text-muted-foreground">
+                                    Page {currentPage + 1} of {totalPages}
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => p + 1)}
+                                    disabled={currentPage >= totalPages - 1}
+                                >
+                                    Next
+                                    <ChevronRight className="ml-1" />
+                                </Button>
                             </div>
                         )}
                     </div>
@@ -398,6 +435,3 @@ export default function WithdrawPage() {
         </div>
     );
 }
-
-
-    
