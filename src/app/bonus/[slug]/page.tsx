@@ -394,22 +394,35 @@ const VideoPlayGame = () => {
 
     const canClaim = progress >= 100 && !isClaimed(selectedVideo.id);
     const getThumbnailUrl = (youtubeId: string) => `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+    const getEmbedUrl = (youtubeId: string) => `https://www.youtube.com/embed/${youtubeId}?autoplay=1`;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
                 <Card className='overflow-hidden'>
                     <div className="relative aspect-video bg-black flex items-center justify-center">
-                        <Image src={getThumbnailUrl(selectedVideo.youtubeId)} alt={selectedVideo.title} fill className={cn("object-cover transition-opacity", isPlaying && "opacity-80")} />
-                         {!isPlaying && progress === 0 && (
-                            <button onClick={handlePlay} className='z-10 bg-black/50 p-4 rounded-full text-white hover:bg-black/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed' disabled={isClaimed(selectedVideo.id)}>
-                                {isClaimed(selectedVideo.id) ? <CheckCircle className='w-16 h-16 text-green-500' /> : <PlayCircle className='w-16 h-16' />}
-                            </button>
-                         )}
-                         {isPlaying && (
-                            <div className='z-10 text-white flex items-center gap-2 bg-black/50 p-2 rounded'>
+                        {isPlaying ? (
+                             <iframe
+                                width="100%"
+                                height="100%"
+                                src={getEmbedUrl(selectedVideo.youtubeId)}
+                                title={selectedVideo.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="border-0"
+                            ></iframe>
+                        ) : (
+                           <>
+                                <Image src={getThumbnailUrl(selectedVideo.youtubeId)} alt={selectedVideo.title} fill className={cn("object-cover transition-opacity", isPlaying && "opacity-80")} />
+                                <button onClick={handlePlay} className='z-10 bg-black/50 p-4 rounded-full text-white hover:bg-black/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed' disabled={isClaimed(selectedVideo.id)}>
+                                    {isClaimed(selectedVideo.id) ? <CheckCircle className='w-16 h-16 text-green-500' /> : <PlayCircle className='w-16 h-16' />}
+                                </button>
+                           </>
+                        )}
+                         {isPlaying && progress < 100 && (
+                            <div className='absolute top-2 left-2 z-10 text-white flex items-center gap-2 bg-black/50 p-2 rounded'>
                                 <Hourglass className='w-4 h-4 animate-spin' />
-                                <span>Playing...</span>
+                                <span>Watching...</span>
                             </div>
                          )}
                     </div>
