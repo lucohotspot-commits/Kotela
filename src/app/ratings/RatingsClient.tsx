@@ -220,7 +220,7 @@ export default function RatingsClient() {
                 </div>
             </div>
 
-            <div className="w-full bg-transparent h-[250px] py-4 pr-4">
+            <div className="w-full bg-transparent h-[250px] py-4 pl-4">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={chartData}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -360,3 +360,5 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
