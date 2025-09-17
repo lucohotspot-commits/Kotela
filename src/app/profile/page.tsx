@@ -115,8 +115,8 @@ export default function ProfilePage() {
               <ScrollArea className="flex-grow -mx-6 px-6">
                 <div className="space-y-4 py-4">
                     <div className="flex flex-col items-center justify-center space-y-2">
-                        <div className='p-4 bg-card rounded-lg'>
-                            <QrCode className="h-32 w-32 bg-black text-white" />
+                        <div className='p-4 bg-white rounded-lg'>
+                            <QrCode className="h-32 w-32 text-black" />
                         </div>
                         <p className='text-xs text-muted-foreground text-center max-w-xs'>
                             Send only KTC to this deposit address. This address does not support NFT deposits.
@@ -147,7 +147,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
               </ScrollArea>
-              <DialogFooter className="flex-col-reverse sm:flex-row mt-auto pt-4">
+              <DialogFooter className="flex-col-reverse sm:flex-row mt-auto pt-4 border-t">
                 <Button type="button" variant="outline" onClick={() => setIsDepositOpen(false)}>Cancel</Button>
                 <Button type="submit" onClick={handleDeposit}>Deposit</Button>
               </DialogFooter>
@@ -174,7 +174,7 @@ export default function ProfilePage() {
             <div className='flex items-center justify-between'>
                 <CardDescription>Estimated Balance</CardDescription>
                 <button onClick={toggleBalanceVisibility} className="text-muted-foreground hover:text-primary">
-                  {isBalanceVisible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                  {isBalanceVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
             </div>
             <div className="flex items-baseline gap-2 flex-wrap">
@@ -356,3 +356,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
