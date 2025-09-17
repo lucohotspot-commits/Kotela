@@ -10,39 +10,56 @@ const blogPosts = [
     {
         title: "Kotela Coin (KTC) Hits All-Time High Amidst Market Surge",
         excerpt: "Kotela Coin has shattered previous records, reaching an unprecedented value as market enthusiasm grows...",
+        content: "The price of Kotela Coin (KTC) surged by over 40% in the last 24 hours, reaching an all-time high of $1.75. This rally is attributed to a combination of positive market sentiment, recent technological upgrades to the Kotela network, and increased adoption by institutional investors. Analysts are optimistic about its short-term performance, with some predicting it could break the $2.00 barrier by the end of the week.",
         date: "2 hours ago",
         category: "Market Update",
-        href: "#"
+        href: "#",
+        image: "https://picsum.photos/seed/ktc-high/800/600",
+        imageHint: "market chart"
     },
     {
         title: "New, More Efficient Mining Algorithm Deployed on the Kotela Network",
         excerpt: "Today, we've rolled out a significant update to our mining protocol that enhances efficiency and security...",
+        content: "The Kotela development team has successfully deployed the 'Phoenix' update, which introduces a new proof-of-stake mining algorithm. This change is expected to reduce energy consumption by up to 95% and significantly increase transaction throughput. The update aims to make the network more sustainable and scalable, paving the way for wider adoption of KTC-based applications.",
         date: "1 day ago",
         category: "Technology",
-        href: "#"
+        href: "#",
+        image: "https://picsum.photos/seed/mining-algo/800/600",
+        imageHint: "network code"
     },
     {
         title: "Kotela Announces Strategic Partnership with Firebase for Web3 Integration",
         excerpt: "In a landmark move, Kotela is partnering with Google's Firebase to build the next generation of decentralized apps...",
+        content: "This strategic partnership will combine Kotela's robust blockchain infrastructure with Firebase's powerful suite of development tools. The collaboration aims to simplify the process for developers to build, deploy, and manage decentralized applications (dApps) on the Kotela network, leveraging Firebase for authentication, data storage, and more.",
         date: "3 days ago",
         category: "Partnerships",
-        href: "#"
+        href: "#",
+        image: "https://picsum.photos/seed/partnership/800/600",
+        imageHint: "handshake business"
     },
     {
         title: "Community Spotlight: Top Miners of the Month",
         excerpt: "We're celebrating the achievements of our most dedicated miners. See who topped the leaderboards this month...",
+        content: "This month, we recognize the top three miners who have contributed significantly to the network's security and stability. 'MinerX_24', 'CryptoQueen', and 'KTC_Hodler' have shown exceptional performance and dedication. We'll be sending them an exclusive Kotela merchandise package as a token of our appreciation. Join us in congratulating them!",
         date: "4 days ago",
         category: "Community",
-        href: "#"
+        href: "#",
+        image: "https://picsum.photos/seed/community-miners/800/600",
+        imageHint: "community people"
     },
     {
         title: "A Guide to Understanding Kotela's Tokenomics",
         excerpt: "Dive deep into the economic model of KTC, from total supply to distribution and utility within the ecosystem.",
+        content: "Kotela Coin's tokenomics are designed for long-term stability and growth. With a fixed total supply of 1 billion KTC, the model includes mechanisms for deflationary pressure and rewards for network participants. This guide breaks down the allocation, vesting schedules, and the various utilities of KTC within our expanding ecosystem, from transaction fees to governance.",
         date: "5 days ago",
         category: "Education",
-        href: "#"
+        href: "#",
+        image: "https://picsum.photos/seed/tokenomics/800/600",
+        imageHint: "coins crypto"
     }
 ];
+
+export { blogPosts };
 
 interface BlogWidgetProps {
     limit?: number;
@@ -65,7 +82,7 @@ export function BlogWidget({ limit, showViewAll }: BlogWidgetProps) {
         </CardHeader>
         <CardContent className="space-y-4">
             {postsToShow.map((post, index) => (
-                <Link key={index} href={post.href} className="block group">
+                <Link key={index} href="/news" className="block group">
                     <div className="p-3 rounded-lg hover:bg-muted/50 transition-colors">
                         <div className="flex items-center justify-between">
                             <Badge variant="outline" className="mb-2 text-xs">{post.category}</Badge>
