@@ -122,7 +122,8 @@ export default function LeaderboardPage() {
             </div>
         </CardHeader>
         <CardContent>
-            <div className='overflow-x-auto'>
+            {/* Desktop Table */}
+            <div className='hidden md:block overflow-x-auto'>
                 <Table>
                     <TableHeader>
                     <TableRow>
@@ -172,10 +173,44 @@ export default function LeaderboardPage() {
                     </TableBody>
                 </Table>
             </div>
+             {/* Mobile List */}
+             <div className="md:hidden space-y-4">
+              {filteredGames.map((game) => (
+                <div key={game.slug} className="border-b pb-4 last:border-b-0">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      {game.icon}
+                      <div className='font-bold'>{game.name}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-green-500 text-base">{game.apr}</span>
+                        {game.isHot && <Badge variant="outline" className="border-red-500 text-red-500 text-[10px]">HOT</Badge>}
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm text-muted-foreground mb-2">Duration</p>
+                    <div className="flex items-center gap-1 flex-wrap">
+                        {game.duration.map(d => (
+                            <DurationButton
+                                key={d}
+                                duration={d}
+                                selected={selectedDurations[game.name] === d}
+                                onClick={() => handleDurationSelect(game.name, d)}
+                                special={game.name === 'Lucky Dice' && d === '120'}
+                            />
+                        ))}
+                    </div>
+                  </div>
+                   <Button asChild className='bg-yellow-500 hover:bg-yellow-600 text-black w-full mt-4'>
+                        <Link href={`/bonus/${game.slug}`}>
+                            {game.action}
+                        </Link>
+                    </Button>
+                </div>
+              ))}
+            </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    
