@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -25,7 +26,7 @@ interface StoreProps {
 const boosts = [
   { id: 'rocket', name: 'Rocket Boost', description: '2x coin multiplier for 5s.', cost: 500, icon: Rocket, color: "text-yellow-500" },
   { id: 'missile', name: 'Missile Boost', description: '3x coin multiplier for 3s.', cost: 1500, icon: Bomb, color: "text-red-500" },
-  { id: 'extraTime', name: 'Extra Time', description: 'Adds 10 seconds to the game.', cost: 0, icon: Clock, color: "text-blue-500", free: true },
+  { id: 'extraTime', name: 'Extra Time', description: 'Adds 10 seconds to the game.', cost: 0, icon: Clock, color: "text-blue-500", free: true, adUrl: 'https://www.youtube.com/embed/R3GfuzLMPkA?autoplay=1' },
   { id: 'freezeTime', name: 'Freeze Time', description: 'Pause the timer for 5s.', cost: 2000, icon: Snowflake, color: "text-cyan-400" },
   { id: 'frenzy', name: 'Frenzy', description: 'Auto-mine for 3 seconds.', cost: 2500, icon: Zap, color: "text-purple-500" },
   { id: 'scoreBomb', name: 'Coin Bomb', description: 'Instantly get 1,000 coins.', cost: 3000, icon: Gift, color: "text-green-500" },
@@ -35,6 +36,7 @@ const boosts = [
 export function Store({ onPurchase }: StoreProps) {
   const [currency, setCurrency] = useState(getCurrency());
   const [isWatchingAd, setIsWatchingAd] = useState(false);
+  const [adBoost, setAdBoost] = useState<{id: string, adUrl?: string} | null>(null);
   const { toast } = useToast();
 
   const handlePurchase = (boostId: string, cost: number) => {
@@ -56,19 +58,29 @@ export function Store({ onPurchase }: StoreProps) {
     }
   };
 
-  const handleWatchAd = (boostId: string) => {
+  const startWatchingAd = (boost: {id: string, adUrl?: string}) => {
+    setAdBoost(boost);
     setIsWatchingAd(true);
     // Simulate watching an ad
     setTimeout(() => {
-      addBoost(boostId, 1);
-      onPurchase();
+      if (boost) {
+        addBoost(boost.id, 1);
+        onPurchase();
+        toast({
+          title: "Reward Claimed!",
+          description: `You got an ${boosts.find(b => b.id === boost.id)?.name}.`,
+        });
+      }
+      // Automatically close and reset after timeout
+      setAdBoost(null);
       setIsWatchingAd(false);
-      toast({
-        title: "Reward Claimed!",
-        description: `You got an ${boosts.find(b => b.id === boostId)?.name}.`,
-      });
-    }, 3000); // 3-second ad
+    }, 10000); // 10-second ad simulation
   };
+  
+  const closeAdDialog = () => {
+    setAdBoost(null);
+    setIsWatchingAd(false);
+  }
 
 
   return (
@@ -92,9 +104,9 @@ export function Store({ onPurchase }: StoreProps) {
                 </CardHeader>
                 <CardFooter className="flex-grow flex items-center justify-between mt-auto pt-3 pb-3 px-4 border-t">
                   {boost.free ? (
-                     <AlertDialog>
+                     <AlertDialog open={!!adBoost && adBoost.id === boost.id} onOpenChange={(open) => !open && closeAdDialog()}>
                       <AlertDialogTrigger asChild>
-                         <Button variant="outline" size="sm" className='w-full'>
+                         <Button variant="outline" size="sm" className='w-full' onClick={() => setAdBoost(boost)}>
                             <Youtube className="mr-2 text-red-600"/> Watch Ad
                         </Button>
                       </AlertDialogTrigger>
@@ -105,23 +117,26 @@ export function Store({ onPurchase }: StoreProps) {
                             Watch a short video to get a free {boost.name}.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        {isWatchingAd ? (
-                            <div className="flex flex-col items-center justify-center p-4 gap-2">
-                                <div className="w-full aspect-video bg-black flex flex-col items-center justify-center text-white rounded-lg">
-                                    <p>Your ad is playing...</p>
-                                    <p className='text-xs'>(This is a placeholder)</p>
-                                </div>
-                                <p className="mt-2 text-sm text-muted-foreground">You will receive your reward shortly.</p>
+                        {isWatchingAd && adBoost?.adUrl ? (
+                             <div className="w-full aspect-video bg-black rounded-lg overflow-hidden">
+                                 <iframe
+                                    width="100%"
+                                    height="100%"
+                                    src={adBoost.adUrl}
+                                    title="YouTube video player"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
                             </div>
                         ) : (
-                            <div className='flex items-center justify-center p-4'>
+                            <div className='flex items-center justify-center p-4 h-48'>
                                 <p>Click "Watch Now" to start the ad.</p>
                             </div>
                         )}
                         <AlertDialogFooter>
-                          <AlertDialogCancel disabled={isWatchingAd}>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleWatchAd(boost.id)} disabled={isWatchingAd}>
-                            {isWatchingAd ? "Watching..." : "Watch Now"}
+                          <AlertDialogCancel onClick={closeAdDialog} disabled={isWatchingAd}>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => adBoost && startWatchingAd(adBoost)} disabled={isWatchingAd}>
+                            {isWatchingAd ? "Claiming Reward..." : "Watch Now"}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -144,3 +159,4 @@ export function Store({ onPurchase }: StoreProps) {
     </div>
   );
 }
+
