@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { addCurrency } from '@/lib/storage';
+import { addCurrency, getCurrency } from '@/lib/storage';
+import { Badge } from '@/components/ui/badge';
 
 
 const gameDetails: { [key: string]: { name: string; description: string } } = {
@@ -220,40 +221,38 @@ const VideoPlayGame = () => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-                <Card>
-                    <CardContent className="p-0">
-                        <div className="relative aspect-video bg-black rounded-t-lg flex items-center justify-center">
-                            <Image src={selectedVideo.image.imageUrl} alt={selectedVideo.title} fill className={cn("object-cover rounded-t-lg transition-opacity", isPlaying && "opacity-80")} data-ai-hint={selectedVideo.image.imageHint} />
-                             {!isPlaying && progress === 0 && (
-                                <button onClick={handlePlay} className='z-10 bg-black/50 p-4 rounded-full text-white hover:bg-black/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed' disabled={isClaimed(selectedVideo.id)}>
-                                    {isClaimed(selectedVideo.id) ? <CheckCircle className='w-16 h-16 text-green-500' /> : <PlayCircle className='w-16 h-16' />}
-                                </button>
-                             )}
-                             {isPlaying && (
-                                <div className='z-10 text-white flex items-center gap-2 bg-black/50 p-2 rounded'>
-                                    <Hourglass className='w-4 h-4 animate-spin' />
-                                    <span>Playing...</span>
-                                </div>
-                             )}
+                <Card className='overflow-hidden'>
+                    <div className="relative aspect-video bg-black flex items-center justify-center">
+                        <Image src={selectedVideo.image.imageUrl} alt={selectedVideo.title} fill className={cn("object-cover transition-opacity", isPlaying && "opacity-80")} data-ai-hint={selectedVideo.image.imageHint} />
+                         {!isPlaying && progress === 0 && (
+                            <button onClick={handlePlay} className='z-10 bg-black/50 p-4 rounded-full text-white hover:bg-black/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed' disabled={isClaimed(selectedVideo.id)}>
+                                {isClaimed(selectedVideo.id) ? <CheckCircle className='w-16 h-16 text-green-500' /> : <PlayCircle className='w-16 h-16' />}
+                            </button>
+                         )}
+                         {isPlaying && (
+                            <div className='z-10 text-white flex items-center gap-2 bg-black/50 p-2 rounded'>
+                                <Hourglass className='w-4 h-4 animate-spin' />
+                                <span>Playing...</span>
+                            </div>
+                         )}
+                    </div>
+                    <CardContent className='p-4 space-y-4'>
+                        <h2 className="text-xl font-bold">{selectedVideo.title}</h2>
+                        <div className='flex items-center gap-4 text-sm text-muted-foreground'>
+                            <div className="flex items-center gap-1">
+                                <Award className="w-4 h-4 text-yellow-500" />
+                                <span>Reward: {selectedVideo.reward} Coins</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                <span>Duration: {selectedVideo.duration}</span>
+                            </div>
                         </div>
-                        <div className='p-4 space-y-4'>
-                            <h2 className="text-xl font-bold">{selectedVideo.title}</h2>
-                            <div className='flex items-center gap-4 text-sm text-muted-foreground'>
-                                <div className="flex items-center gap-1">
-                                    <Award className="w-4 h-4 text-yellow-500" />
-                                    <span>Reward: {selectedVideo.reward} Coins</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4" />
-                                    <span>Duration: {selectedVideo.duration}</span>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Progress value={progress} />
-                                <Button onClick={handleClaimReward} disabled={!canClaim} className="w-full">
-                                    {isClaimed(selectedVideo.id) ? 'Reward Claimed' : 'Claim Reward'}
-                                </Button>
-                            </div>
+                        <div className="space-y-2">
+                            <Progress value={progress} />
+                            <Button onClick={handleClaimReward} disabled={!canClaim} className="w-full">
+                                {isClaimed(selectedVideo.id) ? 'Reward Claimed' : 'Claim Reward'}
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -263,17 +262,24 @@ const VideoPlayGame = () => {
                     <CardHeader>
                         <CardTitle>Playlist</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <ScrollArea className="h-[400px]">
+                    <CardContent className='p-2'>
+                        <ScrollArea className="h-[420px] pr-2">
                             <div className="space-y-2">
                             {videos.map(video => (
                                 <button key={video.id} onClick={() => handleSelectVideo(video)} className={cn("flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-muted", selectedVideo.id === video.id && "bg-muted")}>
-                                    <Image src={video.image.imageUrl} alt={video.title} width={120} height={68} className="rounded-md object-cover" data-ai-hint={video.image.imageHint}/>
+                                    <div className="relative w-[120px] h-[68px] flex-shrink-0">
+                                        <Image src={video.image.imageUrl} alt={video.title} fill className="rounded-md object-cover" data-ai-hint={video.image.imageHint}/>
+                                        {isClaimed(video.id) && (
+                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
+                                                <CheckCircle className="w-6 h-6 text-green-400" />
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className='flex-1'>
-                                        <p className="font-semibold text-sm">{video.title}</p>
+                                        <p className="font-semibold text-sm leading-tight">{video.title}</p>
                                         <p className="text-xs text-muted-foreground">{video.duration}</p>
                                          {isClaimed(video.id) && (
-                                            <Badge variant="secondary" className='mt-1 text-green-600'>Claimed</Badge>
+                                            <Badge variant="secondary" className='mt-1 text-green-600 bg-green-500/10 text-[10px] px-1.5 py-0'>Claimed</Badge>
                                         )}
                                     </div>
                                 </button>
@@ -376,6 +382,16 @@ export default function BonusGamePage() {
   const params = useParams();
   const slug = params.slug as string;
   const details = gameDetails[slug] || { name: 'Game', description: 'Play to win!' };
+  const [currency, setCurrency] = useState(0);
+
+  useEffect(() => {
+    setCurrency(getCurrency());
+  }, []);
+  
+  const handleRewardClaimed = () => {
+    // A bit of a delay to allow storage to update
+    setTimeout(() => setCurrency(getCurrency()), 100);
+  }
 
   const renderGame = () => {
     switch (slug) {
@@ -395,10 +411,16 @@ export default function BonusGamePage() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-primary">{details.name}</h1>
-        <p className="text-muted-foreground">{details.description}</p>
+    <div className="w-full max-w-6xl mx-auto space-y-6">
+      <div className="flex items-start justify-between">
+        <div>
+            <h1 className="text-3xl font-bold text-primary">{details.name}</h1>
+            <p className="text-muted-foreground mt-1">{details.description}</p>
+        </div>
+        <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary px-2 py-1 rounded-md bg-muted">
+            <Coins className="w-5 h-5 text-yellow-500"/>
+            <span className='text-lg'>{currency.toLocaleString()}</span>
+        </div>
       </div>
 
       {renderGame()}
@@ -406,6 +428,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
 
     
