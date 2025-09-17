@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import { Separator } from '@/components/ui/separator';
 
 type Coin = {
   name: string;
@@ -36,7 +35,7 @@ const initialCoins: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>
 function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>): Coin {
     const history = Array.from({ length: 30 }, (_, i) => {
         const price = coin.price * (1 + (Math.random() - 0.5) * 0.1);
-        return { time: new Date(Date.now() - (30 - i) * 2000).toLocaleTimeString(), price };
+        return { time: new Date(Date.now() - (30 - i) * 2000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), price };
     });
     const prices = history.map(h => h.price);
     return {
@@ -55,7 +54,7 @@ export default function RatingsClient() {
   const [selectedCoin, setSelectedCoin] = useState<Coin>(coins[4]); // Default to Kotela
 
   const updateCoinData = useCallback(() => {
-    const now = new Date().toLocaleTimeString();
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     setCoins(prevCoins =>
       prevCoins.map(coin => {
         const changeFactor = Math.random() * 0.02 - 0.01; // Fluctuate by up to 1%
@@ -82,7 +81,7 @@ export default function RatingsClient() {
         return updatedCoin;
       })
     );
-  }, [selectedCoin, coins]);
+  }, [selectedCoin]);
 
 
   useEffect(() => {
@@ -195,7 +194,7 @@ export default function RatingsClient() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-lg">
                         <div className="space-y-4">
                             <h3 className="font-semibold">Buy {selectedCoin.symbol}</h3>
-                            <Input type="number" placeholder={`Price (USDT)`} defaultValue={selectedCoin.price.toFixed(4)} />
+                            <Input type="number" placeholder={`Price (USDT)`} defaultValue={selectedCoin.price.toFixed(4)} readOnly />
                             <Input type="number" placeholder={`Amount (${selectedCoin.symbol})`} />
                             <Slider defaultValue={[50]} max={100} step={1} />
                              <p className='text-sm text-muted-foreground'>Available: 0.00 USDT</p>
@@ -208,15 +207,35 @@ export default function RatingsClient() {
                                     <TableRow>
                                         <TableHead className="text-xs h-8">Price(USDT)</TableHead>
                                         <TableHead className="text-xs h-8 text-right">Amount({selectedCoin.symbol})</TableHead>
+                                        <TableHead className="text-xs h-8 text-right">Total</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {[...Array(5)].map((_, i) => (
+                                    {[...Array(5)].map((_, i) => {
+                                        const price = selectedCoin.price * (1 + (Math.random() - 0.45) * 0.01);
+                                        const amount = Math.random() * 2;
+                                        return (
                                         <TableRow key={i}>
-                                            <TableCell className={`py-1 text-xs ${getChangeColor(Math.random() - 0.5)}`}>{(selectedCoin.price * (1 + (Math.random() - 0.45) * 0.01)).toFixed(4)}</TableCell>
-                                            <TableCell className="py-1 text-xs text-right">{(Math.random() * 2).toFixed(4)}</TableCell>
+                                            <TableCell className={`py-1 text-xs text-red-500`}>{price.toFixed(4)}</TableCell>
+                                            <TableCell className="py-1 text-xs text-right">{amount.toFixed(4)}</TableCell>
+                                            <TableCell className="py-1 text-xs text-right">{(price * amount).toFixed(4)}</TableCell>
                                         </TableRow>
-                                    ))}
+                                    )})}
+                                     <TableRow>
+                                        <TableCell colSpan={3} className="py-2 text-lg font-bold text-center ${getChangeColor(selectedCoin.change)}">
+                                            {selectedCoin.price.toFixed(4)}
+                                        </TableCell>
+                                    </TableRow>
+                                    {[...Array(5)].map((_, i) => {
+                                        const price = selectedCoin.price * (1 - (Math.random() - 0.45) * 0.01);
+                                        const amount = Math.random() * 2;
+                                        return(
+                                        <TableRow key={i}>
+                                            <TableCell className={`py-1 text-xs text-green-500`}>{price.toFixed(4)}</TableCell>
+                                            <TableCell className="py-1 text-xs text-right">{amount.toFixed(4)}</TableCell>
+                                             <TableCell className="py-1 text-xs text-right">{(price * amount).toFixed(4)}</TableCell>
+                                        </TableRow>
+                                    )})}
                                 </TableBody>
                             </Table>
                         </div>
@@ -226,7 +245,7 @@ export default function RatingsClient() {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-lg">
                         <div className="space-y-4">
                             <h3 className="font-semibold">Sell {selectedCoin.symbol}</h3>
-                            <Input type="number" placeholder="Price (USDT)" defaultValue={selectedCoin.price.toFixed(4)} />
+                            <Input type="number" placeholder="Price (USDT)" defaultValue={selectedCoin.price.toFixed(4)} readOnly />
                             <Input type="number" placeholder={`Amount (${selectedCoin.symbol})`} />
                             <Slider defaultValue={[50]} max={100} step={1} />
                             <p className='text-sm text-muted-foreground'>Available: 0.00 {selectedCoin.symbol}</p>
@@ -239,15 +258,35 @@ export default function RatingsClient() {
                                     <TableRow>
                                         <TableHead className="text-xs h-8">Price(USDT)</TableHead>
                                         <TableHead className="text-xs h-8 text-right">Amount({selectedCoin.symbol})</TableHead>
+                                        <TableHead className="text-xs h-8 text-right">Total</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {[...Array(5)].map((_, i) => (
+                                    {[...Array(5)].map((_, i) => {
+                                        const price = selectedCoin.price * (1 + (Math.random() - 0.45) * 0.01);
+                                        const amount = Math.random() * 2;
+                                        return (
                                         <TableRow key={i}>
-                                            <TableCell className={`py-1 text-xs ${getChangeColor(Math.random() - 0.5)}`}>{(selectedCoin.price * (1 + (Math.random() - 0.55) * 0.01)).toFixed(4)}</TableCell>
-                                            <TableCell className="py-1 text-xs text-right">{(Math.random() * 2).toFixed(4)}</TableCell>
+                                            <TableCell className={`py-1 text-xs text-red-500`}>{price.toFixed(4)}</TableCell>
+                                            <TableCell className="py-1 text-xs text-right">{amount.toFixed(4)}</TableCell>
+                                            <TableCell className="py-1 text-xs text-right">{(price * amount).toFixed(4)}</TableCell>
                                         </TableRow>
-                                    ))}
+                                    )})}
+                                     <TableRow>
+                                        <TableCell colSpan={3} className="py-2 text-lg font-bold text-center ${getChangeColor(selectedCoin.change)}">
+                                            {selectedCoin.price.toFixed(4)}
+                                        </TableCell>
+                                    </TableRow>
+                                    {[...Array(5)].map((_, i) => {
+                                        const price = selectedCoin.price * (1 - (Math.random() - 0.45) * 0.01);
+                                        const amount = Math.random() * 2;
+                                        return(
+                                        <TableRow key={i}>
+                                            <TableCell className={`py-1 text-xs text-green-500`}>{price.toFixed(4)}</TableCell>
+                                            <TableCell className="py-1 text-xs text-right">{amount.toFixed(4)}</TableCell>
+                                             <TableCell className="py-1 text-xs text-right">{(price * amount).toFixed(4)}</TableCell>
+                                        </TableRow>
+                                    )})}
                                 </TableBody>
                             </Table>
                         </div>
@@ -273,7 +312,7 @@ export default function RatingsClient() {
                     </TableHeader>
                     <TableBody>
                     {coins.map((coin) => (
-                        <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer">
+                        <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50">
                         <TableCell className='py-2'>
                             <div className="flex items-center gap-2">
                                 <Star className={`h-4 w-4 ${coin.symbol === selectedCoin.symbol ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/50'}`}/>
@@ -282,7 +321,7 @@ export default function RatingsClient() {
                         </TableCell>
                         <TableCell className="text-right font-mono text-xs py-2">${coin.price.toFixed(4)}</TableCell>
                         <TableCell className={`text-right font-mono text-xs py-2 ${getChangeColor(coin.change)}`}>
-                            {((coin.change / (coin.price - coin.change)) * 100).toFixed(2)}%
+                            {coin.change > 0 ? '+' : ''}{((coin.change / (coin.price - coin.change)) * 100).toFixed(2)}%
                         </TableCell>
                         </TableRow>
                     ))}
