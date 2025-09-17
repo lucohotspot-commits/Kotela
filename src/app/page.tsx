@@ -42,7 +42,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
       <header className="py-4">
-        <div className="container mx-auto flex w-full flex-col items-end sm:items-center sm:flex-row justify-between gap-4">
+        <div className="container mx-auto flex w-full flex-col items-start sm:flex-row sm:items-center justify-between gap-4">
             <div className="mr-auto">
                  <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">
                     Mine
