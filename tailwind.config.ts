@@ -94,8 +94,8 @@ export default {
           '50%': { transform: 'scale(1.02)' },
         },
         glow: {
-          '0%, 100%': { opacity: '0.7' },
-          '50%': { opacity: '1' },
+          '0%, 100%': { filter: 'drop-shadow(0 0 5px hsl(var(--primary)))' },
+          '50%': { filter: 'drop-shadow(0 0 10px hsl(var(--primary)))' },
         },
         marquee: {
           from: { transform: 'translateX(0)' },
