@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,11 +21,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
-import { ChevronRight, ShieldCheck, Camera, Check, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Camera, Check, AlertCircle, ArrowLeft, ArrowRight, Upload, FileText, CameraIcon, FileUp } from 'lucide-react';
 import { PhoneInput, type Country } from '@/components/ui/phone-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getYears, getMonths, getDaysInMonth } from '@/lib/dates';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 const formSchema = z.object({
@@ -36,7 +38,8 @@ const formSchema = z.object({
   dob_year: z.string({ required_error: "Please select a year." }),
   dob_month: z.string({ required_error: "Please select a month." }),
   dob_day: z.string({ required_error: "Please select a day." }),
-  document: z.any().refine((files) => files?.length == 1, "Document is required."),
+  documentType: z.string({ required_error: "Please select a document type." }),
+  document: z.any().refine((file) => file, "Document image is required."),
 });
 
 type VerificationFormValues = z.infer<typeof formSchema>;
@@ -50,11 +53,13 @@ const verificationSteps = [
 export default function VerifyPage() {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
+  const [uploadMode, setUploadMode] = useState<'select' | 'upload' | 'camera'>('select');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [selfie, setSelfie] = useState<string | null>(null);
+  const [documentPreview, setDocumentPreview] = useState<string | null>(null);
 
   const form = useForm<VerificationFormValues>({
     resolver: zodResolver(formSchema),
@@ -67,11 +72,12 @@ export default function VerifyPage() {
       dob_year: "",
       dob_month: "",
       dob_day: "",
+      documentType: "",
     },
     mode: 'onChange',
   });
 
-  const getCameraPermission = useCallback(async () => {
+  const getCameraPermission = useCallback(async (isDocumentCamera = false) => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       console.error('Camera not supported on this browser.');
       setHasCameraPermission(false);
@@ -80,8 +86,10 @@ export default function VerifyPage() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       setHasCameraPermission(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+
+      const videoElement = isDocumentCamera ? document.getElementById('doc-video') as HTMLVideoElement : videoRef.current;
+      if (videoElement) {
+        videoElement.srcObject = stream;
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
@@ -98,7 +106,10 @@ export default function VerifyPage() {
     if (step === 3) {
       getCameraPermission();
     }
-  }, [step, getCameraPermission]);
+     if (step === 2 && uploadMode === 'camera') {
+      getCameraPermission(true);
+    }
+  }, [step, uploadMode, getCameraPermission]);
 
   function onSubmit(values: VerificationFormValues) {
     const dob = `${values.dob_year}-${values.dob_month}-${values.dob_day}`;
@@ -111,7 +122,7 @@ export default function VerifyPage() {
     // Maybe redirect or show a success message
   }
 
-  const handleCapture = () => {
+  const handleCaptureSelfie = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -124,7 +135,35 @@ export default function VerifyPage() {
     }
   };
 
-  const handleRetake = () => {
+  const handleCaptureDocument = () => {
+    const video = document.getElementById('doc-video') as HTMLVideoElement;
+    if (video && canvasRef.current) {
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d');
+      context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+      const dataUri = canvas.toDataURL('image/jpeg');
+      form.setValue('document', dataUri, { shouldValidate: true });
+      setDocumentPreview(dataUri);
+      setUploadMode('select'); // Go back to selection
+    }
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      form.setValue('document', file, { shouldValidate: true });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDocumentPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+
+  const handleRetakeSelfie = () => {
     setSelfie(null);
   }
 
@@ -139,7 +178,7 @@ export default function VerifyPage() {
   const days = getDaysInMonth(watchedYear ? parseInt(watchedYear) : null, watchedMonth ? parseInt(watchedMonth) - 1 : null);
 
   const isStep1Valid = form.watch('country') && form.watch('phoneNumber') && form.watch('surname') && form.watch('dob_day') && form.watch('dob_month') && form.watch('dob_year') && !form.getFieldState('country').invalid && !form.getFieldState('phoneNumber').invalid && !form.getFieldState('surname').invalid && !form.getFieldState('dob_day').invalid && !form.getFieldState('dob_month').invalid && !form.getFieldState('dob_year').invalid;
-  const isStep2Valid = form.watch('document') && form.watch('document').length > 0;
+  const isStep2Valid = form.watch('documentType') && documentPreview;
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
@@ -322,19 +361,89 @@ export default function VerifyPage() {
             {step === 2 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Step 2: Upload Document</CardTitle>
-                        <CardDescription>Upload a clear image of your government-issued ID (e.g., Passport, Driver's License).</CardDescription>
+                        <CardTitle>Step 2: Document Verification</CardTitle>
+                        <CardDescription>Select the type of document you'd like to upload.</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        <FormField control={form.control} name="document" render={({ field }) => (
+                    <CardContent className="space-y-6">
+                        <FormField
+                            control={form.control}
+                            name="documentType"
+                            render={({ field }) => (
                             <FormItem>
-                                <FormLabel>ID Document</FormLabel>
+                                <FormLabel>Document Type</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
-                                    <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={(e) => field.onChange(e.target.files)} />
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Select a document type" />
+                                    </SelectTrigger>
                                 </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="passport">Passport</SelectItem>
+                                    <SelectItem value="drivers_license">Driver's License</SelectItem>
+                                    <SelectItem value="national_id">National ID Card</SelectItem>
+                                </SelectContent>
+                                </Select>
                                 <FormMessage />
                             </FormItem>
-                        )} />
+                            )}
+                        />
+
+                        {form.watch('documentType') && uploadMode === 'select' && (
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setUploadMode('upload')}>
+                                    <FileUp className="h-8 w-8" />
+                                    <span>Upload File</span>
+                                </Button>
+                                <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setUploadMode('camera')}>
+                                    <CameraIcon className="h-8 w-8" />
+                                    <span>Use Camera</span>
+                                </Button>
+                            </div>
+                        )}
+                        
+                        {uploadMode === 'upload' && (
+                            <FormField
+                                control={form.control}
+                                name="document"
+                                render={() => ( // We don't use field here because we have a custom handler
+                                <FormItem>
+                                    <FormLabel>Upload your document</FormLabel>
+                                    <FormControl>
+                                        <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        )}
+
+                        {uploadMode === 'camera' && (
+                             <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
+                                <video id="doc-video" className="w-full h-full object-cover" autoPlay muted playsInline />
+                                {hasCameraPermission === false && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                                        <AlertCircle className="h-10 w-10 text-destructive mb-2" />
+                                        <p className="font-semibold">Camera Access Denied</p>
+                                    </div>
+                                )}
+                                <Button onClick={handleCaptureDocument} className="absolute bottom-4 z-10" size="lg" disabled={!hasCameraPermission}>
+                                    <Camera className="mr-2" /> Capture Document
+                                </Button>
+                            </div>
+                        )}
+
+                        {documentPreview && (
+                            <div className="space-y-2">
+                                <Label>Document Preview</Label>
+                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                    <Image src={documentPreview} alt="Document preview" layout="fill" objectFit="contain" />
+                                </div>
+                                <Button variant="link" onClick={() => { setDocumentPreview(null); form.setValue('document', null); setUploadMode('select'); }}>
+                                    Clear and re-upload
+                                </Button>
+                            </div>
+                        )}
+
                     </CardContent>
                      <CardFooter className='justify-between'>
                          <Button onClick={prevStep} variant="outline">
@@ -347,6 +456,7 @@ export default function VerifyPage() {
                 </Card>
             )}
 
+
             {step === 3 && (
                 <Card>
                     <CardHeader>
@@ -356,19 +466,20 @@ export default function VerifyPage() {
                     <CardContent className="space-y-4">
                         <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
                             {selfie ? (
-                                <img src={selfie} alt="User selfie" className="w-full h-full object-cover" />
+                                <Image src={selfie} alt="User selfie" className="w-full h-full object-cover" width={640} height={480} />
                             ) : (
                                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
                             )}
                             {hasCameraPermission === false && (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                                    <AlertCircle className="h-10 w-10 text-destructive mb-2" />
-                                    <p className="font-semibold">Camera Access Denied</p>
-                                    <p className="text-sm text-muted-foreground">Please enable camera permissions in your browser settings to continue.</p>
-                                    <Button onClick={getCameraPermission} size="sm" className="mt-4">Retry</Button>
-                                </div>
+                                <Alert variant="destructive" className="absolute bottom-4 w-auto">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <AlertTitle>Camera Access Denied</AlertTitle>
+                                  <AlertDescription>
+                                    Please enable camera permissions to continue.
+                                  </AlertDescription>
+                                </Alert>
                             )}
-                            {hasCameraPermission === null && (
+                            {hasCameraPermission === null && !selfie && (
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <p className="text-muted-foreground">Requesting camera access...</p>
                                 </div>
@@ -378,13 +489,13 @@ export default function VerifyPage() {
                             <div className="flex justify-center gap-4">
                                 {selfie ? (
                                     <>
-                                    <Button onClick={handleRetake} variant="outline">Retake Selfie</Button>
+                                    <Button onClick={handleRetakeSelfie} variant="outline">Retake Selfie</Button>
                                     <Button disabled>
                                         <Check className="mr-2" /> Selfie Captured
                                     </Button>
                                     </>
                                 ) : (
-                                    <Button onClick={handleCapture}>
+                                    <Button onClick={handleCaptureSelfie}>
                                     <Camera className="mr-2" /> Capture Selfie
                                     </Button>
                                 )}
