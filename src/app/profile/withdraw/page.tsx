@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass, Smartphone, CheckCircle, Clock } from 'lucide-react';
+import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass, Smartphone, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { getCurrency, spendCurrency, getWithdrawals, addWithdrawal, type Withdrawal } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -396,5 +396,3 @@ export default function WithdrawPage() {
         </div>
     );
 }
-
-    
