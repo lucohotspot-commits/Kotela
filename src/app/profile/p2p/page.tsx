@@ -160,28 +160,30 @@ export default function P2PTransferPage() {
             
             <Card>
                 <CardHeader>
-                    <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                        <Tabs defaultValue="buy" className="w-auto">
                             <TabsList className="p-1 border rounded-lg h-auto">
                                 <TabsTrigger value="buy" className="px-6">Buy</TabsTrigger>
                                 <TabsTrigger value="sell" className="px-6">Sell</TabsTrigger>
                             </TabsList>
                         </Tabs>
-                        <div className="flex items-center gap-4 overflow-x-auto pb-2">
-                           {cryptoCurrencies.map(crypto => (
-                                <Button 
-                                    key={crypto}
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className={cn(
-                                        "text-muted-foreground h-auto p-1",
-                                        selectedCrypto === crypto && "text-primary font-bold border-b-2 border-primary rounded-none"
-                                    )}
-                                    onClick={() => setSelectedCrypto(crypto)}
-                                >
-                                    {crypto}
-                                </Button>
-                            ))}
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-4 overflow-x-auto pb-2 -mb-2">
+                               {cryptoCurrencies.map(crypto => (
+                                    <Button 
+                                        key={crypto}
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className={cn(
+                                            "text-muted-foreground h-auto p-1 flex-shrink-0",
+                                            selectedCrypto === crypto && "text-primary font-bold border-b-2 border-primary rounded-none"
+                                        )}
+                                        onClick={() => setSelectedCrypto(crypto)}
+                                    >
+                                        {crypto}
+                                    </Button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
