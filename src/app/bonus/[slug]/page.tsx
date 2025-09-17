@@ -93,13 +93,13 @@ const AviatorGame = () => {
         let gameLoop: NodeJS.Timeout;
         if (gameState === 'playing') {
             const startTime = Date.now();
-            const crashPoint = (Math.random() * 15 + 2) * 1000; // Slower progression
+            const crashPoint = (Math.random() * 10 + 5) * 1000;
 
             gameLoop = setInterval(() => {
                 const elapsedTime = Date.now() - startTime;
                 setFlightTime(elapsedTime);
 
-                const newMultiplier = 1 + (elapsedTime / 1500) * 0.2 + (elapsedTime / 7000) ** 2; // Slower multiplier
+                const newMultiplier = 1 + (elapsedTime / 1500) * 0.2 + (elapsedTime / 7000) ** 2;
                 setMultiplier(newMultiplier);
 
                 if (elapsedTime >= crashPoint) {
@@ -144,9 +144,36 @@ const AviatorGame = () => {
     const handleBetChange = (amount: number) => {
         setBetAmount(prev => Math.max(1, prev + amount));
     }
+    
+    const maxFlightTime = 15000;
+    const planeX = Math.min(100, (flightTime / maxFlightTime) * 100);
 
-    const planeX = Math.min(100, (flightTime / 12000) * 100); // Slower plane movement
-    const planeY = 100 - Math.pow(planeX / 100, 0.5) * 80;
+    const getPathData = (progress: number) => {
+        const width = 100;
+        const height = 100;
+        const controlX1 = width * 0.3;
+        const controlY1 = height;
+        const controlX2 = width * 0.7;
+        const controlY2 = height * 0.6;
+        const endX = width;
+        const endY = height * 0.2;
+        
+        const path = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
+        
+        const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        tempPath.setAttribute('d', path);
+        const pathLength = tempPath.getTotalLength();
+        
+        const point = tempPath.getPointAtLength(progress * pathLength / 100);
+
+        const subPath = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${point.x} ${point.y}`;
+        
+        return { path: subPath, point };
+    };
+
+    const { path: flightPath, point: planePosition } = getPathData(planeX);
+    
+    const planeRotation = Math.atan2(planePosition.y - 100, planePosition.x) * (180/Math.PI) + 45;
 
     const multiplierFontSize = Math.min(10, 2 + multiplier / 5);
 
@@ -154,19 +181,14 @@ const AviatorGame = () => {
         <div className='flex flex-col items-center gap-4'>
             <Card className="w-full max-w-4xl overflow-hidden">
                 <CardContent className="p-0">
-                    <div className="relative w-full aspect-video bg-[#1e2024] flex items-center justify-center overflow-hidden">
-                        <div
-                            className="absolute inset-0 bg-transparent"
-                            style={{
-                                backgroundImage: `
-                                    radial-gradient(ellipse at 50% 120%, hsla(0,0%,100%,0.05) 0%, transparent 40%),
-                                    radial-gradient(circle at 50% 120%, transparent 20%, #1e2024 20.5%, #1e2024 30%, transparent 30.5%, transparent 100%)
-                                `,
-                                backgroundSize: '100% 100%, 80px 80px',
+                    <div className="relative w-full aspect-video bg-[#0f1923] flex items-center justify-center overflow-hidden">
+                        <div className="absolute inset-0 bg-transparent"
+                            style={{ 
+                                backgroundImage: 'radial-gradient(ellipse at 5% 100%, hsl(207 30% 25% / 0.3), transparent 40%), conic-gradient(from 180deg at 0% 100%, hsl(0 0% 5% / 0.9), hsl(0 0% 5% / 0.5) 10deg, transparent 35deg)',
                             }}
                         ></div>
-
-                        <div className="absolute inset-0 flex items-center justify-center z-20">
+                        
+                        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                             {gameState === 'waiting' && (
                                 <p className="text-xl font-semibold text-muted-foreground animate-pulse">Waiting for next round...</p>
                             )}
@@ -178,11 +200,8 @@ const AviatorGame = () => {
                             )}
                             {gameState === 'crashed' && (
                                 <div className="text-center flex flex-col items-center">
-                                    <div className="flex items-center gap-2">
-                                        <Plane className="h-8 w-8 text-destructive" />
-                                        <p className="text-3xl font-bold text-destructive">Flew Away!</p>
-                                    </div>
-                                    <p className="text-2xl text-white font-bold">{multiplier.toFixed(2)}x</p>
+                                    <p className="text-2xl text-destructive font-bold">Flew Away!</p>
+                                    <p className="text-4xl text-white font-bold">{multiplier.toFixed(2)}x</p>
                                 </div>
                             )}
                             {(gameState === 'playing') && (
@@ -196,27 +215,39 @@ const AviatorGame = () => {
                         </div>
 
                         {(gameState === 'playing' || gameState === 'cashed_out') && (
-                            <div className="absolute h-full w-full">
-                                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
-                                    <path
-                                        d={`M 0 100 C 30 100, 70 60, 100 20`}
-                                        stroke={"#ef4444"}
-                                        strokeWidth="0.5"
-                                        fill="none"
-                                        strokeDasharray="1"
-                                        strokeDashoffset={1 - (planeX / 100)}
-                                        pathLength="1"
-                                    />
-                                </svg>
-                                <Plane
-                                    className={cn("h-8 w-8 text-red-500 absolute bottom-0 left-0 transform -translate-x-1/2 translate-y-1/2 transition-all ease-linear duration-[50ms]", gameState === 'cashed_out' && 'opacity-50')}
-                                    style={{
-                                        left: `${planeX}%`,
-                                        bottom: `${100 - planeY}%`,
-                                        transform: `translate(-50%, 50%) rotate(${-(planeX / 3)}deg)`,
-                                    }}
+                            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
+                                <defs>
+                                    <linearGradient id="glow" x1="0" x2="0" y1="0" y2="1">
+                                        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+                                        <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+                                    </linearGradient>
+                                     <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+                                        <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
+                                    </filter>
+                                </defs>
+                                <path
+                                    d={flightPath + ` L ${planePosition.x} 100 L 0 100 Z`}
+                                    fill="rgba(239, 68, 68, 0.2)"
                                 />
-                            </div>
+                                <path
+                                    d={flightPath}
+                                    stroke={"#ef4444"}
+                                    strokeWidth="0.5"
+                                    fill="none"
+                                />
+                                <path
+                                    d={flightPath}
+                                    stroke="url(#glow)"
+                                    strokeWidth="1.5"
+                                    fill="none"
+                                    filter="url(#glow-filter)"
+                                />
+                                <g transform={`translate(${planePosition.x}, ${planePosition.y}) rotate(${planeRotation})`}>
+                                     <Plane
+                                        className={cn("h-4 w-4 text-red-500 transition-all ease-linear duration-[50ms]", gameState === 'cashed_out' && 'opacity-50')}
+                                    />
+                                </g>
+                            </svg>
                         )}
                     </div>
                 </CardContent>
