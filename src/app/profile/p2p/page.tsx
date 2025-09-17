@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -74,6 +74,7 @@ const advertisers = [
 ];
 
 const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'SHIB', 'USDC'];
+const allPaymentMethods = ['All Payments', 'SEPA (EU) bank transfer', 'Bank Transfer', 'SEPA Instant', 'ZEN', 'Pesapal', 'Jpesa', 'TransID'];
 
 const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) => {
     
@@ -153,17 +154,28 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
 }
 
 export default function P2PTransferPage() {
-    const [balance, setBalance] = useState(0);
-    const [selectedCrypto, setSelectedCrypto] = useState('BTC');
+    const [selectedCrypto, setSelectedCrypto] = useState('USDT');
+    const [amount, setAmount] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('All Payments');
+    const [region, setRegion] = useState('All Regions');
     const { toast } = useToast();
 
-    const refreshBalance = () => {
-        setBalance(getCurrency());
-    }
+    const filteredAdvertisers = useMemo(() => {
+        let result = advertisers;
+        
+        const numericAmount = parseFloat(amount);
+        if (!isNaN(numericAmount) && numericAmount > 0) {
+            result = result.filter(ad => numericAmount >= ad.limitMin && numericAmount <= ad.limitMax);
+        }
 
-    useEffect(() => {
-        refreshBalance();
-    }, []);
+        if (paymentMethod !== 'All Payments') {
+            result = result.filter(ad => ad.payments.includes(paymentMethod));
+        }
+        
+        // Region filter logic would go here if data was available
+
+        return result;
+    }, [amount, paymentMethod]);
 
 
     return (
@@ -215,7 +227,13 @@ export default function P2PTransferPage() {
 
                     <div className="flex flex-col md:flex-row items-center gap-4 mt-4">
                         <div className="relative w-full md:w-auto md:flex-1">
-                            <Input id="amount" placeholder="Enter amount" className="pr-24"/>
+                            <Input 
+                                id="amount" 
+                                placeholder="Enter amount" 
+                                className="pr-24"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                            />
                             <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                                 <span className='h-full w-[1px] bg-border mx-2'></span>
                                 <Select defaultValue="EUR">
@@ -230,26 +248,22 @@ export default function P2PTransferPage() {
                                 </Select>
                             </div>
                         </div>
-                        <Select defaultValue="all">
+                        <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                             <SelectTrigger id="payment" className="w-full md:w-auto md:flex-1">
                                 <SelectValue placeholder="All Payments" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Payments</SelectItem>
-                                <SelectItem value="sepa">SEPA</SelectItem>
-                                <SelectItem value="zen">ZEN</SelectItem>
-                                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                <SelectItem value="pesapal">Pesapal</SelectItem>
-                                <SelectItem value="jpesa">Jpesa</SelectItem>
-                                <SelectItem value="transid">TransID</SelectItem>
+                                {allPaymentMethods.map(method => (
+                                    <SelectItem key={method} value={method}>{method}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
-                        <Select defaultValue="all">
+                        <Select value={region} onValueChange={setRegion}>
                             <SelectTrigger id="regions" className="w-full md:w-auto md:flex-1">
                                 <SelectValue placeholder="All Regions" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Regions</SelectItem>
+                                <SelectItem value="All Regions">All Regions</SelectItem>
                                 <SelectItem value="eu">Europe</SelectItem>
                                 <SelectItem value="us">United States</SelectItem>
                                 <SelectItem value="asia">Asia</SelectItem>
@@ -269,14 +283,18 @@ export default function P2PTransferPage() {
                         <div className="text-right">Trade</div>
                     </div>
                     <div>
-                        {advertisers.map(ad => (
-                            <AdvertiserCard key={ad.name} advertiser={ad} />
-                        ))}
+                        {filteredAdvertisers.length > 0 ? (
+                            filteredAdvertisers.map(ad => (
+                                <AdvertiserCard key={ad.name} advertiser={ad} />
+                            ))
+                        ) : (
+                            <div className="text-center text-muted-foreground p-10">
+                                <p>No advertisers match the current filters.</p>
+                            </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>
         </div>
     );
 }
-
-    
