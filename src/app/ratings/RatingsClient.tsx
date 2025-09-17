@@ -5,13 +5,14 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TrendingUp, TrendingDown, Minus, Coins, Star } from 'lucide-react';
-import { ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { OrderBook } from '@/components/order-book';
 import { MarketTrades } from '@/components/market-trades';
 import { TopMovers } from '@/components/top-movers';
+import { Separator } from '@/components/ui/separator';
 
 type CoinData = {
   time: string;
@@ -184,14 +185,12 @@ export default function RatingsClient() {
             <OrderBook selectedCoin={selectedCoin} />
         </div>
         <div className="lg:col-span-6 space-y-2">
-            <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b pb-2">
-                <div>
+            <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 p-2">
+                <div className='flex items-center gap-2'>
                     <h1 className="text-xl font-bold">{selectedCoin.symbol}/USDT</h1>
                     <p className='text-xs text-muted-foreground'>{selectedCoin.name}</p>
                 </div>
-                <div>
-                    <p className={`text-xl font-bold ${getChangeColor(selectedCoin.change)}`}>${selectedCoin.price.toFixed(4)}</p>
-                </div>
+                <p className={`text-xl font-bold ${getChangeColor(selectedCoin.change)}`}>${selectedCoin.price.toFixed(4)}</p>
                 <div className='text-xs space-y-0.5'>
                     <p><span className='text-muted-foreground'>24h Change:</span> <span className={getChangeColor(selectedCoin.change)}>{selectedCoin.change.toFixed(4)} {((selectedCoin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%</span></p>
                     <p><span className='text-muted-foreground'>24h High:</span> <span>${selectedCoin.high.toFixed(4)}</span></p>
@@ -201,8 +200,8 @@ export default function RatingsClient() {
                     <p><span className='text-muted-foreground'>24h Volume({selectedCoin.symbol}):</span> <span>{selectedCoin.volume.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
                 </div>
             </header>
-            <Card className="w-full bg-transparent">
-                <CardContent className="p-0 sm:p-1 h-[250px]">
+            <Separator />
+            <div className="w-full bg-transparent p-0 sm:p-1 h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -245,10 +244,9 @@ export default function RatingsClient() {
                         </Bar>
                     </ComposedChart>
                 </ResponsiveContainer>
-                </CardContent>
-            </Card>
+            </div>
             
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-4 p-2">
                 {/* Buy Form */}
                 <div className="space-y-2">
                     <p className='text-xs text-muted-foreground'>Avbl: 0.00000000 USDT</p>
@@ -290,13 +288,10 @@ export default function RatingsClient() {
 
         </div>
         <div className="lg:col-span-3 space-y-2">
-             <Card className="w-full">
-                <CardHeader className='p-2 border-b'>
-                <CardTitle className="flex items-center gap-2 text-sm">
-                    <span>Market</span>
-                </CardTitle>
-                </CardHeader>
-                <CardContent className='p-0'>
+            <div className="border-b">
+                <div className='p-2'>
+                    <h3 className="font-semibold text-sm">Market</h3>
+                </div>
                 <Table>
                     <TableHeader>
                     <TableRow className='h-8'>
@@ -322,8 +317,7 @@ export default function RatingsClient() {
                     ))}
                     </TableBody>
                 </Table>
-                </CardContent>
-            </Card>
+            </div>
             <MarketTrades selectedCoin={selectedCoin} />
             <TopMovers />
         </div>

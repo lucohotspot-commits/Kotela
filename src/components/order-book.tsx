@@ -63,34 +63,32 @@ export function OrderBook({ selectedCoin }: OrderBookProps) {
     }
 
     return (
-        <Card className="w-full h-full">
-            <CardHeader className='p-2 border-b'>
-                <CardTitle className="text-sm">Order Book</CardTitle>
-            </CardHeader>
-            <CardContent className='p-0'>
-                <Table>
-                    <TableHeader>
-                        <TableRow className='h-8'>
-                            <TableHead className="text-xs h-auto px-2">Price(USDT)</TableHead>
-                            <TableHead className="text-xs h-auto px-2 text-right">Amount({selectedCoin.symbol})</TableHead>
-                            <TableHead className="text-xs h-auto px-2 text-right">Total</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sellOrders.map((order, i) => (
-                            <OrderRow key={`sell-${i}`} order={order} type="sell" maxTotal={maxTotal} />
-                        ))}
-                        <TableRow className='h-9'>
-                            <TableCell colSpan={3} className={`py-1 px-2 text-base font-bold text-center ${getChangeColor(selectedCoin.change)}`}>
-                                {selectedCoin.price.toFixed(4)}
-                            </TableCell>
-                        </TableRow>
-                        {buyOrders.map((order, i) => (
-                            <OrderRow key={`buy-${i}`} order={order} type="buy" maxTotal={maxTotal} />
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+        <div className="w-full h-full border-r">
+            <div className='p-2 border-b'>
+                <h3 className="font-semibold text-sm">Order Book</h3>
+            </div>
+            <Table>
+                <TableHeader>
+                    <TableRow className='h-8'>
+                        <TableHead className="text-xs h-auto px-2">Price(USDT)</TableHead>
+                        <TableHead className="text-xs h-auto px-2 text-right">Amount({selectedCoin.symbol})</TableHead>
+                        <TableHead className="text-xs h-auto px-2 text-right">Total</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {sellOrders.map((order, i) => (
+                        <OrderRow key={`sell-${i}`} order={order} type="sell" maxTotal={maxTotal} />
+                    ))}
+                    <TableRow className='h-9'>
+                        <TableCell colSpan={3} className={`py-1 px-2 text-base font-bold text-center ${getChangeColor(selectedCoin.change)}`}>
+                            {selectedCoin.price.toFixed(4)}
+                        </TableCell>
+                    </TableRow>
+                    {buyOrders.map((order, i) => (
+                        <OrderRow key={`buy-${i}`} order={order} type="buy" maxTotal={maxTotal} />
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
     );
 }

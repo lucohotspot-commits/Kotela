@@ -62,16 +62,16 @@ export function MarketTrades({ selectedCoin }: MarketTradesProps) {
     };
 
     return (
-        <Card className="w-full">
-            <CardHeader className='p-2 border-b'>
-                 <Tabs defaultValue="market" className="w-full">
+        <div className='border-b'>
+             <div className='p-2'>
+                <Tabs defaultValue="market" className="w-full">
                     <TabsList className="grid w-full grid-cols-2 h-8 p-0 px-1 bg-transparent">
                         <TabsTrigger value="market" className="text-xs data-[state=active]:bg-muted data-[state=active]:shadow-none">Market Trades</TabsTrigger>
                         <TabsTrigger value="my" className="text-xs data-[state=active]:bg-muted data-[state=active]:shadow-none">My Trades</TabsTrigger>
                     </TabsList>
                 </Tabs>
-            </CardHeader>
-            <CardContent className='p-0 h-[240px] overflow-y-auto'>
+            </div>
+            <div className='p-0 h-[240px] overflow-y-auto'>
                 <Table>
                     <TableHeader>
                         <TableRow className='h-8'>
@@ -90,7 +90,7 @@ export function MarketTrades({ selectedCoin }: MarketTradesProps) {
                         ))}
                     </TableBody>
                 </Table>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
