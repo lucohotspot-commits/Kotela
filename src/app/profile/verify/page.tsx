@@ -55,6 +55,7 @@ export default function VerifyPage() {
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [uploadMode, setUploadMode] = useState<'select' | 'upload' | 'camera'>('select');
+  const [selfieUploadMode, setSelfieUploadMode] = useState<'select' | 'upload' | 'camera'>('select');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -78,7 +79,7 @@ export default function VerifyPage() {
     mode: 'onChange',
   });
 
-  const getCameraPermission = useCallback(async (isDocumentCamera = false) => {
+  const getCameraPermission = useCallback(async (isSelfieCamera = false) => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       console.error('Camera not supported on this browser.');
       setHasCameraPermission(false);
@@ -88,7 +89,7 @@ export default function VerifyPage() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       setHasCameraPermission(true);
 
-      const videoElement = isDocumentCamera ? document.getElementById('doc-video') as HTMLVideoElement : videoRef.current;
+      const videoElement = isSelfieCamera ? videoRef.current : document.getElementById('doc-video') as HTMLVideoElement;
       if (videoElement) {
         videoElement.srcObject = stream;
       }
@@ -104,13 +105,13 @@ export default function VerifyPage() {
   }, [toast]);
   
   useEffect(() => {
-    if (step === 3) {
-      getCameraPermission();
-    }
-     if (step === 2 && uploadMode === 'camera') {
+    if (step === 3 && selfieUploadMode === 'camera') {
       getCameraPermission(true);
     }
-  }, [step, uploadMode, getCameraPermission]);
+     if (step === 2 && uploadMode === 'camera') {
+      getCameraPermission(false);
+    }
+  }, [step, uploadMode, selfieUploadMode, getCameraPermission]);
 
   function onSubmit(values: VerificationFormValues) {
     const dob = `${values.dob_year}-${values.dob_month}-${values.dob_day}`;
@@ -170,10 +171,24 @@ export default function VerifyPage() {
       reader.readAsDataURL(file);
     }
   };
+  
+  const handleSelfieFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelfie(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
 
   const handleRetakeSelfie = () => {
     setSelfie(null);
+    if (selfieUploadMode === 'camera') {
+      getCameraPermission(true);
+    }
   }
 
   const nextStep = () => setStep(s => s + 1);
@@ -411,19 +426,13 @@ export default function VerifyPage() {
                         )}
                         
                         {uploadMode === 'upload' && (
-                            <FormField
-                                control={form.control}
-                                name="document"
-                                render={() => ( // We don't use field here because we have a custom handler
-                                <FormItem>
-                                    <FormLabel>Upload your document</FormLabel>
-                                    <FormControl>
-                                        <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                            <FormItem>
+                                <FormLabel>Upload your document</FormLabel>
+                                <FormControl>
+                                    <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )}
 
                         {uploadMode === 'camera' && (
@@ -470,46 +479,70 @@ export default function VerifyPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Step 3: Selfie Verification</CardTitle>
-                        <CardDescription>Please take a clear photo of yourself. Make sure your face is well-lit and centered.</CardDescription>
+                        <CardDescription>Please provide a clear photo of yourself. Make sure your face is well-lit and centered.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
-                            {selfie ? (
-                                <Image src={selfie} alt="User selfie" className="w-full h-full object-cover" width={640} height={480} />
-                            ) : (
-                                <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                            )}
-                            {hasCameraPermission === false && (
-                                <Alert variant="destructive" className="absolute bottom-4 w-auto">
-                                  <AlertCircle className="h-4 w-4" />
-                                  <AlertTitle>Camera Access Denied</AlertTitle>
-                                  <AlertDescription>
-                                    Please enable camera permissions to continue.
-                                  </AlertDescription>
-                                </Alert>
-                            )}
-                            {hasCameraPermission === null && !selfie && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <p className="text-muted-foreground">Requesting camera access...</p>
+                        {selfie ? (
+                             <div className="space-y-2">
+                                <Label>Selfie Preview</Label>
+                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                     <Image src={selfie} alt="User selfie" layout="fill" objectFit="contain" />
                                 </div>
-                            )}
-                        </div>
-                        {hasCameraPermission && (
-                            <div className="flex justify-center gap-4">
-                                {selfie ? (
-                                    <>
-                                    <Button onClick={handleRetakeSelfie} variant="outline">Retake Selfie</Button>
-                                    <Button disabled>
-                                        <Check className="mr-2" /> Selfie Captured
-                                    </Button>
-                                    </>
-                                ) : (
-                                    <Button onClick={handleCaptureSelfie}>
-                                    <Camera className="mr-2" /> Capture Selfie
-                                    </Button>
+                            </div>
+                        ) : selfieUploadMode === 'select' ? (
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setSelfieUploadMode('upload')}>
+                                    <FileUp className="h-8 w-8" />
+                                    <span>Upload Photo</span>
+                                </Button>
+                                <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setSelfieUploadMode('camera')}>
+                                    <CameraIcon className="h-8 w-8" />
+                                    <span>Use Camera</span>
+                                </Button>
+                            </div>
+                        ) : selfieUploadMode === 'upload' ? (
+                             <FormItem>
+                                <FormLabel>Upload your selfie</FormLabel>
+                                <FormControl>
+                                    <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleSelfieFileChange} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        ) : ( // camera mode
+                            <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
+                                <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                                {hasCameraPermission === false && (
+                                    <Alert variant="destructive" className="absolute bottom-4 w-auto">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertTitle>Camera Access Denied</AlertTitle>
+                                    <AlertDescription>
+                                        Please enable camera permissions to continue.
+                                    </AlertDescription>
+                                    </Alert>
+                                )}
+                                {hasCameraPermission === null && (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <p className="text-muted-foreground">Requesting camera access...</p>
+                                    </div>
                                 )}
                             </div>
                         )}
+
+                        
+                        <div className="flex justify-center gap-4">
+                            {selfie ? (
+                                <>
+                                <Button onClick={handleRetakeSelfie} variant="outline">Retake</Button>
+                                <Button disabled>
+                                    <Check className="mr-2" /> Selfie Ready
+                                </Button>
+                                </>
+                            ) : selfieUploadMode === 'camera' ? (
+                                <Button onClick={handleCaptureSelfie} disabled={!hasCameraPermission}>
+                                    <Camera className="mr-2" /> Capture Selfie
+                                </Button>
+                            ) : null }
+                        </div>
                         <canvas ref={canvasRef} className="hidden"></canvas>
                     </CardContent>
                     <CardFooter className='justify-between'>
@@ -526,3 +559,5 @@ export default function VerifyPage() {
     </div>
   );
 }
+
+    
