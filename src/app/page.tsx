@@ -6,7 +6,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Link from 'next/link';
 
 export default function Home() {
   const [scores, setScores] = useState<Score[]>([]);
@@ -34,14 +35,17 @@ export default function Home() {
   }, [refreshData]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-20 w-full bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto flex h-16 items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight text-primary font-headline">
-              Play
-            </h1>
-          </div>
+    <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
+      <header className="py-4">
+        <div className="container mx-auto flex items-center justify-between">
+            <div>
+                 <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">
+                    Play
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                    Tap the coin to start mining. Use boosts to get a high score!
+                </p>
+            </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
               <p className="text-xs text-muted-foreground">My Coins</p>
@@ -74,13 +78,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-grow flex flex-col items-center justify-center p-4">
-        <div className="flex flex-col items-center text-center mb-8">
-          <p className="mt-2 text-sm text-muted-foreground max-w-prose">
-            Tap once to start mining. Use boosts to get a high score!
-          </p>
-        </div>
-        
+      <main className="flex-grow flex flex-col items-center justify-center">
         <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-16">
           <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />

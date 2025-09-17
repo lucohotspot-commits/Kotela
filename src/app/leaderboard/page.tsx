@@ -15,7 +15,7 @@ export default function LeaderboardPage() {
   }, []);
 
   return (
-    <main className="flex-grow flex flex-col items-center p-4 sm:p-6">
+    <div className="flex-grow flex flex-col items-center">
       <Card className="w-full max-w-4xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-2xl">
@@ -55,6 +55,6 @@ export default function LeaderboardPage() {
           </ScrollArea>
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }
