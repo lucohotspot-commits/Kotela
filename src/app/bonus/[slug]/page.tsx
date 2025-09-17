@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plane, Coins, Disc, CircleDollarSign, Dice5, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight } from 'lucide-react';
+import { Plane, Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,14 @@ import { useToast } from '@/hooks/use-toast';
 import { addCurrency, getCurrency, spendCurrency } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogFooter,
+} from "@/components/ui/dialog";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -313,17 +321,20 @@ const SpinWheelGame = () => {
     const [spinning, setSpinning] = useState(false);
     const [betAmount, setBetAmount] = useState(10);
     const [balance, setBalance] = useState(0);
+    const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
+    const [spinResult, setSpinResult] = useState<{ multiplier: number; winnings: number } | null>(null);
 
-    const segments = [
-        { value: 2, style: 'bg-green-500/50', textColor: 'text-green-50' },
-        { value: 0.5, style: 'bg-blue-500/50', textColor: 'text-blue-50' },
-        { value: 1.5, style: 'bg-yellow-500/50', textColor: 'text-yellow-50' },
-        { value: 0, style: 'bg-red-500/50', textColor: 'text-red-50' },
-        { value: 5, style: 'bg-purple-500/50', textColor: 'text-purple-50' },
-        { value: 0.2, style: 'bg-indigo-500/50', textColor: 'text-indigo-50' },
-        { value: 10, style: 'bg-pink-500/50', textColor: 'text-pink-50' },
-        { value: 1, style: 'bg-gray-500/50', textColor: 'text-gray-50' },
-    ];
+    const segments = useMemo(() => [
+        { value: 2, color: 'bg-green-500/50', textColor: 'text-green-50' },
+        { value: 0.5, color: 'bg-blue-500/50', textColor: 'text-blue-50' },
+        { value: 1.5, color: 'bg-yellow-500/50', textColor: 'text-yellow-50' },
+        { value: 0, color: 'bg-red-500/50', textColor: 'text-red-50' },
+        { value: 5, color: 'bg-purple-500/50', textColor: 'text-purple-50' },
+        { value: 0.2, color: 'bg-indigo-500/50', textColor: 'text-indigo-50' },
+        { value: 10, color: 'bg-pink-500/50', textColor: 'text-pink-50' },
+        { value: 1, color: 'bg-gray-500/50', textColor: 'text-gray-50' },
+    ].reverse(), []); // Reversed to match visual layout with calculation
+
     const segmentAngle = 360 / segments.length;
 
     const refreshBalance = useCallback(() => {
@@ -349,30 +360,23 @@ const SpinWheelGame = () => {
 
         const randomSpins = Math.floor(Math.random() * 5) + 8; // 8 to 13 full spins
         const randomStop = Math.random() * 360;
-        const targetRotation = rotation + (randomSpins * 360) + randomStop;
+        const targetRotation = (rotation - (rotation % 360)) + (randomSpins * 360) + randomStop;
         
-        const normalizedRotation = (targetRotation % 360 + 360) % 360;
-        const prizeIndex = Math.floor((normalizedRotation + segmentAngle / 2) / segmentAngle);
-        const prizeMultiplier = segments[segments.length - 1 - prizeIndex].value;
-
         setRotation(targetRotation);
 
         setTimeout(() => {
             setSpinning(false);
+            const normalizedRotation = (targetRotation % 360 + 360) % 360;
+            const prizeIndex = Math.floor(normalizedRotation / segmentAngle);
+            const prizeMultiplier = segments[prizeIndex].value;
             const winnings = betAmount * prizeMultiplier;
+
             if (winnings > 0) {
                 addCurrency(winnings);
-                toast({
-                    title: `You won ${winnings.toLocaleString()} coins!`,
-                    description: `Your ${betAmount} coin bet returned ${prizeMultiplier}x.`,
-                });
-            } else {
-                 toast({
-                    variant: 'destructive',
-                    title: "Better luck next time!",
-                    description: `You lost your ${betAmount} coin bet.`,
-                });
             }
+            
+            setSpinResult({ multiplier: prizeMultiplier, winnings });
+            setIsResultDialogOpen(true);
             refreshBalance();
         }, 7000); // Corresponds to the animation duration
     };
@@ -381,55 +385,80 @@ const SpinWheelGame = () => {
         setBetAmount(prev => Math.max(0, prev + amount));
     }
 
+    const closeDialog = () => {
+        setIsResultDialogOpen(false);
+        setSpinResult(null);
+    }
+
     return (
-        <Card className='overflow-hidden'>
-            <CardContent className='p-6 flex flex-col items-center justify-center gap-8'>
-                <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center">
-                    <div className="absolute -top-4 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-primary z-10"></div>
-                    <div
-                        className={cn(
-                            "relative w-full h-full rounded-full border-8 border-primary/20",
-                            spinning ? "transition-transform duration-[7000ms] ease-out" : "animate-[spin_30s_linear_infinite]"
-                        )}
-                        style={{ transform: `rotate(${rotation}deg)` }}
-                    >
-                        {segments.map((segment, i) => (
-                            <div
-                                key={i}
-                                className="absolute w-1/2 h-1/2 top-1/2 left-1/2 origin-top-left flex items-center justify-center"
-                                style={{ transform: `rotate(${i * segmentAngle}deg)` }}
-                            >
+        <>
+            <Card className='overflow-hidden'>
+                <CardContent className='p-6 flex flex-col items-center justify-center gap-6'>
+                    <div className="relative w-96 h-96 flex items-center justify-center">
+                        <div className="absolute -top-3 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-primary z-20"></div>
+                        <div
+                            className={cn(
+                                "relative w-full h-full rounded-full border-8 border-primary/20",
+                                spinning ? "transition-transform duration-[7000ms] ease-out" : ""
+                            )}
+                            style={{ transform: `rotate(${rotation}deg)` }}
+                        >
+                            {segments.map((segment, i) => (
                                 <div
-                                    className={cn("w-full h-full text-center flex items-center justify-end pr-4", segment.style)}
-                                    style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
+                                    key={i}
+                                    className="absolute w-1/2 h-1/2 top-1/2 left-1/2 origin-top-left flex items-center justify-center"
+                                    style={{ transform: `rotate(${i * segmentAngle}deg)` }}
                                 >
-                                     <span
-                                        className={cn("transform -rotate-45 font-bold text-lg", segment.textColor)}
-                                        style={{ transform: `rotate(-${segmentAngle/2}deg) translate(-10px, -60px)`}}
+                                    <div
+                                        className={cn("w-full h-full text-center flex items-center justify-end", segment.color)}
+                                        style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 100%)' }}
                                     >
-                                        {segment.value}x
-                                    </span>
+                                         <span
+                                            className={cn("transform font-bold text-lg", segment.textColor)}
+                                            style={{ transform: `rotate(${segmentAngle/2}deg) translate(-50px, -50px)`}}
+                                        >
+                                            {segment.value}x
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
+                        <div className="absolute w-20 h-20 bg-background rounded-full border-4 border-primary/20 flex items-center justify-center z-10">
+                            <Circle className="w-12 h-12 text-primary" />
+                        </div>
                     </div>
-                    <div className="absolute w-16 h-16 bg-background rounded-full flex items-center justify-center">
-                        <Disc className="w-10 h-10 text-primary" />
+                    <div className="w-full max-w-xs space-y-4">
+                        <div className="flex items-center space-x-2">
+                            <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={spinning}>-</Button>
+                            <Input value={betAmount} onChange={(e) => setBetAmoount(Number(e.target.value))} type="number" className="text-center w-24" disabled={spinning} />
+                            <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={spinning}>+</Button>
+                            <Input value={`Bet: ${betAmount.toLocaleString()}`} className="text-center flex-1" disabled />
+                        </div>
+                        <Button size="lg" className='w-full bg-yellow-500 hover:bg-yellow-600 text-black text-lg h-12' onClick={handleSpin} disabled={spinning || betAmount <= 0}>
+                            {spinning ? 'Spinning...' : `Spin for ${betAmount.toLocaleString()}`}
+                        </Button>
                     </div>
-                </div>
-                <div className="w-full max-w-sm space-y-4">
-                    <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={spinning}>-</Button>
-                        <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center" disabled={spinning} />
-                        <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={spinning}>+</Button>
-                        <Coins className="text-yellow-500" />
-                    </div>
-                    <Button size="lg" className='w-full bg-yellow-500 hover:bg-yellow-600 text-black text-lg h-12' onClick={handleSpin} disabled={spinning || betAmount <= 0}>
-                        {spinning ? 'Spinning...' : `Spin for ${betAmount.toLocaleString()}`}
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+            <AlertDialog open={isResultDialogOpen} onOpenChange={setIsResultDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className='text-center text-2xl'>
+                            {spinResult && spinResult.multiplier > 0 ? `You won ${spinResult.multiplier}x!` : 'Better luck next time!'}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className='text-center'>
+                            {spinResult && spinResult.winnings > 0 
+                                ? `Your ${betAmount} coin bet returned ${spinResult.winnings.toLocaleString()} coins.`
+                                : `You lost your ${betAmount.toLocaleString()} coin bet.`
+                            }
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <Button onClick={closeDialog} className="w-full">Play Again</Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     )
 }
 
@@ -479,19 +508,107 @@ const CoinFlipGame = () => {
 }
 
 const LuckyDiceGame = () => {
+    const { toast } = useToast();
+    const [dice1, setDice1] = useState<number>(5);
+    const [dice2, setDice2] = useState<number>(5);
+    const [rolling, setRolling] = useState<boolean>(false);
+    const [betAmount, setBetAmount] = useState<number>(10);
+    const [balance, setBalance] = useState(0);
+
+    const refreshBalance = useCallback(() => {
+        setBalance(getCurrency());
+    }, []);
+
+    useEffect(() => {
+        refreshBalance();
+        window.addEventListener('storage', refreshBalance);
+        return () => window.removeEventListener('storage', refreshBalance);
+    }, [refreshBalance]);
+
+    const handleRoll = () => {
+        if (rolling) return;
+        if (balance < betAmount) {
+            toast({ variant: 'destructive', title: "Not enough coins", description: "You don't have enough coins to place this bet." });
+            return;
+        }
+        setRolling(true);
+        spendCurrency(betAmount);
+        refreshBalance();
+
+        const rollInterval = setInterval(() => {
+            setDice1(Math.floor(Math.random() * 6) + 1);
+            setDice2(Math.floor(Math.random() * 6) + 1);
+        }, 100);
+
+        setTimeout(() => {
+            clearInterval(rollInterval);
+            const finalDice1 = Math.floor(Math.random() * 6) + 1;
+            const finalDice2 = Math.floor(Math.random() * 6) + 1;
+            setDice1(finalDice1);
+            setDice2(finalDice2);
+            setRolling(false);
+
+            const sum = finalDice1 + finalDice2;
+            let winnings = 0;
+            let multiplier = 0;
+
+            if (finalDice1 === finalDice2) {
+                multiplier = 10;
+                winnings = betAmount * multiplier;
+            } else if (sum === 7 || sum === 11) {
+                multiplier = 2;
+                winnings = betAmount * multiplier;
+            }
+
+            if (winnings > 0) {
+                addCurrency(winnings);
+                toast({
+                    title: `You won ${winnings.toLocaleString()} coins!`,
+                    description: `You rolled ${finalDice1} and ${finalDice2}. Your bet returned ${multiplier}x.`,
+                });
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: "Better luck next time!",
+                    description: `You rolled a ${sum}. You lost your ${betAmount} coin bet.`,
+                });
+            }
+            refreshBalance();
+        }, 1500);
+    };
+
+    const handleBetChange = (amount: number) => {
+        setBetAmount(prev => Math.max(0, prev + amount));
+    };
+
+    const DiceIcon = ({ value }: { value: number }) => {
+        const icons = [Dice1, Dice2, Dice3, Dice4, Dice5, Dice6];
+        const Icon = icons[value - 1];
+        return <Icon className={cn("w-24 h-24 text-primary", rolling && "animate-spin")} />;
+    };
+
     return (
         <Card>
             <CardContent className="p-6 flex flex-col items-center justify-center gap-8">
                 <div className="flex gap-4 sm:gap-8">
-                    <Dice5 className="w-24 h-24 text-primary" />
-                    <Dice5 className="w-24 h-24 text-primary" />
+                    <DiceIcon value={dice1} />
+                    <DiceIcon value={dice2} />
                 </div>
-                <p className='text-muted-foreground'>Click the button to roll the dice.</p>
-                <Button size="lg" variant="secondary">Roll Dice</Button>
+                 <div className="w-full max-w-sm space-y-4">
+                    <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={rolling}>-</Button>
+                        <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center" disabled={rolling} />
+                        <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={rolling}>+</Button>
+                        <Coins className="text-yellow-500" />
+                    </div>
+                    <Button size="lg" className="w-full text-lg h-12" onClick={handleRoll} disabled={rolling || betAmount <= 0}>
+                        {rolling ? 'Rolling...' : `Roll for ${betAmount.toLocaleString()}`}
+                    </Button>
+                </div>
             </CardContent>
         </Card>
-    )
-}
+    );
+};
 
 
 export default function BonusGamePage() {
@@ -571,3 +688,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
+
+    
