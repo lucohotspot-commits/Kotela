@@ -3,11 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Home, Coins, TrendingUp, User } from "lucide-react"
+import { Pickaxe, Coins, TrendingUp, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
-  { href: "/", label: "Play", icon: Home },
+  { href: "/", label: "Mine", icon: Pickaxe },
   { href: "/leaderboard", label: "Leaderboard", icon: Coins },
   { href: "/ratings", label: "Ratings", icon: TrendingUp },
   { href: "/profile", label: "Profile", icon: User },

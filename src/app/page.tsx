@@ -40,7 +40,7 @@ export default function Home() {
         <div className="container mx-auto flex items-center justify-between">
             <div>
                  <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">
-                    Play
+                    Mine
                 </h1>
                 <p className="text-sm text-muted-foreground">
                     Tap the coin to start mining. Use boosts to get a high score!
