@@ -65,7 +65,7 @@ export default function ProfilePage() {
           <CardDescription>Your current collection of power-ups.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
               <Rocket className="w-6 h-6 text-yellow-500" />
               <div>
