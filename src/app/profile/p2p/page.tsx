@@ -3,20 +3,128 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { ChevronRight, Users, Coins } from 'lucide-react';
+import { ChevronRight, Users, Coins, ThumbsUp, CheckCircle, RefreshCw, SlidersHorizontal, ChevronDown, Filter } from 'lucide-react';
 import { getCurrency, spendCurrency } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+
+const advertisers = [
+  {
+    name: 'NobleDigital',
+    avatar: 'https://picsum.photos/seed/p2p1/40/40',
+    isVerified: true,
+    orders: 2388,
+    completion: 100,
+    rating: 97.9,
+    price: 1.01,
+    available: 15000.50,
+    limitMin: 200,
+    limitMax: 13919,
+    payments: ['SEPA (EU) bank transfer', 'Bank Transfer', 'SEPA Instant'],
+  },
+  {
+    name: 'Aura-Legal_2417',
+    avatar: 'https://picsum.photos/seed/p2p2/40/40',
+    isVerified: true,
+    orders: 1923,
+    completion: 99.7,
+    rating: 85.08,
+    price: 1.02,
+    available: 12500.00,
+    limitMin: 100,
+    limitMax: 10000,
+    payments: ['SEPA (EU) bank transfer', 'ZEN', 'SEPA Instant'],
+  },
+  {
+    name: 'SEPA-Exchange',
+    avatar: 'https://picsum.photos/seed/p2p3/40/40',
+    isVerified: false,
+    orders: 3960,
+    completion: 97.41,
+    rating: 97.41,
+    price: 1.03,
+    available: 25000.75,
+    limitMin: 50,
+    limitMax: 25000,
+    payments: ['SEPA (EU) bank transfer', 'ZEN', 'Bank Transfer'],
+  },
+   {
+    name: 'CryptoWhale',
+    avatar: 'https://picsum.photos/seed/p2p4/40/40',
+    isVerified: true,
+    orders: 5012,
+    completion: 99.9,
+    rating: 99.5,
+    price: 1.00,
+    available: 100000.00,
+    limitMin: 1000,
+    limitMax: 50000,
+    payments: ['Bank Transfer'],
+  },
+];
+
+
+const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) => {
+    return (
+        <div className="border-b last:border-b-0">
+            <div className="p-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+                {/* Advertiser Info */}
+                <div className="md:col-span-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                            <AvatarImage src={advertiser.avatar} />
+                            <AvatarFallback>{advertiser.name.substring(0,2)}</AvatarFallback>
+                        </Avatar>
+                        <div className="font-bold text-base flex items-center gap-1">
+                            {advertiser.name}
+                            {advertiser.isVerified && <CheckCircle className="h-4 w-4 text-yellow-500" />}
+                        </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground space-y-1 pl-10">
+                        <p>{advertiser.orders} orders</p>
+                        <p>{advertiser.completion.toFixed(2)}% completion</p>
+                        <div className="flex items-center gap-1">
+                            <ThumbsUp className="h-3 w-3" />
+                            <span>{advertiser.rating.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Price and Limits */}
+                <div className="md:col-span-2 grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p className="text-xs text-muted-foreground">Price</p>
+                        <p className="text-lg font-semibold">{advertiser.price.toFixed(3)} USDT</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-muted-foreground">Available / Limit</p>
+                        <p className="font-semibold">{advertiser.available.toLocaleString()} KTC</p>
+                        <p className="text-muted-foreground">{advertiser.limitMin.toLocaleString()} ~ {advertiser.limitMax.toLocaleString()} USDT</p>
+                    </div>
+                </div>
+
+                {/* Payment and Trade */}
+                <div className="md:col-span-1 space-y-2 flex flex-col items-start md:items-end">
+                    <div className='text-xs text-left md:text-right'>
+                        {advertiser.payments.map(p => <p key={p}>{p}</p>)}
+                    </div>
+                    <Button className="w-full md:w-auto bg-green-600 hover:bg-green-700">Buy KTC</Button>
+                </div>
+            </div>
+        </div>
+    )
+}
 
 export default function P2PTransferPage() {
-    const [recipient, setRecipient] = useState('');
-    const [amount, setAmount] = useState('');
-    const [note, setNote] = useState('');
     const [balance, setBalance] = useState(0);
     const { toast } = useToast();
 
@@ -28,38 +136,9 @@ export default function P2PTransferPage() {
         refreshBalance();
     }, []);
 
-    const handleTransfer = () => {
-        const transferAmount = parseFloat(amount);
-        if (!recipient) {
-            toast({ variant: 'destructive', title: "Recipient required", description: "Please enter a recipient's User ID or email." });
-            return;
-        }
-        if (isNaN(transferAmount) || transferAmount <= 0) {
-            toast({ variant: 'destructive', title: "Invalid amount", description: "Please enter a valid amount to transfer." });
-            return;
-        }
-        if (balance < transferAmount) {
-            toast({ variant: 'destructive', title: "Insufficient funds", description: "You don't have enough KTC to make this transfer." });
-            return;
-        }
-
-        const success = spendCurrency(transferAmount);
-        if (success) {
-            refreshBalance();
-            setRecipient('');
-            setAmount('');
-            setNote('');
-            toast({
-                title: "Transfer Successful!",
-                description: `You sent ${transferAmount.toLocaleString()} KTC to ${recipient}.`,
-            });
-        } else {
-             toast({ variant: 'destructive', title: "Transfer Failed", description: "An unexpected error occurred. Please try again." });
-        }
-    }
 
     return (
-        <div className="w-full max-w-2xl mx-auto space-y-6">
+        <div className="w-full max-w-6xl mx-auto space-y-6">
             <Breadcrumb>
                 <BreadcrumbList>
                     <BreadcrumbItem>
@@ -71,70 +150,93 @@ export default function P2PTransferPage() {
                         <ChevronRight />
                     </BreadcrumbSeparator>
                     <BreadcrumbItem>
-                        <BreadcrumbPage>P2P Transfer</BreadcrumbPage>
+                        <BreadcrumbPage>P2P Trading</BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
             
-            <div className="flex items-center gap-2">
-                <Users className="h-6 w-6" />
-                <h1 className="text-2xl font-bold">P2P Transfer</h1>
-            </div>
-
             <Card>
                 <CardHeader>
-                    <CardTitle>Send KTC to another user</CardTitle>
-                    <CardDescription>Enter the recipient's User ID or email and the amount you wish to send.</CardDescription>
+                    <Tabs defaultValue="buy">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="buy">Buy</TabsTrigger>
+                            <TabsTrigger value="sell">Sell</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
+                    <div className="p-4 bg-muted/50 rounded-lg space-y-4 mt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                             <div className="relative">
+                                <Label htmlFor="amount" className="text-xs absolute -top-2 left-2 bg-muted/50 px-1 text-muted-foreground">Amount</Label>
+                                <Input id="amount" placeholder="Enter amount" />
+                                <div className="absolute right-1 top-1 flex items-center">
+                                    <Select defaultValue="USDT">
+                                        <SelectTrigger className="h-auto bg-transparent border-0 text-sm font-bold">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="USDT">USDT</SelectItem>
+                                            <SelectItem value="EUR">EUR</SelectItem>
+                                            <SelectItem value="USD">USD</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="relative">
+                                <Label htmlFor="payment" className="text-xs absolute -top-2 left-2 bg-muted/50 px-1 text-muted-foreground">Payment</Label>
+                                <Select defaultValue="all">
+                                    <SelectTrigger id="payment">
+                                        <SelectValue placeholder="All Payments" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Payments</SelectItem>
+                                        <SelectItem value="sepa">SEPA</SelectItem>
+                                        <SelectItem value="zen">ZEN</SelectItem>
+                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="relative col-span-1 lg:col-span-2">
+                                <Label htmlFor="regions" className="text-xs absolute -top-2 left-2 bg-muted/50 px-1 text-muted-foreground">Available Regions</Label>
+                                <Select defaultValue="all">
+                                    <SelectTrigger id="regions">
+                                        <SelectValue placeholder="All Regions" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Regions</SelectItem>
+                                        <SelectItem value="eu">Europe</SelectItem>
+                                        <SelectItem value="us">United States</SelectItem>
+                                        <SelectItem value="asia">Asia</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Button variant="ghost" size="sm" className="text-muted-foreground"><Filter className="h-4 w-4 mr-2" />Filter</Button>
+                            </div>
+                             <Button variant="ghost" size="sm" className="text-muted-foreground"><RefreshCw className="h-4 w-4 mr-2" />Refresh</Button>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex items-center justify-end text-sm">
-                        <span className="text-muted-foreground mr-2">Available Balance:</span>
-                        <div className="font-bold flex items-center gap-1">
-                            <Coins className="w-4 h-4 text-yellow-500" />
-                            {balance.toLocaleString()} KTC
+                <CardContent className="p-0">
+                    <div className="hidden md:grid md:grid-cols-4 gap-4 items-center text-xs font-semibold text-muted-foreground px-4 pb-2 border-b">
+                        <div>Advertisers</div>
+                        <div className="col-span-2 grid grid-cols-2 gap-4">
+                            <div>Price</div>
+                            <div>Available / Limit</div>
                         </div>
+                        <div className="text-right">Payment</div>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="recipient">Recipient</Label>
-                        <Input 
-                            id="recipient" 
-                            placeholder="Enter User ID or email" 
-                            value={recipient}
-                            onChange={(e) => setRecipient(e.target.value)}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="amount">Amount</Label>
-                        <div className="relative">
-                            <Input 
-                                id="amount" 
-                                type="number" 
-                                placeholder="0.00" 
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                className="pr-12"
-                            />
-                            <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm font-semibold text-muted-foreground">
-                                KTC
-                            </span>
-                        </div>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="note">Note (Optional)</Label>
-                        <Textarea 
-                            id="note" 
-                            placeholder="Add a note for the recipient" 
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                        />
+                    <div>
+                        {advertisers.map(ad => (
+                            <AdvertiserCard key={ad.name} advertiser={ad} />
+                        ))}
                     </div>
                 </CardContent>
-                <CardFooter>
-                    <Button onClick={handleTransfer} className="w-full" size="lg">
-                        Send
-                    </Button>
-                </CardFooter>
             </Card>
         </div>
     )
 }
+
+    
