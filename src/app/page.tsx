@@ -7,7 +7,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, Flame } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -51,17 +51,12 @@ export default function Home() {
       </header>
 
       <main className="relative flex-grow flex flex-col items-center justify-center">
-        <div className="absolute top-0 right-0 flex items-center gap-4 p-4">
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">My Coins</p>
-              <div className="flex items-center justify-end gap-1">
-                <Coins className="h-4 w-4 text-yellow-500" />
-                <p className="text-lg font-bold text-primary">{currency.toLocaleString()}</p>
-              </div>
-            </div>
+        <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-16">
+          <div className="relative">
+            <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
             <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="absolute top-0 right-0 -mr-4 -mt-4">
                   <ShoppingCart className="mr-2" /> Store
                 </Button>
               </DialogTrigger>
@@ -80,9 +75,6 @@ export default function Home() {
               </DialogContent>
             </Dialog>
           </div>
-
-        <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-16">
-          <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
           <div className="w-full max-w-md flex flex-col gap-6">
             <Leaderboard scores={scores} />
