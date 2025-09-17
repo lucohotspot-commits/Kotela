@@ -79,6 +79,11 @@ const AviatorGame = () => {
     const [balance, setBalance] = useState(0);
     const [cashOutMultiplier, setCashOutMultiplier] = useState(0);
     const [pathData, setPathData] = useState({ path: '', point: { x: 0, y: 100 } });
+    
+    const [autoBetEnabled, setAutoBetEnabled] = useState(false);
+    const [autoCashoutEnabled, setAutoCashoutEnabled] = useState(false);
+    const [autoCashoutMultiplier, setAutoCashoutMultiplier] = useState(1.5);
+
 
     const refreshBalance = useCallback(() => {
         setBalance(getCurrency());
@@ -94,7 +99,7 @@ const AviatorGame = () => {
         let gameLoop: NodeJS.Timeout;
         if (gameState === 'playing') {
             const startTime = Date.now();
-            const crashPoint = (Math.random() * 10 + 5) * 1000;
+            const crashPoint = (Math.random() * 10 + 5) * 1000; // Crashes between 5 and 15 seconds
 
             gameLoop = setInterval(() => {
                 const elapsedTime = Date.now() - startTime;
@@ -102,6 +107,10 @@ const AviatorGame = () => {
 
                 const newMultiplier = 1 + (elapsedTime / 2500) * 0.2 + (elapsedTime / 10000) ** 2;
                 setMultiplier(newMultiplier);
+                
+                if (autoCashoutEnabled && newMultiplier >= autoCashoutMultiplier && gameState === 'playing') {
+                    handleCashOut();
+                }
 
                 if (elapsedTime >= crashPoint) {
                     setGameState('crashed');
@@ -112,9 +121,12 @@ const AviatorGame = () => {
             setMultiplier(1.00);
             setFlightTime(0);
             setCashOutMultiplier(0);
+            if (autoBetEnabled) {
+                setTimeout(handleBet, 3000); // Wait 3 seconds before auto-betting
+            }
         }
         return () => clearInterval(gameLoop);
-    }, [gameState]);
+    }, [gameState, autoBetEnabled, autoCashoutEnabled, autoCashoutMultiplier]);
 
     const handleBet = () => {
         if (balance < betAmount) {
@@ -127,6 +139,8 @@ const AviatorGame = () => {
     };
 
     const handleCashOut = () => {
+        if (gameState !== 'playing') return;
+        
         const winnings = betAmount * multiplier;
         addCurrency(winnings);
         refreshBalance();
@@ -189,31 +203,25 @@ const AviatorGame = () => {
                 <Card className="w-full md:col-span-2 overflow-hidden">
                     <CardContent className="p-0">
                         <div className="relative w-full aspect-video bg-[#0f1923] flex items-center justify-center overflow-hidden">
-                            <div className="absolute inset-0 bg-transparent"
-                                style={{ 
-                                    backgroundImage: 'radial-gradient(ellipse at 5% 100%, hsl(207 30% 25% / 0.3), transparent 40%), conic-gradient(from 180deg at 0% 100%, hsl(0 0% 5% / 0.9), hsl(0 0% 5% / 0.5) 10deg, transparent 35deg)',
-                                }}
-                            ></div>
-                            
-                            <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                            <div className="absolute inset-0 z-20 pointer-events-none">
                                 {gameState === 'waiting' && (
-                                    <p className="text-xl font-semibold text-muted-foreground animate-pulse">Waiting for next round...</p>
+                                    <p className="text-xl font-semibold text-muted-foreground animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">Waiting for next round...</p>
                                 )}
                                 {gameState === 'cashed_out' && (
-                                    <div className="text-center">
+                                    <div className="text-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                                         <p className="text-2xl text-green-400 font-bold">You Cashed Out!</p>
                                         <p className="text-5xl text-white font-bold">{cashOutMultiplier.toFixed(2)}x</p>
                                     </div>
                                 )}
                                 {gameState === 'crashed' && (
-                                    <div className="text-center flex flex-col items-center">
+                                    <div className="text-center flex flex-col items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                                         <p className="text-2xl text-destructive font-bold">Flew Away!</p>
                                         <p className="text-4xl text-white font-bold">{multiplier.toFixed(2)}x</p>
                                     </div>
                                 )}
                                 {(gameState === 'playing') && (
                                     <p
-                                        className="text-white font-bold transition-all duration-100"
+                                        className="text-white font-bold transition-all duration-100 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                                         style={{ fontSize: `${multiplierFontSize}rem` }}
                                     >
                                         {multiplier.toFixed(2)}x
@@ -296,14 +304,20 @@ const AviatorGame = () => {
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="auto-bet">Auto Bet</Label>
-                                <Switch id="auto-bet" />
+                                <Switch id="auto-bet" checked={autoBetEnabled} onCheckedChange={setAutoBetEnabled} />
                             </div>
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="auto-cashout">Auto Cashout</Label>
-                                <Switch id="auto-cashout" />
+                                <Switch id="auto-cashout" checked={autoCashoutEnabled} onCheckedChange={setAutoCashoutEnabled} />
                             </div>
                             <div className='relative'>
-                                <Input type="text" placeholder='Multiplier' defaultValue={"1.50"} />
+                                <Input 
+                                    type="number" 
+                                    placeholder='Multiplier' 
+                                    value={autoCashoutMultiplier}
+                                    onChange={(e) => setAutoCashoutMultiplier(parseFloat(e.target.value))}
+                                    disabled={!autoCashoutEnabled}
+                                />
                                 <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>x</span>
                             </div>
                         </CardContent>
