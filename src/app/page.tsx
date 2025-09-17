@@ -85,7 +85,8 @@ export default function Home() {
           <div className="w-full max-w-md flex flex-col gap-6">
             <Leaderboard scores={scores} />
             <div className="p-4 border rounded-lg">
-                <h3 className="text-base font-semibold mb-3 flex items-center gap-2"><Rocket/> My Boosts</h3>
+                <h3 className="text-base font-semibold mb-1 flex items-center gap-2"><Rocket/> My Boosts</h3>
+                <p className="text-xs text-muted-foreground mb-3">Activate these power-ups during a game by clicking the buttons below the mining coin.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                         <Rocket className="w-4 h-4 text-yellow-500"/>
