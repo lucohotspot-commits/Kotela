@@ -73,7 +73,7 @@ const advertisersData = [
   },
 ];
 
-const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'SHIB', 'USDC'];
+const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'KTC', 'SHIB', 'USDC'];
 const allPaymentMethods = ['All Payments', 'SEPA (EU) bank transfer', 'Bank Transfer', 'SEPA Instant', 'ZEN', 'Pesapal', 'Jpesa', 'TransID'];
 const fiatCurrencies = ['USDT', 'EUR', 'USD', 'UGX', 'KES', 'NGN'];
 const conversionRates: { [key: string]: number } = {
@@ -334,3 +334,5 @@ export default function P2PTransferPage() {
         </div>
     );
 }
+
+    
