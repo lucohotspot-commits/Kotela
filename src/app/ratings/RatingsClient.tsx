@@ -222,7 +222,7 @@ export default function RatingsClient() {
 
             <div className="w-full bg-transparent p-2 h-[250px] pt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 0 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 0, left: 0, bottom: 0 }}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis 
                             dataKey="time" 
@@ -361,5 +361,7 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
 
     
