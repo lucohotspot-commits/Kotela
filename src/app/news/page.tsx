@@ -79,7 +79,7 @@ export default function NewsPage() {
                                         data-ai-hint={selectedPost.imageHint}
                                     />
                                 </div>
-                                <h2 className="text-2xl font-bold mb-2">{selectedPost.title}</h2>
+                                <h2 className="text-xl font-bold mb-2">{selectedPost.title}</h2>
                                 <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                                     <span>{selectedPost.date}</span>
                                     <Badge variant="secondary">{selectedPost.category}</Badge>
@@ -98,7 +98,7 @@ export default function NewsPage() {
                                     </div>
                                 </div>
 
-                                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90">
+                                <div className="prose prose-base dark:prose-invert max-w-none text-foreground/90 font-serif">
                                     <p>{selectedPost.content}</p>
                                 </div>
 
