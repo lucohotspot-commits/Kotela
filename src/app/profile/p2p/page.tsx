@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const advertisers = [
   {
@@ -72,6 +73,7 @@ const advertisers = [
   },
 ];
 
+const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'SHIB', 'USDC'];
 
 const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) => {
     return (
@@ -126,6 +128,7 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
 
 export default function P2PTransferPage() {
     const [balance, setBalance] = useState(0);
+    const [selectedCrypto, setSelectedCrypto] = useState('BTC');
     const { toast } = useToast();
 
     const refreshBalance = () => {
@@ -157,66 +160,73 @@ export default function P2PTransferPage() {
             
             <Card>
                 <CardHeader>
-                    <Tabs defaultValue="buy">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="buy">Buy</TabsTrigger>
-                            <TabsTrigger value="sell">Sell</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <Tabs defaultValue="buy">
+                            <TabsList className="grid w-auto grid-cols-2">
+                                <TabsTrigger value="buy">Buy</TabsTrigger>
+                                <TabsTrigger value="sell">Sell</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <div className="flex items-center gap-4 overflow-x-auto pb-2">
+                           {cryptoCurrencies.map(crypto => (
+                                <Button 
+                                    key={crypto}
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className={cn(
+                                        "text-muted-foreground h-auto p-1",
+                                        selectedCrypto === crypto && "text-primary font-bold border-b-2 border-primary rounded-none"
+                                    )}
+                                    onClick={() => setSelectedCrypto(crypto)}
+                                >
+                                    {crypto}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
 
-                    <div className="p-4 bg-muted/50 rounded-lg space-y-4 mt-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                             <div className="relative">
-                                <Label htmlFor="amount" className="text-xs absolute -top-2 left-2 bg-muted/50 px-1 text-muted-foreground">Amount</Label>
-                                <Input id="amount" placeholder="Enter amount" />
-                                <div className="absolute right-1 top-1 flex items-center">
-                                    <Select defaultValue="USDT">
-                                        <SelectTrigger className="h-auto bg-transparent border-0 text-sm font-bold">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="USDT">USDT</SelectItem>
-                                            <SelectItem value="EUR">EUR</SelectItem>
-                                            <SelectItem value="USD">USD</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="relative">
-                                <Label htmlFor="payment" className="text-xs absolute -top-2 left-2 bg-muted/50 px-1 text-muted-foreground">Payment</Label>
-                                <Select defaultValue="all">
-                                    <SelectTrigger id="payment">
-                                        <SelectValue placeholder="All Payments" />
+                    <div className="flex flex-col md:flex-row items-center gap-4 mt-4">
+                        <div className="relative w-full md:w-auto md:flex-1">
+                            <Input id="amount" placeholder="Enter amount" className="pr-24"/>
+                            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
+                                <span className='h-full w-[1px] bg-border mx-2'></span>
+                                <Select defaultValue="EUR">
+                                    <SelectTrigger className="h-auto bg-transparent border-0 text-sm font-bold w-20">
+                                        <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Payments</SelectItem>
-                                        <SelectItem value="sepa">SEPA</SelectItem>
-                                        <SelectItem value="zen">ZEN</SelectItem>
-                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="relative col-span-1 lg:col-span-2">
-                                <Label htmlFor="regions" className="text-xs absolute -top-2 left-2 bg-muted/50 px-1 text-muted-foreground">Available Regions</Label>
-                                <Select defaultValue="all">
-                                    <SelectTrigger id="regions">
-                                        <SelectValue placeholder="All Regions" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Regions</SelectItem>
-                                        <SelectItem value="eu">Europe</SelectItem>
-                                        <SelectItem value="us">United States</SelectItem>
-                                        <SelectItem value="asia">Asia</SelectItem>
+                                        <SelectItem value="USDT">USDT</SelectItem>
+                                        <SelectItem value="EUR">EUR</SelectItem>
+                                        <SelectItem value="USD">USD</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="sm" className="text-muted-foreground"><Filter className="h-4 w-4 mr-2" />Filter</Button>
-                            </div>
-                             <Button variant="ghost" size="sm" className="text-muted-foreground"><RefreshCw className="h-4 w-4 mr-2" />Refresh</Button>
-                        </div>
+                        <Select defaultValue="all">
+                            <SelectTrigger id="payment" className="w-full md:w-auto md:flex-1">
+                                <SelectValue placeholder="All Payments" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Payments</SelectItem>
+                                <SelectItem value="sepa">SEPA</SelectItem>
+                                <SelectItem value="zen">ZEN</SelectItem>
+                                <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Select defaultValue="all">
+                            <SelectTrigger id="regions" className="w-full md:w-auto md:flex-1">
+                                <SelectValue placeholder="All Regions" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Regions</SelectItem>
+                                <SelectItem value="eu">Europe</SelectItem>
+                                <SelectItem value="us">United States</SelectItem>
+                                <SelectItem value="asia">Asia</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Button variant="outline" size="icon">
+                            <Filter className="h-4 w-4" />
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -238,5 +248,3 @@ export default function P2PTransferPage() {
         </div>
     )
 }
-
-    
