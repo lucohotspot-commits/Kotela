@@ -59,8 +59,8 @@ export function CountrySelect({ onValueChange, defaultValue }: CountrySelectProp
               {countries.map((country) => (
                 <CommandItem
                   key={country.value}
-                  value={country.label}
-                  onSelect={() => handleSelect(country.value.toLowerCase())}
+                  value={country.value}
+                  onSelect={(currentValue) => handleSelect(currentValue)}
                 >
                   <Check
                     className={cn(
