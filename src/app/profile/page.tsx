@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { getCurrency, addCurrency } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -26,6 +26,7 @@ export default function ProfilePage() {
   const [currency, setCurrency] = useState(0);
   const [depositAmount, setDepositAmount] = useState('');
   const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const { toast } = useToast();
 
   const refreshCurrency = () => {
@@ -65,8 +66,13 @@ export default function ProfilePage() {
       });
     }
   }
+
+  const toggleBalanceVisibility = () => {
+    setIsBalanceVisible(!isBalanceVisible);
+  };
   
   const currencyAsUSD = (currency * KTC_TO_USD_RATE).toFixed(2);
+  const hiddenBalance = "********";
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
@@ -146,23 +152,29 @@ export default function ProfilePage() {
         <CardHeader>
             <div className='flex items-center justify-between'>
                 <CardDescription>Estimated Balance</CardDescription>
-                <Eye className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-primary" />
+                <button onClick={toggleBalanceVisibility} className="text-muted-foreground hover:text-primary">
+                  {isBalanceVisible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                </button>
             </div>
             <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold">{currency.toFixed(8)} KTC</span>
-                <span className="text-muted-foreground">≈ ${currencyAsUSD}</span>
+                <span className="text-3xl font-bold">
+                  {isBalanceVisible ? `${currency.toFixed(8)} KTC` : hiddenBalance}
+                </span>
+                <span className="text-muted-foreground">
+                  {isBalanceVisible ? `≈ $${currencyAsUSD}` : ''}
+                </span>
             </div>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4 border-t pt-4">
             <div>
                 <p className='text-sm text-muted-foreground'>Spot balance</p>
-                <p className="font-semibold">{currency.toFixed(8)} KTC</p>
-                <p className="text-sm text-muted-foreground">≈ ${currencyAsUSD}</p>
+                <p className="font-semibold">{isBalanceVisible ? `${currency.toFixed(8)} KTC` : hiddenBalance}</p>
+                <p className="text-sm text-muted-foreground">{isBalanceVisible ? `≈ $${currencyAsUSD}`: ''}</p>
             </div>
              <div>
                 <p className='text-sm text-muted-foreground'>Fiat balance</p>
-                <p className="font-semibold">0.00000000 KTC</p>
-                <p className="text-sm text-muted-foreground">≈ $0.00</p>
+                <p className="font-semibold">{isBalanceVisible ? '0.00000000 KTC' : hiddenBalance}</p>
+                <p className="text-sm text-muted-foreground">{isBalanceVisible ? '≈ $0.00' : ''}</p>
             </div>
         </CardContent>
       </Card>
