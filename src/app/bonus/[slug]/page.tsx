@@ -440,7 +440,7 @@ const VideoPlayGame = () => {
                                         )}
                                     </div>
                                     <div className='flex-1'>
-                                        <p className="font-semibold text-sm leading-tight">{video.title}</p>
+                                        <p className="font-semibold text-xs leading-tight">{video.title}</p>
                                         <p className="text-xs text-muted-foreground">{video.duration}</p>
                                          {isClaimed(video.id) && (
                                             <Badge variant="secondary" className='mt-1 text-green-600 bg-green-500/10 text-[10px] px-1.5 py-0'>Claimed</Badge>
@@ -915,3 +915,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
+
+    
