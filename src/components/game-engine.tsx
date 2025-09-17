@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -294,7 +295,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
         {gameState === "ended" && (
           <Button onClick={resetGame} size="lg" className="mt-4">
             <Repeat className="mr-2" />
-            Play Again
+            Mine Again
           </Button>
         )}
       </div>
@@ -318,3 +319,5 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     </div>
   );
 }
+
+    
