@@ -23,6 +23,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from 'next/link';
 
 
 const KTC_TO_USD_RATE = 1.25;
@@ -295,7 +296,7 @@ export default function ProfilePage() {
         <h3 className="text-lg font-semibold">Account</h3>
         <Card>
           <div className="divide-y">
-            <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
+            <Link href="/profile/verify" className="p-4 flex items-center justify-between hover:bg-muted/50">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium">Identity Verification</span>
@@ -304,7 +305,7 @@ export default function ProfilePage() {
                 <span className="text-sm">Unverified</span>
                 <ArrowRight className="h-4 w-4" />
               </div>
-            </div>
+            </Link>
             <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <Moon className="h-5 w-5 text-muted-foreground" />
@@ -326,3 +327,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
