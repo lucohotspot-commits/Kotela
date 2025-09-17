@@ -78,7 +78,7 @@ const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'SHIB', '
 const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) => {
     return (
         <div className="border-b last:border-b-0">
-            <div className="p-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+            <div className="p-4 grid grid-cols-1 md:grid-cols-5 gap-4 items-start">
                 {/* Advertiser Info */}
                 <div className="md:col-span-1 space-y-2">
                     <div className="flex items-center gap-2">
@@ -101,24 +101,27 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
                     </div>
                 </div>
 
-                {/* Price and Limits */}
-                <div className="md:col-span-2 grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p className="text-xs text-muted-foreground">Price</p>
-                        <p className="text-lg font-semibold">{advertiser.price.toFixed(3)} USDT</p>
-                    </div>
-                    <div>
-                        <p className="text-xs text-muted-foreground">Available / Limit</p>
-                        <p className="font-semibold">{advertiser.available.toLocaleString()} KTC</p>
-                        <p className="text-muted-foreground">{advertiser.limitMin.toLocaleString()} ~ {advertiser.limitMax.toLocaleString()} USDT</p>
-                    </div>
+                {/* Price */}
+                <div className="text-sm">
+                    <p className="text-xs text-muted-foreground md:hidden">Price</p>
+                    <p className="text-lg font-semibold">{advertiser.price.toFixed(3)} USDT</p>
+                </div>
+                
+                {/* Available / Limit */}
+                <div className="text-sm">
+                    <p className="text-xs text-muted-foreground md:hidden">Available / Limit</p>
+                    <p className="font-semibold">{advertiser.available.toLocaleString()} KTC</p>
+                    <p className="text-muted-foreground">{advertiser.limitMin.toLocaleString()} ~ {advertiser.limitMax.toLocaleString()} USDT</p>
                 </div>
 
-                {/* Payment and Trade */}
-                <div className="md:col-span-1 space-y-2 flex flex-col items-start md:items-end">
-                    <div className='text-xs text-left md:text-right'>
-                        {advertiser.payments.map(p => <p key={p}>{p}</p>)}
-                    </div>
+                {/* Payment */}
+                <div className='text-xs'>
+                    <p className="text-xs text-muted-foreground md:hidden">Payment Methods</p>
+                    {advertiser.payments.map(p => <p key={p}>{p}</p>)}
+                </div>
+
+                {/* Trade */}
+                <div className="flex flex-col items-start md:items-end">
                     <Button className="w-full md:w-auto bg-green-600 hover:bg-green-700">Buy KTC</Button>
                 </div>
             </div>
@@ -235,13 +238,12 @@ export default function P2PTransferPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <div className="hidden md:grid md:grid-cols-4 gap-4 items-center text-xs font-semibold text-muted-foreground px-4 pb-2 border-b">
+                    <div className="hidden md:grid md:grid-cols-5 gap-4 items-center text-xs font-semibold text-muted-foreground px-4 pb-2 border-b">
                         <div>Advertisers</div>
-                        <div className="col-span-2 grid grid-cols-2 gap-4">
-                            <div>Price</div>
-                            <div>Available / Limit</div>
-                        </div>
-                        <div className="text-right">Payment</div>
+                        <div>Price</div>
+                        <div>Available / Limit</div>
+                        <div>Payment</div>
+                        <div className="text-right">Trade</div>
                     </div>
                     <div>
                         {advertisers.map(ad => (
@@ -253,5 +255,3 @@ export default function P2PTransferPage() {
         </div>
     )
 }
-
-    
