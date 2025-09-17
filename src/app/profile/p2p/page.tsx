@@ -162,9 +162,9 @@ export default function P2PTransferPage() {
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                        <Tabs defaultValue="buy" className="w-auto">
-                            <TabsList className="p-1 border rounded-lg h-auto">
-                                <TabsTrigger value="buy" className="px-6">Buy</TabsTrigger>
-                                <TabsTrigger value="sell" className="px-6">Sell</TabsTrigger>
+                            <TabsList className="p-1 border bg-muted rounded-lg h-auto">
+                                <TabsTrigger value="buy" className="px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Buy</TabsTrigger>
+                                <TabsTrigger value="sell" className="px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Sell</TabsTrigger>
                             </TabsList>
                         </Tabs>
                         <div className="flex-1 min-w-0">
@@ -226,7 +226,7 @@ export default function P2PTransferPage() {
                                 <SelectItem value="asia">Asia</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Button variant="outline" size="icon">
+                        <Button variant="outline" size="icon" className="hidden md:inline-flex">
                             <Filter className="h-4 w-4" />
                         </Button>
                     </div>
