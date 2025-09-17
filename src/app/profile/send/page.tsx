@@ -112,7 +112,9 @@ export default function SendPage() {
                     <BreadcrumbItem>
                         <BreadcrumbLink asChild><Link href="/profile">Profile</Link></BreadcrumbLink>
                     </BreadcrumbItem>
-                    <Separator><ChevronRight /></Separator>
+                    <BreadcrumbSeparator>
+                        <ChevronRight />
+                    </BreadcrumbSeparator>
                     <BreadcrumbItem>
                         <BreadcrumbPage>Send</BreadcrumbPage>
                     </BreadcrumbItem>
@@ -269,5 +271,4 @@ export default function SendPage() {
             </Card>
         </div>
     );
-
-    
+}
