@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { addCurrency, getCurrency } from '@/lib/storage';
+import { addCurrency, getCurrency, spendCurrency } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import {
@@ -311,48 +311,74 @@ const SpinWheelGame = () => {
     const { toast } = useToast();
     const [rotation, setRotation] = useState(0);
     const [spinning, setSpinning] = useState(false);
+    const [betAmount, setBetAmount] = useState(10);
+    const [balance, setBalance] = useState(getCurrency());
 
     const segments = [
-        { value: 100, style: 'bg-green-500/50', textColor: 'text-green-50' },
-        { value: 250, style: 'bg-blue-500/50', textColor: 'text-blue-50' },
-        { value: 50, style: 'bg-yellow-500/50', textColor: 'text-yellow-50' },
+        { value: 2, style: 'bg-green-500/50', textColor: 'text-green-50' },
+        { value: 0.5, style: 'bg-blue-500/50', textColor: 'text-blue-50' },
+        { value: 1.5, style: 'bg-yellow-500/50', textColor: 'text-yellow-50' },
         { value: 0, style: 'bg-red-500/50', textColor: 'text-red-50' },
-        { value: 500, style: 'bg-purple-500/50', textColor: 'text-purple-50' },
-        { value: 75, style: 'bg-indigo-500/50', textColor: 'text-indigo-50' },
-        { value: 1000, style: 'bg-pink-500/50', textColor: 'text-pink-50' },
-        { value: 25, style: 'bg-gray-500/50', textColor: 'text-gray-50' },
+        { value: 5, style: 'bg-purple-500/50', textColor: 'text-purple-50' },
+        { value: 0.2, style: 'bg-indigo-500/50', textColor: 'text-indigo-50' },
+        { value: 10, style: 'bg-pink-500/50', textColor: 'text-pink-50' },
+        { value: 1, style: 'bg-gray-500/50', textColor: 'text-gray-50' },
     ];
     const segmentAngle = 360 / segments.length;
 
+    const refreshBalance = useCallback(() => {
+        setBalance(getCurrency());
+    }, []);
+
+    useEffect(() => {
+        refreshBalance();
+        window.addEventListener('storage', refreshBalance);
+        return () => window.removeEventListener('storage', refreshBalance);
+    }, [refreshBalance]);
+
     const handleSpin = () => {
         if (spinning) return;
+        if (balance < betAmount) {
+            toast({ variant: 'destructive', title: "Not enough coins", description: "You don't have enough coins to place this bet." });
+            return;
+        }
+
         setSpinning(true);
-        const randomSpins = Math.floor(Math.random() * 5) + 5; // 5 to 10 full spins
+        spendCurrency(betAmount);
+        refreshBalance();
+
+        const randomSpins = Math.floor(Math.random() * 5) + 8; // 8 to 13 full spins
         const randomStop = Math.random() * 360;
         const targetRotation = rotation + (randomSpins * 360) + randomStop;
 
         const prizeIndex = Math.floor(((targetRotation + segmentAngle / 2) % 360) / segmentAngle);
-        const prize = segments[segments.length - 1 - prizeIndex];
+        const prizeMultiplier = segments[segments.length - 1 - prizeIndex].value;
 
         setRotation(targetRotation);
 
         setTimeout(() => {
             setSpinning(false);
-            if (prize.value > 0) {
-                addCurrency(prize.value);
+            const winnings = betAmount * prizeMultiplier;
+            if (winnings > 0) {
+                addCurrency(winnings);
                 toast({
-                    title: `You won ${prize.value.toLocaleString()} coins!`,
-                    description: "The amount has been added to your balance.",
+                    title: `You won ${winnings.toLocaleString()} coins!`,
+                    description: `Your ${betAmount} coin bet returned ${prizeMultiplier}x.`,
                 });
             } else {
                  toast({
                     variant: 'destructive',
                     title: "Better luck next time!",
-                    description: "You didn't win a prize this time.",
+                    description: `You lost your ${betAmount} coin bet.`,
                 });
             }
-        }, 5000); // Corresponds to the animation duration
+            refreshBalance();
+        }, 7000); // Corresponds to the animation duration
     };
+    
+    const handleBetChange = (amount: number) => {
+        setBetAmount(prev => Math.max(0, prev + amount));
+    }
 
     return (
         <Card className='overflow-hidden'>
@@ -360,7 +386,10 @@ const SpinWheelGame = () => {
                 <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center">
                     <div className="absolute -top-4 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-primary z-10"></div>
                     <div
-                        className="relative w-full h-full rounded-full border-8 border-primary/20 transition-transform duration-[5000ms] ease-out"
+                        className={cn(
+                            "relative w-full h-full rounded-full border-8 border-primary/20 transition-transform duration-[7000ms] ease-out",
+                            !spinning && "animate-[spin_30s_linear_infinite]"
+                        )}
                         style={{ transform: `rotate(${rotation}deg)` }}
                     >
                         {segments.map((segment, i) => (
@@ -377,7 +406,7 @@ const SpinWheelGame = () => {
                                         className={cn("transform -rotate-45 font-bold text-lg", segment.textColor)}
                                         style={{ transform: `rotate(-${segmentAngle/2}deg) translate(-10px, -60px)`}}
                                     >
-                                        {segment.value}
+                                        {segment.value}x
                                     </span>
                                 </div>
                             </div>
@@ -387,9 +416,17 @@ const SpinWheelGame = () => {
                         <Disc className="w-10 h-10 text-primary" />
                     </div>
                 </div>
-                <Button size="lg" className='bg-yellow-500 hover:bg-yellow-600 text-black' onClick={handleSpin} disabled={spinning}>
-                    {spinning ? 'Spinning...' : 'Spin the Wheel'}
-                </Button>
+                <div className="w-full max-w-sm space-y-4">
+                    <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={spinning}>-</Button>
+                        <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center" disabled={spinning} />
+                        <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={spinning}>+</Button>
+                        <Coins className="text-yellow-500" />
+                    </div>
+                    <Button size="lg" className='w-full bg-yellow-500 hover:bg-yellow-600 text-black text-lg h-12' onClick={handleSpin} disabled={spinning || betAmount <= 0}>
+                        {spinning ? 'Spinning...' : `Spin for ${betAmount.toLocaleString()}`}
+                    </Button>
+                </div>
             </CardContent>
         </Card>
     )
@@ -469,11 +506,8 @@ export default function BonusGamePage() {
   useEffect(() => {
     refreshCurrency();
     
-    // Listen for currency updates from other components
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'kotela-currency') {
-          refreshCurrency();
-      }
+    const handleStorageChange = () => {
+      refreshCurrency();
     };
     window.addEventListener('storage', handleStorageChange);
 
@@ -536,5 +570,3 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
-    

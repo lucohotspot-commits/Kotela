@@ -1,3 +1,4 @@
+
 "use client";
 
 export type Score = {
@@ -66,6 +67,7 @@ export function addCurrency(amount: number) {
   try {
     const currentCurrency = getCurrency();
     localStorage.setItem(CURRENCY_KEY, (currentCurrency + amount).toString());
+    window.dispatchEvent(new Event('storage'));
   } catch (error) {
     console.error("Failed to add currency:", error);
   }
@@ -77,6 +79,7 @@ export function spendCurrency(amount: number): boolean {
     const currentCurrency = getCurrency();
     if (currentCurrency >= amount) {
       localStorage.setItem(CURRENCY_KEY, (currentCurrency - amount).toString());
+      window.dispatchEvent(new Event('storage'));
       return true;
     }
     return false;
