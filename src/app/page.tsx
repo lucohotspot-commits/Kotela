@@ -6,7 +6,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,14 +32,6 @@ export default function Home() {
     refreshData();
   }, [refreshData]);
 
-  const handleGameEnd = useCallback(() => {
-    refreshData();
-  }, [refreshData]);
-
-  const handlePurchase = useCallback(() => {
-    refreshData();
-  }, [refreshData]);
-
   return (
     <div className="flex flex-col min-h-screen">
       <header className="absolute top-0 right-0 p-4 sm:p-6 flex items-center gap-4">
@@ -60,7 +52,7 @@ export default function Home() {
                 Boost Store
               </DialogTitle>
             </DialogHeader>
-            <Store onPurchase={handlePurchase} />
+            <Store onPurchase={refreshData} />
           </DialogContent>
         </Dialog>
       </header>
@@ -76,16 +68,24 @@ export default function Home() {
         </div>
         
         <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-12 lg:gap-16">
-          <GameEngine onGameEnd={handleGameEnd} inventory={inventory} refreshInventory={refreshData} />
+          <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
           <div className="w-full max-w-md flex flex-col gap-8">
             <Leaderboard scores={scores} />
             <div className="p-4 border rounded-lg">
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><Rocket/> My Boosts</h3>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Rocket className="w-5 h-5 text-primary"/>
-                        <span className="font-bold">Rocket Boost x {inventory.rocket || 0}</span>
+                        <Rocket className="w-5 h-5 text-yellow-500"/>
+                        <span className="font-bold">Rocket (2x) x {inventory.rocket || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                        <Bomb className="w-5 h-5 text-red-500"/>
+                        <span className="font-bold">Missile (3x) x {inventory.missile || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                        <Clock className="w-5 h-5 text-blue-500"/>
+                        <span className="font-bold">Extra Time (+10s) x {inventory.extraTime || 0}</span>
                     </div>
                 </div>
             </div>
