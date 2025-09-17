@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+
 
 const earnProducts = [
   {
@@ -53,6 +55,36 @@ const earnProducts = [
     actionVariant: 'secondary' as const
   },
 ];
+
+const DurationButton = ({ duration, selected, onClick, special }: { duration: string; selected: boolean; onClick: () => void; special?: boolean }) => {
+  if (special) {
+    return (
+      <div className="relative">
+        <Button
+          size="sm"
+          variant={selected ? "secondary" : "outline"}
+          onClick={onClick}
+          className={cn("h-8 text-xs z-10", selected && "border-yellow-400")}
+        >
+          {duration}
+        </Button>
+        <div className="absolute top-0 right-0 w-0 h-0 border-t-8 border-l-8 border-t-yellow-400 border-l-transparent z-0"></div>
+      </div>
+    );
+  }
+
+  return (
+    <Button
+      size="sm"
+      variant={selected ? "secondary" : "outline"}
+      onClick={onClick}
+      className="h-8 text-xs"
+    >
+      {duration}
+    </Button>
+  );
+};
+
 
 export default function LeaderboardPage() {
   const [selectedDurations, setSelectedDurations] = useState<{[key: string]: string}>({});
@@ -103,15 +135,13 @@ export default function LeaderboardPage() {
                         <TableCell>
                             <div className="flex items-center gap-1 flex-wrap">
                                 {product.duration.map(d => (
-                                <Button 
-                                    key={d} 
-                                    size="sm" 
-                                    variant={selectedDurations[product.coin] === d ? "secondary" : "outline"}
-                                    onClick={() => handleDurationSelect(product.coin, d)}
-                                    className="h-8 text-xs"
-                                >
-                                    {d}
-                                </Button>
+                                    <DurationButton
+                                        key={d}
+                                        duration={d}
+                                        selected={selectedDurations[product.coin] === d}
+                                        onClick={() => handleDurationSelect(product.coin, d)}
+                                        special={d === '120'}
+                                    />
                                 ))}
                             </div>
                         </TableCell>
