@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { getCurrency, addCurrency } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon, Gift, Users } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon, Gift, Users, Wallet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -203,7 +203,10 @@ export default function ProfilePage() {
       <Dialog>
         <Card>
             <CardHeader>
-                <CardTitle>Wallet Address</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                    <Wallet className="h-5 w-5" />
+                    Wallet Address
+                </CardTitle>
                 <CardDescription>Use this address to receive KTC tokens.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -352,6 +355,5 @@ export default function ProfilePage() {
 
     </div>
   );
-}
 
     
