@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { TrendingUp, TrendingDown, Minus, Coins, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Coins, Star, Settings, BarChart, Expand } from 'lucide-react';
 import { ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { MarketTrades } from '@/components/market-trades';
 import { TopMovers } from '@/components/top-movers';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type CoinData = {
   time: string;
@@ -186,7 +187,7 @@ export default function RatingsClient() {
             <OrderBook selectedCoin={selectedCoin} />
         </div>
         <div className="lg:col-span-6 space-y-0">
-            <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 p-2">
+            <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 p-2 border-b">
                 <div className='flex items-center gap-2'>
                     <h1 className="text-xl font-bold">{selectedCoin.symbol}/USDT</h1>
                     <p className='text-xs text-muted-foreground'>{selectedCoin.name}</p>
@@ -201,10 +202,27 @@ export default function RatingsClient() {
                     <p><span className='text-muted-foreground'>24h Volume({selectedCoin.symbol}):</span> <span>{selectedCoin.volume.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
                 </div>
             </header>
-            <Separator />
-            <div className="w-full bg-transparent p-2 h-[250px]">
+            
+            <div className="flex items-center justify-between gap-2 p-2 border-b">
+                <Tabs defaultValue="1H" className="w-full">
+                    <TabsList className="h-auto p-0 bg-transparent gap-2">
+                        <TabsTrigger value="Time" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none" disabled>Time</TabsTrigger>
+                        <TabsTrigger value="1H" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none">1H</TabsTrigger>
+                        <TabsTrigger value="4H" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none">4H</TabsTrigger>
+                        <TabsTrigger value="1D" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none">1D</TabsTrigger>
+                        <TabsTrigger value="1W" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none">1W</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <BarChart className="h-4 w-4 cursor-pointer hover:text-primary" />
+                    <Settings className="h-4 w-4 cursor-pointer hover:text-primary" />
+                    <Expand className="h-4 w-4 cursor-pointer hover:text-primary" />
+                </div>
+            </div>
+
+            <div className="w-full bg-transparent p-2 h-[250px] pt-4">
                 <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 0 }}>
                         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis 
                             dataKey="time" 
@@ -257,6 +275,8 @@ export default function RatingsClient() {
                 </ResponsiveContainer>
             </div>
             
+            <Separator />
+            
             <div className="grid grid-cols-2 gap-4 p-2">
                 {/* Buy Form */}
                 <div className="space-y-2">
@@ -296,7 +316,11 @@ export default function RatingsClient() {
                     <Button className="w-full" variant="destructive">Sell {selectedCoin.symbol}</Button>
                 </div>
             </div>
-
+            
+            <Separator />
+            <div className="lg:hidden">
+              <OrderBook selectedCoin={selectedCoin} />
+            </div>
         </div>
         <div className="lg:col-span-3 space-y-2 border-l pl-2">
             <div className="border-b">
@@ -337,3 +361,5 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
