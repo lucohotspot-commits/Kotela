@@ -37,6 +37,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer, webpack }) => {
+    if (!isServer) {
+        config.plugins.push(
+            new webpack.IgnorePlugin({
+                resourceRegExp: /handlebars/,
+            })
+        );
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
