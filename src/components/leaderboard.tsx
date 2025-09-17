@@ -57,7 +57,7 @@ export function Leaderboard({ scores }: LeaderboardProps) {
           <Trophy className="h-5 w-5 text-yellow-500" />
           <span>Leaderboard</span>
         </CardTitle>
-        <CardDescription className="text-xs">Your top scores.</CardDescription>
+        <CardDescription className="text-xs">Your top mining runs.</CardDescription>
       </CardHeader>
       <CardContent className="px-2 pt-0">
         {scores.length > 0 ? (
@@ -65,7 +65,7 @@ export function Leaderboard({ scores }: LeaderboardProps) {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[80px] text-xs">Rank</TableHead>
-                <TableHead className="text-xs">Score</TableHead>
+                <TableHead className="text-xs">Coins</TableHead>
                 <TableHead className="text-right text-xs">Date</TableHead>
               </TableRow>
             </TableHeader>
@@ -118,7 +118,7 @@ export function Leaderboard({ scores }: LeaderboardProps) {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="w-[80px]">Rank</TableHead>
-                                            <TableHead>Score</TableHead>
+                                            <TableHead>Coins</TableHead>
                                             <TableHead className="text-right">Date</TableHead>
                                         </TableRow>
                                     </TableHeader>

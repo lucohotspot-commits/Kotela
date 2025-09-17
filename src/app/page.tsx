@@ -6,7 +6,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Gamepad2 } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -38,15 +38,33 @@ export default function Home() {
       <header className="sticky top-0 z-20 w-full bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <Gamepad2 className="h-7 w-7 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4"
+              >
+                <path d="M13.5 4.5 21 12l-7.5 7.5" />
+                <path d="M3 12h18" />
+                <path d="m10.5 19.5-7.5-7.5 7.5-7.5" />
+              </svg>
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-primary font-headline">
               Kotela
             </h1>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">My Points</p>
-              <p className="text-lg font-bold text-primary">{currency.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground">My Coins</p>
+              <div className="flex items-center justify-end gap-1">
+                <Coins className="h-4 w-4 text-yellow-500" />
+                <p className="text-lg font-bold text-primary">{currency.toLocaleString()}</p>
+              </div>
             </div>
             <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
               <DialogTrigger asChild>
@@ -54,7 +72,7 @@ export default function Home() {
                   <ShoppingCart className="mr-2" /> Store
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-[90vh] sm:max-h-[800px]">
+              <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-auto sm:max-h-[800px]">
                 <DialogHeader>
                   <DialogTitle className='flex items-center gap-2'>
                     <ShoppingCart />
@@ -75,7 +93,7 @@ export default function Home() {
       <main className="flex-grow flex flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center text-center mb-8">
           <p className="mt-2 text-sm text-muted-foreground max-w-prose">
-            Tap once to start the game. Use boosts to get a high score!
+            Tap once to start mining. Use boosts to get a high score!
           </p>
         </div>
         

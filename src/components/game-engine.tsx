@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Hand, Repeat, AlertTriangle, TimerIcon, Rocket, Bomb, Clock, Zap, Gift, Snowflake } from "lucide-react";
+import { Pickaxe, Repeat, AlertTriangle, TimerIcon, Rocket, Bomb, Clock, Zap, Gift, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { addScore, useBoost } from "@/lib/storage";
 import { checkForPrivacyIssues } from "@/app/actions";
@@ -245,13 +245,13 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
         >
           {gameState === 'idle' && (
             <div className='text-center'>
-              <Hand className="w-12 h-12 mb-2 transition-transform group-hover:scale-110 group-active:scale-90 inline-block" />
-              <span className="text-lg font-semibold">Tap to Start</span>
+              <Pickaxe className="w-12 h-12 mb-2 transition-transform group-hover:scale-110 group-active:scale-90 inline-block" />
+              <span className="text-lg font-semibold">Tap to Mine</span>
             </div>
           )}
           {gameState === 'playing' && (
             <div className="text-center">
-              <div className="text-xs uppercase text-muted-foreground">Score</div>
+              <div className="text-xs uppercase text-muted-foreground">Coins</div>
               <div className={`text-6xl font-bold ${boostTextColor}`}>{score.toLocaleString()}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
                 <TimerIcon className="h-3 w-3" />
@@ -264,7 +264,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
             <div className='text-center'>
               <div className="text-xs uppercase text-muted-foreground">Game Over</div>
               <div className={`text-5xl font-bold ${boostTextColor}`}>{score.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground mt-1">Final Score</div>
+              <div className="text-xs text-muted-foreground mt-1">Final Coins</div>
             </div>
           )}
         </button>
