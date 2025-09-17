@@ -166,9 +166,10 @@ const AviatorGame = () => {
                             stroke="#ef4444"
                             strokeWidth="0.5"
                             fill="none"
-                            strokeDasharray="4 4"
-                            pathLength="1"
+                            strokeDasharray="1"
                             strokeDashoffset={`${1 - (planeX/100)}`}
+                            style={{ strokeDashoffset: `${1 - (planeX/100)}` }}
+                            pathLength="1"
                         />
                     </svg>
                      <Plane 
