@@ -7,9 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plane, Coins, Disc, CircleDollarSign, Dice5, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass } from 'lucide-react';
+import { Plane, Coins, Disc, CircleDollarSign, Dice5, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User } from 'lucide-react';
 import { useParams } from 'next/navigation';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,34 +18,39 @@ import { addCurrency, getCurrency } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 
 
-const gameDetails: { [key: string]: { name: string; description: string } } = {
+const gameDetails: { [key: string]: { name: string; description: string, icon: React.ReactNode } } = {
   'aviator': {
     name: 'Aviator',
-    description: 'Watch the multiplier grow and cash out before the plane flies away!'
+    description: 'Watch the multiplier grow and cash out before the plane flies away!',
+    icon: <Plane className="h-6 w-6" />
   },
   'video-play': {
     name: 'Video Play',
-    description: 'Watch videos to earn rewards.'
+    description: 'Watch videos to earn rewards.',
+    icon: <Video className="h-6 w-6" />
   },
   'spin-the-wheel': {
     name: 'Spin the Wheel',
-    description: 'Spin the wheel for a chance to win big!'
+    description: 'Spin the wheel for a chance to win big!',
+    icon: <Disc className="h-6 w-6" />
   },
   'coin-flip': {
     name: 'Coin Flip',
-    description: 'Double or nothing! Flip a coin to test your luck.'
+    description: 'Double or nothing! Flip a coin to test your luck.',
+    icon: <CircleDollarSign className="h-6 w-6" />
   },
   'lucky-dice': {
     name: 'Lucky Dice',
-    description: 'Roll the dice and win rewards based on your roll.'
+    description: 'Roll the dice and win rewards based on your roll.',
+    icon: <Dice5 className="h-6 w-6" />
   }
 };
 
 const videos = [
-    { id: 1, title: 'Introduction to Kotela', duration: '1:35', reward: 50, image: PlaceHolderImages[0], watchTime: 60 },
-    { id: 2, title: 'How to use the Store', duration: '2:10', reward: 75, image: PlaceHolderImages[1], watchTime: 60 },
-    { id: 3, title: 'Advanced Mining Techniques', duration: '3:00', reward: 100, image: PlaceHolderImages[2], watchTime: 60 },
-    { id: 4, title: 'Community Highlights', duration: '5:20', reward: 150, image: PlaceHolderImages[3], watchTime: 60 },
+    { id: 1, title: 'Learn Next.js in 100 Seconds', duration: '1:40', reward: 50, youtubeId: 'Sklc_fQB-B0', watchTime: 60 },
+    { id: 2, title: 'The story of Genkit', duration: '6:37', reward: 75, youtubeId: 'j8-k0f9vR8g', watchTime: 60 },
+    { id: 3, title: 'Fireship Explains The End', duration: '3:00', reward: 100, youtubeId: 'c5Gf0_C3F10', watchTime: 60 },
+    { id: 4, title: 'The Most Important New UI Framework', duration: '9:25', reward: 150, youtubeId: 'pS8hhKM30iY', watchTime: 60 },
 ]
 
 const AviatorGame = () => {
@@ -217,13 +221,14 @@ const VideoPlayGame = () => {
     }, [claimedRewards]);
 
     const canClaim = progress >= 100 && !isClaimed(selectedVideo.id);
+    const getThumbnailUrl = (youtubeId: string) => `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
                 <Card className='overflow-hidden'>
                     <div className="relative aspect-video bg-black flex items-center justify-center">
-                        <Image src={selectedVideo.image.imageUrl} alt={selectedVideo.title} fill className={cn("object-cover transition-opacity", isPlaying && "opacity-80")} data-ai-hint={selectedVideo.image.imageHint} />
+                        <Image src={getThumbnailUrl(selectedVideo.youtubeId)} alt={selectedVideo.title} fill className={cn("object-cover transition-opacity", isPlaying && "opacity-80")} />
                          {!isPlaying && progress === 0 && (
                             <button onClick={handlePlay} className='z-10 bg-black/50 p-4 rounded-full text-white hover:bg-black/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed' disabled={isClaimed(selectedVideo.id)}>
                                 {isClaimed(selectedVideo.id) ? <CheckCircle className='w-16 h-16 text-green-500' /> : <PlayCircle className='w-16 h-16' />}
@@ -268,7 +273,7 @@ const VideoPlayGame = () => {
                             {videos.map(video => (
                                 <button key={video.id} onClick={() => handleSelectVideo(video)} className={cn("flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-muted", selectedVideo.id === video.id && "bg-muted")}>
                                     <div className="relative w-[120px] h-[68px] flex-shrink-0">
-                                        <Image src={video.image.imageUrl} alt={video.title} fill className="rounded-md object-cover" data-ai-hint={video.image.imageHint}/>
+                                        <Image src={getThumbnailUrl(video.youtubeId)} alt={video.title} fill className="rounded-md object-cover" />
                                         {isClaimed(video.id) && (
                                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
                                                 <CheckCircle className="w-6 h-6 text-green-400" />
@@ -381,17 +386,27 @@ const LuckyDiceGame = () => {
 export default function BonusGamePage() {
   const params = useParams();
   const slug = params.slug as string;
-  const details = gameDetails[slug] || { name: 'Game', description: 'Play to win!' };
+  const details = gameDetails[slug] || { name: 'Game', description: 'Play to win!', icon: <User /> };
   const [currency, setCurrency] = useState(0);
 
-  useEffect(() => {
+  const refreshCurrency = useCallback(() => {
     setCurrency(getCurrency());
   }, []);
-  
-  const handleRewardClaimed = () => {
-    // A bit of a delay to allow storage to update
-    setTimeout(() => setCurrency(getCurrency()), 100);
-  }
+
+  useEffect(() => {
+    refreshCurrency();
+    
+    // Listen for currency updates from other components
+    const handleStorageChange = () => {
+      refreshCurrency();
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+
+  }, [refreshCurrency]);
 
   const renderGame = () => {
     switch (slug) {
@@ -414,7 +429,10 @@ export default function BonusGamePage() {
     <div className="w-full max-w-6xl mx-auto space-y-6">
       <div className="flex items-start justify-between">
         <div>
-            <h1 className="text-3xl font-bold text-primary">{details.name}</h1>
+            <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
+                {details.icon}
+                {details.name}
+            </h1>
             <p className="text-muted-foreground mt-1">{details.description}</p>
         </div>
         <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary px-2 py-1 rounded-md bg-muted">
@@ -428,5 +446,3 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
-    
