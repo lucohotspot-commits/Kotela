@@ -83,7 +83,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [activeBoost]);
 
   useEffect(() => {
-    if (gameState !== 'playing' || activeEffect === 'timeFreeze') return;
+    if (gameState !== 'playing') return;
 
     let scoreInterval: NodeJS.Timeout;
 
@@ -92,7 +92,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
         setScore(s => s + 5 * scoreIncrement);
       }, 100);
     } else {
-      // Tapping is manual, so no automatic score increment here unless we change game mechanics
+        scoreInterval = setInterval(() => {
+            setScore(s => s + scoreIncrement);
+        }, 1000);
     }
 
     return () => clearInterval(scoreInterval);
@@ -104,10 +106,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (timeBoostUsed) {
         setTimeLeft(gameDuration);
       }
-    } else if (gameState === "playing") {
-        setScore(s => s + scoreIncrement);
     }
-  }, [gameState, timeBoostUsed, gameDuration, scoreIncrement]);
+  }, [gameState, timeBoostUsed, gameDuration]);
 
   useEffect(() => {
     if (gameState !== "playing" || activeEffect === 'timeFreeze') return;
