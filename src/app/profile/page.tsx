@@ -160,9 +160,11 @@ export default function ProfilePage() {
             <Download className="mr-2" />
             Withdraw
           </Button>
-          <Button variant="outline">
-            <Send className="mr-2" />
-            Send
+          <Button variant="outline" asChild>
+            <Link href="/profile/send">
+              <Send className="mr-2" />
+              Send
+            </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/profile/p2p">
