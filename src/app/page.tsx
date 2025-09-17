@@ -129,7 +129,7 @@ export default function Home() {
                 </div>
             </div>
             <div className="hidden lg:block w-full">
-                <BlogWidget />
+                <BlogWidget limit={3} showViewAll={true} />
             </div>
           </div>
         </div>
