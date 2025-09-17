@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Hand, Repeat, AlertTriangle, TimerIcon } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { addScore } from "@/lib/storage";
 import { checkForPrivacyIssues } from "@/app/actions";
@@ -28,9 +27,19 @@ export function GameEngine({ onGameEnd }: GameEngineProps) {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [gameState, setGameState] = useState<GameState>("idle");
-  const [tapTimestamps, setTapTimestamps] = useState<number[]>([]);
   const [privacyWarning, setPrivacyWarning] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Score increment logic
+  useEffect(() => {
+    if (gameState !== "playing") return;
+
+    const scoreInterval = setInterval(() => {
+      setScore((s) => s + 1);
+    }, 100);
+
+    return () => clearInterval(scoreInterval);
+  }, [gameState]);
 
   // Timer logic
   useEffect(() => {
@@ -56,7 +65,6 @@ export function GameEngine({ onGameEnd }: GameEngineProps) {
 
       const gameData = JSON.stringify({
         finalScore: score,
-        taps: tapTimestamps.length,
         gameEndTime: new Date().toISOString(),
       });
 
@@ -67,41 +75,32 @@ export function GameEngine({ onGameEnd }: GameEngineProps) {
         }
       });
     }
-  }, [gameState, score, onGameEnd, tapTimestamps]);
+  }, [gameState, score, onGameEnd]);
 
   const handleTap = useCallback(() => {
-    if (gameState === "ended") return;
     if (gameState === "idle") {
       setGameState("playing");
     }
-
-    const now = Date.now();
-    const oneSecondAgo = now - 1000;
-    
-    const recentTaps = [...tapTimestamps, now].filter((t) => t > oneSecondAgo);
-    setTapTimestamps(recentTaps);
-    
-    const tapsPerSecond = recentTaps.length;
-    const increment = 1 + Math.floor(tapsPerSecond / 5);
-
-    setScore((s) => s + increment);
-  }, [gameState, tapTimestamps]);
+  }, [gameState]);
 
   const resetGame = () => {
     setScore(0);
     setTimeLeft(GAME_DURATION);
-    setTapTimestamps([]);
     setGameState("idle");
     setPrivacyWarning(null);
   };
 
-  const progressValue = (timeLeft / GAME_DURATION) * 100;
-
   const tapAreaText = useMemo(() => {
     if (gameState === "idle") return "Tap to Start";
     if (gameState === "ended") return "Game Over";
-    return "Tap!";
+    return "Tapping...";
   }, [gameState]);
+
+  const CIRCLE_RADIUS = 120;
+  const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
+  const progressOffset =
+    CIRCLE_CIRCUMFERENCE -
+    (timeLeft / GAME_DURATION) * CIRCLE_CIRCUMFERENCE;
 
   return (
     <div className="w-full max-w-md flex flex-col items-center gap-8">
@@ -115,7 +114,6 @@ export function GameEngine({ onGameEnd }: GameEngineProps) {
           {score.toLocaleString()}
         </h1>
         <div className="w-full mt-4">
-          <Progress value={progressValue} className="h-4 [&>div]:bg-muted-foreground" />
           <p className="text-center text-sm text-muted-foreground mt-2 flex items-center justify-center gap-2">
             <TimerIcon className="h-4 w-4" />
             <span>{timeLeft}s remaining</span>
@@ -123,15 +121,39 @@ export function GameEngine({ onGameEnd }: GameEngineProps) {
         </div>
       </div>
 
-      <button
-        onClick={handleTap}
-        disabled={gameState === "ended"}
-        className="relative w-64 h-64 bg-primary rounded-full text-primary-foreground flex flex-col items-center justify-center text-2xl font-bold transition-all duration-300 ease-in-out shadow-lg hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:scale-100 disabled:cursor-not-allowed group"
-        aria-label={tapAreaText}
-      >
-        <Hand className="w-16 h-16 mb-2 transition-transform group-hover:scale-110 group-active:scale-90" />
-        <span>{tapAreaText}</span>
-      </button>
+      <div className="relative w-64 h-64 flex items-center justify-center">
+        <svg className="absolute w-[256px] h-[256px] -rotate-90">
+          <circle
+            cx="128"
+            cy="128"
+            r={CIRCLE_RADIUS}
+            stroke="hsl(var(--border))"
+            strokeWidth="8"
+            fill="transparent"
+          />
+          <circle
+            cx="128"
+            cy="128"
+            r={CIRCLE_RADIUS}
+            stroke="hsl(var(--primary))"
+            strokeWidth="8"
+            fill="transparent"
+            strokeDasharray={CIRCLE_CIRCUMFERENCE}
+            strokeDashoffset={progressOffset}
+            className="transition-all duration-1000 ease-linear"
+          />
+        </svg>
+        <button
+          onClick={handleTap}
+          disabled={gameState !== "idle"}
+          className="relative w-56 h-56 bg-primary rounded-full text-primary-foreground flex flex-col items-center justify-center text-2xl font-bold transition-all duration-300 ease-in-out shadow-lg hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:scale-100 disabled:cursor-not-allowed group"
+          aria-label={tapAreaText}
+        >
+          <Hand className="w-16 h-16 mb-2 transition-transform group-hover:scale-110 group-active:scale-90" />
+          <span>{tapAreaText}</span>
+        </button>
+      </div>
+
 
       {gameState === "ended" && (
         <Button onClick={resetGame} size="lg" className="mt-4">
