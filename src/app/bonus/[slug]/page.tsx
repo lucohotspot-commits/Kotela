@@ -449,7 +449,7 @@ const VideoPlayGame = () => {
             </div>
             <div className="lg:col-span-1">
                 <Card className='flex flex-col'>
-                    <CardHeader>
+                    <CardHeader className="p-4">
                         <CardTitle>Playlist</CardTitle>
                     </CardHeader>
                     <CardContent className='p-2 flex-grow'>
@@ -962,3 +962,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
+
+    
