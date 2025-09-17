@@ -79,7 +79,7 @@ export default function ProfilePage() {
     <div className="w-full max-w-4xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">My Wallet</h1>
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
           <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -157,7 +157,7 @@ export default function ProfilePage() {
                   {isBalanceVisible ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
                 </button>
             </div>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="text-3xl font-bold">
                   {isBalanceVisible ? `${currency.toFixed(8)} KTC` : hiddenBalance}
                 </span>
@@ -166,7 +166,7 @@ export default function ProfilePage() {
                 </span>
             </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-4 border-t pt-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
             <div>
                 <p className='text-sm text-muted-foreground'>Spot balance</p>
                 <p className="font-semibold">{isBalanceVisible ? `${currency.toFixed(8)} KTC` : hiddenBalance}</p>
@@ -187,7 +187,7 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
             <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="font-mono text-sm text-muted-foreground">{walletAddress}</span>
+                <span className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
                 <Button variant="ghost" size="icon" onClick={handleCopyAddress}>
                     <Copy className="h-4 w-4" />
                 </Button>
