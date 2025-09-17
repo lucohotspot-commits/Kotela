@@ -21,10 +21,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
 import { ChevronRight, ShieldCheck, Camera, Check, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
 import { PhoneInput, type Country } from '@/components/ui/phone-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getYears, getMonths, getDaysInMonth } from '@/lib/dates';
+import { cn } from '@/lib/utils';
 
 
 const formSchema = z.object({
@@ -34,12 +34,18 @@ const formSchema = z.object({
   givenName: z.string().optional(),
   middleName: z.string().optional(),
   dob_year: z.string({ required_error: "Please select a year." }),
-  dob_month: z.string({ required_error: "Please select a month." }),
-  dob_day: z.string({ required_error: "Please select a day." }),
+  dob_month: z_dot_string({ required_error: "Please select a month." }),
+  dob_day: z_dot_string({ required_error: "Please select a day." }),
   document: z.any().refine((files) => files?.length == 1, "Document is required."),
 });
 
 type VerificationFormValues = z.infer<typeof formSchema>;
+
+const verificationSteps = [
+    { step: 1, title: "Personal Info" },
+    { step: 2, title: "Upload Document" },
+    { step: 3, title: "Selfie" },
+];
 
 export default function VerifyPage() {
   const { toast } = useToast();
@@ -125,8 +131,6 @@ export default function VerifyPage() {
   const nextStep = () => setStep(s => s + 1);
   const prevStep = () => setStep(s => s - 1);
   
-  const progress = (step / 3) * 100;
-  
   const watchedYear = form.watch('dob_year');
   const watchedMonth = form.watch('dob_month');
 
@@ -153,15 +157,46 @@ export default function VerifyPage() {
         </BreadcrumbList>
       </Breadcrumb>
       
-      <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-                <ShieldCheck className="h-6 w-6" />
-                <h1 className="text-2xl font-bold">Identity Verification</h1>
-            </div>
-            <span className="text-sm text-muted-foreground">Step {step} of 3</span>
+      <div className="space-y-4">
+          <div className="flex items-center gap-2">
+              <ShieldCheck className="h-6 w-6" />
+              <h1 className="text-2xl font-bold">Identity Verification</h1>
           </div>
-          <Progress value={progress} />
+
+          <div className="flex items-center justify-between">
+            {verificationSteps.map((item, index) => {
+              const isCompleted = step > item.step;
+              const isCurrent = step === item.step;
+              
+              return (
+                <div key={item.step} className="flex items-center w-full">
+                  <div className="flex flex-col items-center">
+                      <div
+                          className={cn(
+                              "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                              isCompleted ? "bg-primary text-primary-foreground" :
+                              isCurrent ? "border-2 border-primary text-primary" :
+                              "bg-muted text-muted-foreground"
+                          )}
+                      >
+                          {isCompleted ? <Check className="w-5 h-5" /> : item.step}
+                      </div>
+                      <p className={cn(
+                          "text-xs mt-2",
+                           isCurrent ? "font-bold text-primary" : "text-muted-foreground"
+                      )}>{item.title}</p>
+                  </div>
+                  
+                  {index < verificationSteps.length - 1 && (
+                      <div className={cn(
+                          "flex-1 h-0.5 mx-4",
+                          isCompleted ? "bg-primary" : "bg-muted"
+                      )}></div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
       </div>
 
       <Form {...form}>
@@ -371,3 +406,5 @@ export default function VerifyPage() {
   );
 }
 
+
+    
