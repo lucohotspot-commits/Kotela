@@ -107,7 +107,10 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
                 {/* Price */}
                 <div className="text-sm">
                     <p className="text-xs text-muted-foreground md:hidden">Price</p>
-                    <p className="text-lg font-semibold">{advertiser.price.toFixed(3)} USDT</p>
+                    <p className="text-lg font-semibold">
+                        <span>{advertiser.price.toFixed(3)}</span>
+                        <span className="text-muted-foreground ml-1">USDT</span>
+                    </p>
                 </div>
                 
                 {/* Available / Limit */}
