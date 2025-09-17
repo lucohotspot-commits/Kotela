@@ -17,7 +17,7 @@ export function TopMovers() {
                     <TabsTrigger value="all" className="text-xs px-2 data-[state=active]:bg-muted data-[state=active]:shadow-none">All</TabsTrigger>
                     <TabsTrigger value="change" className="text-xs px-2 data-[state=active]:bg-muted data-[state=active]:shadow-none">Change</TabsTrigger>
                     <TabsTrigger value="new" className="text-xs px-2 data-[state=active]:bg-muted data-[state=active]:shadow-none">New High/Low</TabsTrigger>
-                </Tabs>
+                </TabsList>
             </Tabs>
             <div className="text-center text-muted-foreground p-8 text-xs">
                 Top Movers data will be displayed here.
