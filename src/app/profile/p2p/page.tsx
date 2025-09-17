@@ -76,6 +76,17 @@ const advertisers = [
 const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'SHIB', 'USDC'];
 
 const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) => {
+    
+    const getPaymentColor = (payment: string) => {
+        if (payment.toLowerCase().includes('bank transfer')) {
+            return 'bg-yellow-500';
+        }
+        if (payment.toLowerCase().includes('sepa')) {
+            return 'bg-blue-500';
+        }
+        return 'bg-gray-400';
+    }
+
     return (
         <div className="border-b last:border-b-0">
             <div className="p-4 grid grid-cols-1 md:grid-cols-5 gap-4 items-start">
@@ -121,9 +132,14 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
                 </div>
 
                 {/* Payment */}
-                <div className='md:col-span-1 text-xs'>
+                <div className='md:col-span-1 text-xs space-y-1'>
                     <p className="text-xs text-muted-foreground md:hidden">Payment Methods</p>
-                    {advertiser.payments.map(p => <p key={p}>{p}</p>)}
+                    {advertiser.payments.map(p => (
+                        <div key={p} className="flex items-center gap-1.5">
+                            <span className={cn("h-3 w-[2px] rounded-full", getPaymentColor(p))}></span>
+                            <p>{p}</p>
+                        </div>
+                    ))}
                 </div>
 
 
@@ -262,3 +278,5 @@ export default function P2PTransferPage() {
         </div>
     );
 }
+
+    
