@@ -33,6 +33,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 const gameDetails: { [key: string]: { name: string; description: string, icon: React.ReactNode } } = {
@@ -70,8 +71,8 @@ const videos = [
     { id: 4, title: 'Firebase Crashlytics', duration: '9:25', reward: 150, youtubeId: 'Vxa_DzLtlTI', watchTime: 60 },
     { id: 5, title: 'Firebase Remote Config', duration: '5:10', reward: 125, youtubeId: 'Vxa_DzLtlTI', watchTime: 60 },
     { id: 6, title: 'Build a Gen AI chat app', duration: '8:15', reward: 200, youtubeId: 'LXb3EKWsInQ', watchTime: 60 },
-    { id: 7, title: 'What is Genkit?', duration: '4:30', reward: 110, youtubeId: 'Vxa_DzLtlTI', watchTime: 60 },
-    { id: 8, title: 'The future of AI', duration: '12:00', reward: 250, youtubeId: 'LXb3EKWsInQ', watchTime: 60 },
+    { id: 7, title: 'What is Genkit?', duration: '0:25', reward: 110, youtubeId: 'Vxa_DzLtlTI', watchTime: 25 },
+    { id: 8, title: 'The future of AI', duration: '0:55', reward: 250, youtubeId: 'LXb3EKWsInQ', watchTime: 55 },
 ]
 
 const AviatorGame = () => {
@@ -170,6 +171,10 @@ const AviatorGame = () => {
 
     useEffect(() => {
         const getPathData = (progress: number) => {
+            if (typeof document === 'undefined') {
+                return { path: 'M 0 100', point: { x: 0, y: 100 } };
+            }
+            
             const width = 100;
             const height = 100;
             const controlX1 = width * 0.3;
@@ -180,10 +185,6 @@ const AviatorGame = () => {
             const endY = height * 0.2;
             
             const path = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
-            
-            if (typeof document === 'undefined') {
-                return { path: 'M 0 100', point: { x: 0, y: 100 } };
-            }
 
             const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             tempPath.setAttribute('d', path);
@@ -343,14 +344,46 @@ const VideoPlayGame = () => {
     const [progress, setProgress] = useState(0);
     const [claimedRewards, setClaimedRewards] = useState<number[]>([]);
     const [currentPage, setCurrentPage] = useState(0);
+    const [filter, setFilter] = useState('all');
     const videosPerPage = 4;
+    
+    const getDurationInSeconds = (duration: string) => {
+        const parts = duration.split(':').map(Number);
+        return parts[0] * 60 + parts[1];
+    };
+    
+    const filteredVideos = useMemo(() => {
+        switch(filter) {
+            case '30s':
+                return videos.filter(v => getDurationInSeconds(v.duration) <= 30);
+            case '1m':
+                return videos.filter(v => {
+                    const seconds = getDurationInSeconds(v.duration);
+                    return seconds > 30 && seconds <= 60;
+                });
+            case 'more':
+                return videos.filter(v => getDurationInSeconds(v.duration) > 60);
+            default:
+                return videos;
+        }
+    }, [filter]);
 
     const paginatedVideos = useMemo(() => {
         const startIndex = currentPage * videosPerPage;
-        return videos.slice(startIndex, startIndex + videosPerPage);
-    }, [currentPage]);
+        return filteredVideos.slice(startIndex, startIndex + videosPerPage);
+    }, [currentPage, filteredVideos]);
     
-    const totalPages = Math.ceil(videos.length / videosPerPage);
+    const totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+    
+    useEffect(() => {
+        setCurrentPage(0);
+        if(filteredVideos.length > 0) {
+            setSelectedVideo(filteredVideos[0]);
+        } else {
+            // Maybe handle no videos found case later
+        }
+    }, [filter, filteredVideos]);
+
 
     const handleSelectVideo = (video: typeof videos[0]) => {
         setSelectedVideo(video);
@@ -449,12 +482,20 @@ const VideoPlayGame = () => {
             </div>
             <div className="lg:col-span-1">
                 <Card className='flex flex-col'>
-                    <CardHeader className="p-4">
+                    <CardHeader className="p-4 pb-2">
                         <CardTitle>Playlist</CardTitle>
+                        <Tabs defaultValue="all" onValueChange={setFilter} className="w-full pt-2">
+                            <TabsList className="grid w-full grid-cols-4 h-8 text-xs p-0">
+                                <TabsTrigger value="all" className="h-full rounded-none">All</TabsTrigger>
+                                <TabsTrigger value="30s" className="h-full rounded-none">30 SECs</TabsTrigger>
+                                <TabsTrigger value="1m" className="h-full rounded-none">1 MIN</TabsTrigger>
+                                <TabsTrigger value="more" className="h-full rounded-none">MORE</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
                     </CardHeader>
                     <CardContent className='p-2 flex-grow'>
                         <div className="space-y-2">
-                        {paginatedVideos.map(video => (
+                        {paginatedVideos.length > 0 ? paginatedVideos.map(video => (
                             <button key={video.id} onClick={() => handleSelectVideo(video)} className={cn("flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-muted", selectedVideo.id === video.id && "bg-muted")}>
                                 <div className="relative w-32 h-[72px] flex-shrink-0">
                                     <Image src={getThumbnailUrl(video.youtubeId)} alt={video.title} fill className="rounded-md object-cover" />
@@ -472,32 +513,38 @@ const VideoPlayGame = () => {
                                     )}
                                 </div>
                             </button>
-                        ))}
+                        )) : (
+                            <div className="text-center text-muted-foreground p-8">
+                                <p>No videos found for this filter.</p>
+                            </div>
+                        )}
                         </div>
                     </CardContent>
-                    <CardFooter className="flex justify-between items-center p-2 border-t">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setCurrentPage(p => p - 1)}
-                            disabled={currentPage === 0}
-                        >
-                            <ChevronLeft className="mr-1" />
-                            Prev
-                        </Button>
-                        <span className="text-sm text-muted-foreground">
-                            Page {currentPage + 1} of {totalPages}
-                        </span>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setCurrentPage(p => p + 1)}
-                            disabled={currentPage >= totalPages - 1}
-                        >
-                            Next
-                            <ChevronRight className="ml-1" />
-                        </Button>
-                    </CardFooter>
+                    { totalPages > 1 && (
+                        <CardFooter className="flex justify-between items-center p-2 border-t">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => p - 1)}
+                                disabled={currentPage === 0}
+                            >
+                                <ChevronLeft className="mr-1" />
+                                Prev
+                            </Button>
+                            <span className="text-sm text-muted-foreground">
+                                Page {currentPage + 1} of {totalPages}
+                            </span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => p + 1)}
+                                disabled={currentPage >= totalPages - 1}
+                            >
+                                Next
+                                <ChevronRight className="ml-1" />
+                            </Button>
+                        </CardFooter>
+                    )}
                 </Card>
             </div>
         </div>
@@ -962,5 +1009,3 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
-    
