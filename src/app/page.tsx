@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Home() {
   const [scores, setScores] = useState<Score[]>([]);
@@ -45,14 +46,18 @@ export default function Home() {
               <ShoppingCart className="mr-2" /> Store
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md sm:max-w-4xl">
+          <DialogContent className="max-w-md sm:max-w-4xl h-full sm:h-auto">
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
                 <ShoppingCart />
                 Boost Store
               </DialogTitle>
             </DialogHeader>
-            <Store onPurchase={refreshData} />
+            <ScrollArea className="h-full">
+              <div className="p-1">
+                <Store onPurchase={refreshData} />
+              </div>
+            </ScrollArea>
           </DialogContent>
         </Dialog>
       </header>

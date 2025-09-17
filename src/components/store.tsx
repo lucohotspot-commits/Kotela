@@ -80,7 +80,7 @@ export function Store({ onPurchase }: StoreProps) {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {boosts.map((boost) => (
-              <Card key={boost.id} className="flex flex-col shadow-md hover:shadow-lg transition-all duration-300">
+              <Card key={boost.id} className="flex flex-col shadow-sm hover:shadow-md transition-shadow duration-300">
                 <CardHeader className="flex-row items-center gap-4 space-y-0 pb-4">
                     <div className="p-3 bg-muted rounded-full">
                         <boost.icon className={`w-6 h-6 ${boost.color}`}/>
