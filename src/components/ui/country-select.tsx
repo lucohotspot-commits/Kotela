@@ -29,9 +29,8 @@ export function CountrySelect({ onValueChange, defaultValue }: CountrySelectProp
   const [value, setValue] = React.useState(defaultValue || "");
 
   const handleSelect = (currentValue: string) => {
-    const newValue = currentValue === value ? "" : currentValue;
-    setValue(newValue);
-    onValueChange(newValue);
+    setValue(currentValue);
+    onValueChange(currentValue);
     setOpen(false);
   };
 
@@ -59,7 +58,7 @@ export function CountrySelect({ onValueChange, defaultValue }: CountrySelectProp
               {countries.map((country) => (
                 <CommandItem
                   key={country.value}
-                  value={country.value}
+                  value={country.value.toLowerCase()}
                   onSelect={(currentValue) => handleSelect(currentValue)}
                 >
                   <Check
