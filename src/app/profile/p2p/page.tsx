@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { ChevronRight, Users, Coins, ThumbsUp, CheckCircle, RefreshCw, SlidersHorizontal, ChevronDown, Filter } from 'lucide-react';
+import { ChevronRight, Users, Coins, ThumbsUp, CheckCircle, RefreshCw, SlidersHorizontal, ChevronDown, Filter, Clock } from 'lucide-react';
 import { getCurrency, spendCurrency } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,6 +32,7 @@ const advertisersData = [
     limitMin: 200, // Base limit in USDT
     limitMax: 13919, // Base limit in USDT
     payments: ['SEPA (EU) bank transfer', 'Bank Transfer', 'SEPA Instant'],
+    avgReleaseTime: 5,
   },
   {
     name: 'Aura-Legal_2417',
@@ -44,6 +46,7 @@ const advertisersData = [
     limitMin: 100,
     limitMax: 10000,
     payments: ['SEPA (EU) bank transfer', 'ZEN', 'SEPA Instant'],
+    avgReleaseTime: 8,
   },
   {
     name: 'SEPA-Exchange',
@@ -57,6 +60,7 @@ const advertisersData = [
     limitMin: 50,
     limitMax: 25000,
     payments: ['SEPA (EU) bank transfer', 'ZEN', 'Bank Transfer'],
+    avgReleaseTime: 12,
   },
    {
     name: 'CryptoWhale',
@@ -70,6 +74,7 @@ const advertisersData = [
     limitMin: 1000,
     limitMax: 50000,
     payments: ['Bank Transfer'],
+    avgReleaseTime: 3,
   },
 ];
 
@@ -112,26 +117,27 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
         <div className="border-b last:border-b-0">
             <div className="p-4 grid grid-cols-1 md:grid-cols-5 gap-4 items-start">
                 {/* Advertiser Info */}
-                <div className="md:col-span-1 space-y-2">
+                <div className="md:col-span-1">
                     <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
+                        <Avatar className="h-10 w-10">
                             <AvatarImage src={advertiser.avatar} />
                             <AvatarFallback>{advertiser.name.substring(0,2)}</AvatarFallback>
                         </Avatar>
-                        <div className="font-bold text-base flex items-center gap-1">
-                            {advertiser.name}
-                            {advertiser.isVerified && <CheckCircle className="h-4 w-4 text-yellow-500" />}
-                        </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground space-y-1.5 pl-10">
-                        <div className="flex items-center gap-2">
-                            <span>{advertiser.orders} orders</span>
-                            <span className="w-px h-3 bg-border" />
-                            <span>{advertiser.completion.toFixed(2)}% completion</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <ThumbsUp className="h-3 w-3" />
-                            <span>{advertiser.rating.toFixed(2)}%</span>
+                        <div className="flex-1">
+                            <div className="font-bold text-base flex items-center gap-1">
+                                {advertiser.name}
+                                {advertiser.isVerified && <CheckCircle className="h-4 w-4 text-yellow-500" />}
+                            </div>
+                            <div className="text-xs text-muted-foreground space-y-1 mt-1">
+                                <div className="flex items-center gap-4">
+                                    <span>Number of completed orders: {advertiser.orders}</span>
+                                    <span>Execution rate: {advertiser.completion.toFixed(2)}%</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    <span>{advertiser.avgReleaseTime} minutes</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -335,4 +341,3 @@ export default function P2PTransferPage() {
     );
 }
 
-    
