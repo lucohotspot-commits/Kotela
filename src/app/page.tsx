@@ -46,7 +46,7 @@ export default function Home() {
               <ShoppingCart className="mr-2" /> Store
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md sm:max-w-4xl h-full sm:h-auto">
+          <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-auto">
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
                 <ShoppingCart />
