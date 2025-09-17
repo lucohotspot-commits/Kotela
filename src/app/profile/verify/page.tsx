@@ -268,14 +268,16 @@ export default function VerifyPage() {
                           {isCompleted ? <Check className="w-5 h-5" /> : item.step}
                       </div>
                       <p className={cn(
-                          "text-xs mt-2",
-                           isCurrent ? "font-bold text-primary" : "text-muted-foreground"
+                          "text-xs mt-2 text-center",
+                           isCurrent ? "font-bold text-primary" : "text-muted-foreground",
+                           "hidden sm:block"
                       )}>{item.title}</p>
                   </div>
                   
                   {index < verificationSteps.length - 1 && (
                       <div className={cn(
-                          "flex-1 h-0.5 mx-4",
+                          "h-0.5 mx-4",
+                          "flex-1",
                           isCompleted ? "bg-primary" : "bg-muted"
                       )}></div>
                   )}
