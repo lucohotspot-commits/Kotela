@@ -246,7 +246,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
       </div>
 
       <div className="relative w-56 h-56 flex items-center justify-center">
-        <svg className="absolute w-[224px] h-[224px] -rotate-90">
+        <svg className={`absolute w-[224px] h-[224px] -rotate-90 transition-all duration-300 ${gameState === 'playing' ? 'animate-glow' : ''}`} style={{ filter: `drop-shadow(0 0 5px hsl(var(--primary)))`}}>
           <circle
             cx="112"
             cy="112"
