@@ -38,8 +38,8 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
       <header className="py-4">
-        <div className="container mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
+        <div className="container mx-auto flex w-full flex-col items-end sm:items-center sm:flex-row justify-between gap-4">
+            <div className="mr-auto">
                  <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">
                     Mine
                 </h1>
@@ -78,7 +78,7 @@ export default function Home() {
 
       <main className="relative flex-grow flex flex-col items-center justify-center">
         <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-16">
-          <div>
+          <div className="relative">
             <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
           </div>
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
