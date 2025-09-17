@@ -89,13 +89,13 @@ body {
 }
 
 @layer utilities {
-  .border, .border-t, .border-b, .border-l, .border-r {
-    border-width: 0.5px;
+  .border, .border-t, .border-l, .border-r {
+    border-width: 0.1px;
   }
   .border-b {
-    border-bottom-width: 0.5px;
+    border-bottom-width: 0.1px;
   }
   .border-t {
-    border-top-width: 0.5px;
+    border-top-width: 0.1px;
   }
 }
