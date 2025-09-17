@@ -168,7 +168,7 @@ export default function P2PTransferPage() {
                             </TabsList>
                         </Tabs>
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-4 overflow-x-auto pb-2 -mb-2">
+                            <div className="flex items-center justify-start sm:justify-end gap-4 overflow-x-auto pb-2 -mb-2">
                                {cryptoCurrencies.map(crypto => (
                                     <Button 
                                         key={crypto}
@@ -226,7 +226,7 @@ export default function P2PTransferPage() {
                                 <SelectItem value="asia">Asia</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Button variant="outline" size="icon" className="hidden md:inline-flex">
+                        <Button variant="outline" size="icon" className="hidden md:flex">
                             <Filter className="h-4 w-4" />
                         </Button>
                     </div>
