@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from "react";
@@ -102,7 +103,7 @@ export function GameEngine() {
         </svg>
         <button
           onClick={handleTap}
-          disabled={gameState !== 'idle'}
+          disabled={gameState === 'ended'}
           className="relative w-48 h-48 bg-background rounded-full text-foreground flex flex-col items-center justify-center text-xl font-bold transition-all duration-300 ease-in-out shadow-lg hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:scale-100 disabled:cursor-not-allowed group data-[state=playing]:bg-background/80"
           aria-label="Game button"
           data-state={gameState}
