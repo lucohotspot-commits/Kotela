@@ -115,7 +115,7 @@ export default function ProfilePage() {
                 <div className="space-y-4 py-4">
                     <div className="flex flex-col items-center justify-center space-y-2">
                         <div className='p-4 bg-card rounded-lg'>
-                            <QrCode className="h-32 w-32 bg-black text-white rounded-md" />
+                            <QrCode className="h-32 w-32 bg-black text-white" />
                         </div>
                         <p className='text-xs text-muted-foreground text-center max-w-xs'>
                             Send only KTC to this deposit address. This address does not support NFT deposits.
@@ -251,20 +251,20 @@ export default function ProfilePage() {
                         <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-xl">
+                <DialogContent className="max-w-md w-full">
                     <DialogHeader>
                         <DialogTitle>Referral Details</DialogTitle>
                         <DialogDescription>
                             Here's a list of users you've referred and the profit you've earned.
                         </DialogDescription>
                     </DialogHeader>
-                    <ScrollArea className='max-h-[50vh]'>
+                    <ScrollArea className='max-h-[60vh]'>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>User</TableHead>
-                                    <TableHead>Date Joined</TableHead>
-                                    <TableHead className="text-right">Profit Earned (KTC)</TableHead>
+                                    <TableHead className="text-xs">User</TableHead>
+                                    <TableHead className="text-xs">Date Joined</TableHead>
+                                    <TableHead className="text-right text-xs">Profit (KTC)</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -272,15 +272,15 @@ export default function ProfilePage() {
                                     <TableRow key={referral.id}>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
-                                                <Avatar>
+                                                <Avatar className="h-8 w-8">
                                                     <AvatarImage src={referral.avatar} alt={referral.user} />
                                                     <AvatarFallback>{referral.user.substring(0,2)}</AvatarFallback>
                                                 </Avatar>
-                                                <span className="font-medium">{referral.user}</span>
+                                                <span className="font-medium text-sm">{referral.user}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-muted-foreground">{referral.date}</TableCell>
-                                        <TableCell className="text-right font-semibold text-green-500">{referral.profit.toFixed(2)}</TableCell>
+                                        <TableCell className="text-muted-foreground text-xs">{referral.date}</TableCell>
+                                        <TableCell className="text-right font-semibold text-green-500 text-sm">{referral.profit.toFixed(2)}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
