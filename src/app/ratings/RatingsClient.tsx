@@ -5,13 +5,13 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TrendingUp, TrendingDown, Minus, Coins, Star } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, ComposedChart, Bar } from 'recharts';
-import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { OrderBook } from '@/components/order-book';
+import { MarketTrades } from '@/components/market-trades';
+import { TopMovers } from '@/components/top-movers';
 
 type CoinData = {
   time: string;
@@ -289,8 +289,8 @@ export default function RatingsClient() {
             </div>
 
         </div>
-        <div className="lg:col-span-3">
-             <Card className="w-full h-full">
+        <div className="lg:col-span-3 space-y-2">
+             <Card className="w-full">
                 <CardHeader className='p-2 border-b'>
                 <CardTitle className="flex items-center gap-2 text-sm">
                     <span>Market</span>
@@ -324,6 +324,8 @@ export default function RatingsClient() {
                 </Table>
                 </CardContent>
             </Card>
+            <MarketTrades selectedCoin={selectedCoin} />
+            <TopMovers />
         </div>
     </div>
   );

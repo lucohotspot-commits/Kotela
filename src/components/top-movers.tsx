@@ -1,0 +1,28 @@
+
+"use client";
+
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+export function TopMovers() {
+
+  return (
+    <Card className="w-full">
+        <CardHeader className='p-2 border-b'>
+            <CardTitle className="text-sm">Top Movers</CardTitle>
+        </CardHeader>
+        <CardContent className='p-2'>
+            <Tabs defaultValue="all" className="w-full">
+                <TabsList className="w-full justify-start h-8 p-0 bg-transparent rounded-none">
+                    <TabsTrigger value="all" className="text-xs px-2 data-[state=active]:bg-muted data-[state=active]:shadow-none">All</TabsTrigger>
+                    <TabsTrigger value="change" className="text-xs px-2 data-[state=active]:bg-muted data-[state=active]:shadow-none">Change</TabsTrigger>
+                    <TabsTrigger value="new" className="text-xs px-2 data-[state=active]:bg-muted data-[state=active]:shadow-none">New High/Low</TabsTrigger>
+                </Tabs>
+            </Tabs>
+            <div className="text-center text-muted-foreground p-8 text-xs">
+                Top Movers data will be displayed here.
+            </div>
+        </CardContent>
+    </Card>
+  );
+}
