@@ -260,6 +260,5 @@ export default function P2PTransferPage() {
                 </CardContent>
             </Card>
         </div>
-    )
-
-    
+    );
+}
