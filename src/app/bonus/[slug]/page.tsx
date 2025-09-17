@@ -109,34 +109,34 @@ const AviatorGame = () => {
   };
 
   return (
-    <div className='flex flex-col gap-4'>
-        <Card>
+    <div className='flex flex-col items-center gap-4'>
+        <Card className="w-full max-w-lg">
             <CardContent className="p-4">
-            <div className="relative aspect-video w-full bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center">
+            <div className="relative aspect-square h-[300px] mx-auto bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center">
                 {/* Grid background */}
                 <div className="absolute inset-0 z-0" style={{ backgroundImage: 'linear-gradient(rgba(128,128,128,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(128,128,128,0.2) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 
                 <div className="absolute inset-0 flex items-center justify-center">
                 {gameState === 'playing' && (
                     <div className="relative">
-                    <Plane className="h-16 w-16 text-primary transform -rotate-45 animate-pulse" />
-                    <p className="absolute -top-8 left-1/2 -translate-x-1/2 text-2xl font-bold text-primary">{multiplier.toFixed(2)}x</p>
+                    <Plane className="h-12 w-12 text-primary transform -rotate-45 animate-pulse" />
+                    <p className="absolute -top-8 left-1/2 -translate-x-1/2 text-xl font-bold text-primary">{multiplier.toFixed(2)}x</p>
                     </div>
                 )}
                 {gameState === 'waiting' && (
-                    <p className="text-2xl font-semibold text-muted-foreground">Waiting for next round...</p>
+                    <p className="text-xl font-semibold text-muted-foreground">Waiting for next round...</p>
                 )}
                 {gameState === 'crashed' && (
                     <div className="text-center">
-                    <p className="text-4xl font-bold text-destructive">Flew Away!</p>
-                    <p className="text-lg text-muted-foreground">Multiplier: {multiplier.toFixed(2)}x</p>
+                    <p className="text-3xl font-bold text-destructive">Flew Away!</p>
+                    <p className="text-md text-muted-foreground">Multiplier: {multiplier.toFixed(2)}x</p>
                     </div>
                 )}
                 </div>
             </div>
             </CardContent>
         </Card>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
             <Card className="flex-1">
             <CardHeader className="pb-2">
                 <CardTitle className="text-base">Bet Controls</CardTitle>
@@ -149,17 +149,17 @@ const AviatorGame = () => {
                     <Coins className="text-yellow-500" />
                 </div>
                 {gameState === 'waiting' && (
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white text-lg h-12" onClick={handleBet}>
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleBet}>
                     Bet
                 </Button>
                 )}
                 {gameState === 'playing' && (
-                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black text-lg h-12" onClick={handleCashOut}>
+                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleCashOut}>
                         Cash Out
                     </Button>
                 )}
                 {gameState === 'crashed' && (
-                <Button className="w-full text-lg h-12" onClick={handleReset} variant="secondary">
+                <Button className="w-full" onClick={handleReset} variant="secondary">
                     Play Again
                 </Button>
                 )}
