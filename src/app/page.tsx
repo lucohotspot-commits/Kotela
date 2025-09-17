@@ -46,7 +46,17 @@ export default function Home() {
                  <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">
                     Mine
                 </h1>
-                <p className="text-sm text-muted-foreground max-w-xs">
+                <div className="flex items-center gap-2 mt-1">
+                    <MapPin className="w-4 h-4 text-muted-foreground" />
+                    {userLocation.loading ? (
+                        <Skeleton className="h-4 w-32" />
+                    ) : userLocation.error ? (
+                        <p className="text-xs text-destructive">{userLocation.error}</p>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">{userLocation.displayLocation}</p>
+                    )}
+                </div>
+                <p className="text-sm text-muted-foreground max-w-xs mt-2">
                     Tap the coin to start mining. Use boosts to get a high score!
                 </p>
             </div>
@@ -87,18 +97,6 @@ export default function Home() {
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
           <div className="w-full max-w-md flex flex-col gap-6">
             <Leaderboard scores={scores} />
-             <div className="p-4 border rounded-lg">
-                <h3 className="text-base font-semibold mb-2 flex items-center gap-2"><MapPin/> Location</h3>
-                {userLocation.loading ? (
-                  <Skeleton className="h-4 w-48" />
-                ) : userLocation.error ? (
-                  <p className="text-xs text-destructive">{userLocation.error}</p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    Lat: {userLocation.latitude?.toFixed(4)}, Lon: {userLocation.longitude?.toFixed(4)}
-                  </p>
-                )}
-            </div>
             <div className="p-4 border rounded-lg">
                 <h3 className="text-base font-semibold mb-1 flex items-center gap-2"><Rocket/> My Boosts</h3>
                 <p className="text-xs text-muted-foreground mb-3">Activate these power-ups during a game by clicking the buttons below the mining coin.</p>
