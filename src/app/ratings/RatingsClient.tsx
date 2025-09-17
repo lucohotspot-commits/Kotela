@@ -157,7 +157,7 @@ export default function RatingsClient() {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="p-2 text-xs bg-background/90 border-border rounded-none text-foreground">
+        <div className="p-2 text-xs bg-background/90 border rounded-none text-foreground">
           <p>{`Time: ${label}`}</p>
           <p className="text-green-500">{`Open: ${data.open.toFixed(4)}`}</p>
           <p className="text-green-500">{`High: ${data.high.toFixed(4)}`}</p>
@@ -181,11 +181,11 @@ export default function RatingsClient() {
 
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
         <div className="lg:col-span-3 hidden lg:block">
             <OrderBook selectedCoin={selectedCoin} />
         </div>
-        <div className="lg:col-span-6 space-y-2">
+        <div className="lg:col-span-6 space-y-0">
             <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 p-2">
                 <div className='flex items-center gap-2'>
                     <h1 className="text-xl font-bold">{selectedCoin.symbol}/USDT</h1>
@@ -231,16 +231,19 @@ export default function RatingsClient() {
                         <Bar yAxisId="price" dataKey="close" barSize={1} shape={(props) => {
                             const { x, y, width, height, payload } = props;
                             const isUp = payload.close > payload.open;
-                            const color = isUp ? '#22c55e' : '#ef4444';
+                            const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-5))';
+                            const candleWidth = 4;
+                            const candleX = (x ?? 0) + (width ?? 0)/2 - candleWidth/2;
+
                             return <>
-                                <rect x={x} y={isUp ? y : y + height} width={width} height={Math.abs(height)} fill={color} />
-                                <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke={color} strokeWidth={1}/>
+                                <rect x={candleX} y={isUp ? y : (y ?? 0) + (height ?? 0)} width={candleWidth} height={Math.abs(height ?? 0)} fill={color} />
+                                <line x1={(x ?? 0) + (width ?? 0) / 2} y1={payload.high > payload.low ? (isUp ? y : (y ?? 0) + (height ?? 0)) : y} x2={(x ?? 0) + (width ?? 0) / 2} y2={(y ?? 0) + height} stroke={color} strokeWidth={1}/>
                             </>
                         }} />
 
                         <Bar yAxisId="volume" dataKey="volume" barSize={10} >
                           {chartData.map((entry, index) => (
-                            <rect key={`cell-${index}`} fill={entry.close > entry.open ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}/>
+                            <rect key={`cell-${index}`} fill={entry.close > entry.open ? 'hsla(var(--chart-2), 0.4)' : 'hsla(var(--chart-5), 0.4)'}/>
                           ))}
                         </Bar>
                     </ComposedChart>
@@ -272,23 +275,23 @@ export default function RatingsClient() {
                     <p className='text-xs text-muted-foreground'>Avbl: 0.00000000 {selectedCoin.symbol}</p>
                     <div className='relative'>
                         <Input type="text" placeholder='Price' defaultValue={selectedCoin.price.toFixed(4)} className='pr-16' />
-                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
+                        <span className='absolute right-3 top-1/2 -translate-y-1'2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
                     <div className='relative'>
                         <Input type="number" placeholder='Amount' className='pr-16' />
-                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>{selectedCoin.symbol}</span>
+                        <span className='absolute right-3 top-1/2 -translate-y-1'2 text-xs font-semibold text-muted-foreground'>{selectedCoin.symbol}</span>
                     </div>
                     <Slider defaultValue={[50]} max={100} step={1} />
                      <div className='relative'>
                         <Input type="number" placeholder='Total' className='pr-16' />
-                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
+                        <span className='absolute right-3 top-1/2 -translate-y-1'2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
                     <Button className="w-full" variant="destructive">Sell {selectedCoin.symbol}</Button>
                 </div>
             </div>
 
         </div>
-        <div className="lg:col-span-3 space-y-2">
+        <div className="lg:col-span-3 space-y-2 border-l pl-2">
             <div className="border-b">
                 <div className='p-2'>
                     <h3 className="font-semibold text-sm">Market</h3>
@@ -327,3 +330,5 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
