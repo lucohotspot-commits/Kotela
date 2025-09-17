@@ -71,169 +71,205 @@ const videos = [
 ]
 
 const AviatorGame = () => {
-  const [multiplier, setMultiplier] = useState(1.00);
-  const [gameState, setGameState] = useState<'waiting' | 'playing' | 'crashed'>('waiting');
-  const [flightTime, setFlightTime] = useState(0); // in ms
+    const { toast } = useToast();
+    const [multiplier, setMultiplier] = useState(1.00);
+    const [gameState, setGameState] = useState<'waiting' | 'playing' | 'cashed_out' | 'crashed'>('waiting');
+    const [flightTime, setFlightTime] = useState(0);
+    const [betAmount, setBetAmount] = useState(10);
+    const [balance, setBalance] = useState(0);
+    const [cashOutMultiplier, setCashOutMultiplier] = useState(0);
 
-  useEffect(() => {
-    let gameLoop: NodeJS.Timeout;
-    if (gameState === 'playing') {
-      const startTime = Date.now();
-      const crashPoint = (Math.random() * 10 + 2) * 1000; // Plane flies away after 2-12 seconds
+    const refreshBalance = useCallback(() => {
+        setBalance(getCurrency());
+    }, []);
 
-      gameLoop = setInterval(() => {
-        const elapsedTime = Date.now() - startTime;
-        setFlightTime(elapsedTime);
-        
-        const newMultiplier = 1 + (elapsedTime / 1000) * 0.2 + (elapsedTime / 5000) ** 2;
-        setMultiplier(newMultiplier);
+    useEffect(() => {
+        refreshBalance();
+        window.addEventListener('storage', refreshBalance);
+        return () => window.removeEventListener('storage', refreshBalance);
+    }, [refreshBalance]);
 
-        if (elapsedTime >= crashPoint) {
-            setGameState('crashed');
-            clearInterval(gameLoop);
+    useEffect(() => {
+        let gameLoop: NodeJS.Timeout;
+        if (gameState === 'playing') {
+            const startTime = Date.now();
+            const crashPoint = (Math.random() * 10 + 2) * 1000;
+
+            gameLoop = setInterval(() => {
+                const elapsedTime = Date.now() - startTime;
+                setFlightTime(elapsedTime);
+
+                const newMultiplier = 1 + (elapsedTime / 1000) * 0.2 + (elapsedTime / 5000) ** 2;
+                setMultiplier(newMultiplier);
+
+                if (elapsedTime >= crashPoint) {
+                    setGameState('crashed');
+                    clearInterval(gameLoop);
+                }
+            }, 50);
+        } else if (gameState === 'waiting') {
+            setMultiplier(1.00);
+            setFlightTime(0);
+            setCashOutMultiplier(0);
         }
-      }, 50);
-    } else {
-      setMultiplier(1.00);
-      setFlightTime(0);
+        return () => clearInterval(gameLoop);
+    }, [gameState]);
+
+    const handleBet = () => {
+        if (balance < betAmount) {
+            toast({ variant: 'destructive', title: "Not enough coins", description: `You need ${betAmount.toLocaleString()} coins to play.` });
+            return;
+        }
+        spendCurrency(betAmount);
+        refreshBalance();
+        setGameState('playing');
+    };
+
+    const handleCashOut = () => {
+        const winnings = betAmount * multiplier;
+        addCurrency(winnings);
+        refreshBalance();
+        setCashOutMultiplier(multiplier);
+        setGameState('cashed_out');
+        toast({
+            title: `Cashed out at ${multiplier.toFixed(2)}x!`,
+            description: `You won ${winnings.toLocaleString()} coins.`,
+        });
     }
-    return () => clearInterval(gameLoop);
-  }, [gameState]);
 
-  const handleBet = () => {
-    setGameState('playing');
-  };
+    const handleReset = () => {
+        setGameState('waiting');
+    };
 
-  const handleCashOut = () => {
-    // In a real game, you would reward the player here based on the multiplier
-    setGameState('waiting');
-  }
+    const handleBetChange = (amount: number) => {
+        setBetAmount(prev => Math.max(1, prev + amount));
+    }
 
-  const handleReset = () => {
-    setGameState('waiting');
-  };
+    const planeX = Math.min(100, (flightTime / 8000) * 100);
+    const planeY = 100 - Math.pow(planeX / 100, 0.5) * 80;
 
-  // plane position based on time
-  const planeX = Math.min(100, (flightTime / 5000) * 100);
-  const planeY = 100 - Math.pow(planeX / 100, 0.5) * 80;
+    const multiplierFontSize = Math.min(10, 2 + multiplier / 5);
 
-  const multiplierFontSize = Math.min(10, 2 + multiplier / 5);
+    return (
+        <div className='flex flex-col items-center gap-4'>
+            <Card className="w-full max-w-4xl overflow-hidden">
+                <CardContent className="p-0">
+                    <div className="relative w-full aspect-video bg-[#1e2024] flex items-center justify-center overflow-hidden">
+                        <div
+                            className="absolute inset-0 bg-transparent"
+                            style={{
+                                backgroundImage: `
+                                    radial-gradient(ellipse at 50% 120%, hsla(0,0%,100%,0.05) 0%, transparent 40%),
+                                    radial-gradient(circle at 50% 120%, transparent 20%, #1e2024 20.5%, #1e2024 30%, transparent 30.5%, transparent 100%)
+                                `,
+                                backgroundSize: '100% 100%, 80px 80px',
+                            }}
+                        ></div>
 
-  return (
-    <div className='flex flex-col items-center gap-4'>
-        <Card className="w-full max-w-4xl overflow-hidden">
-            <CardContent className="p-0">
-            <div className="relative w-full aspect-video bg-[#1e2024] flex items-center justify-center overflow-hidden">
-                {/* Starburst Background */}
-                <div 
-                    className="absolute inset-0 bg-transparent" 
-                    style={{
-                        backgroundImage: `
-                            radial-gradient(ellipse at 50% 120%, hsla(0,0%,100%,0.05) 0%, transparent 40%),
-                            radial-gradient(circle at 50% 120%, transparent 20%, #1e2024 20.5%, #1e2024 30%, transparent 30.5%, transparent 100%)
-                        `,
-                        backgroundSize: '100% 100%, 80px 80px',
-                    }}
-                ></div>
-
-                 <div className="absolute inset-0 flex items-center justify-center">
-                    {gameState === 'waiting' && (
-                        <p className="text-xl font-semibold text-muted-foreground animate-pulse">Waiting for next round...</p>
-                    )}
-                    {gameState === 'crashed' && (
-                        <div className="text-center z-20">
-                            <p className="text-3xl font-bold text-destructive">Flew Away!</p>
-                            <p className="text-2xl text-white font-bold">{multiplier.toFixed(2)}x</p>
+                        <div className="absolute inset-0 flex items-center justify-center z-20">
+                            {gameState === 'waiting' && (
+                                <p className="text-xl font-semibold text-muted-foreground animate-pulse">Waiting for next round...</p>
+                            )}
+                             {gameState === 'cashed_out' && (
+                                <div className="text-center">
+                                    <p className="text-2xl text-green-400 font-bold">You Cashed Out!</p>
+                                    <p className="text-5xl text-white font-bold">{cashOutMultiplier.toFixed(2)}x</p>
+                                </div>
+                            )}
+                            {gameState === 'crashed' && (
+                                <div className="text-center">
+                                    <p className="text-3xl font-bold text-destructive">Flew Away!</p>
+                                    <p className="text-2xl text-white font-bold">{multiplier.toFixed(2)}x</p>
+                                </div>
+                            )}
+                            {(gameState === 'playing') && (
+                                <p
+                                    className="text-white font-bold transition-all duration-100"
+                                    style={{ fontSize: `${multiplierFontSize}rem` }}
+                                >
+                                    {multiplier.toFixed(2)}x
+                                </p>
+                            )}
                         </div>
-                    )}
-                    {(gameState === 'playing' || gameState === 'crashed') && (
-                        <p 
-                            className="text-white font-bold transition-all duration-100"
-                            style={{ fontSize: `${multiplierFontSize}rem`, opacity: gameState === 'crashed' ? 0 : 1 }}
-                        >
-                            {multiplier.toFixed(2)}x
-                        </p>
-                    )}
-                </div>
 
-                {gameState === 'playing' && (
-                  <div 
-                    className="absolute h-full w-full"
-                  >
-                    <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
-                        <path 
-                            d={`M 0 100 C 30 100, 70 60, 100 20`}
-                            stroke="#ef4444"
-                            strokeWidth="0.5"
-                            fill="none"
-                            strokeDasharray="1"
-                            strokeDashoffset={`${1 - (planeX/100)}`}
-                            style={{ strokeDashoffset: `${1 - (planeX/100)}` }}
-                            pathLength="1"
-                        />
-                    </svg>
-                     <Plane 
-                        className="h-8 w-8 text-red-500 absolute bottom-0 left-0 transform -translate-y-1/2 -translate-x-1/2 transition-all ease-linear duration-[50ms]" 
-                        style={{ left: `${planeX}%`, bottom: `${100 - planeY}%`, transform: `rotate(${-(planeX/2)}deg)` }}
-                    />
-                  </div>
-                )}
-               
+                        {(gameState === 'playing' || gameState === 'crashed' || gameState === 'cashed_out') && (
+                            <div className="absolute h-full w-full">
+                                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
+                                    <path
+                                        d={`M 0 100 C 30 100, 70 60, 100 20`}
+                                        stroke={gameState === 'crashed' ? "#ef4444" : "#facc15"}
+                                        strokeWidth="0.5"
+                                        fill="none"
+                                        strokeDasharray="1"
+                                        strokeDashoffset={1 - (planeX / 100)}
+                                        pathLength="1"
+                                    />
+                                </svg>
+                                <Plane
+                                    className={cn("h-8 w-8 text-red-500 absolute bottom-0 left-0 transform transition-all ease-linear duration-[50ms]", gameState === 'cashed_out' && 'opacity-50')}
+                                    style={{
+                                        left: `${planeX}%`,
+                                        bottom: `${100 - planeY}%`,
+                                        transform: `rotate(${-(planeX / 2)}deg)  translate(-50%, 50%)`,
+                                    }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
+                <Card className="flex-1">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Bet Controls</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center space-x-2">
+                            <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={gameState !== 'waiting'}>-</Button>
+                            <Input value={betAmount.toLocaleString()} className="text-center" readOnly />
+                            <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={gameState !== 'waiting'}>+</Button>
+                            <Coins className="text-yellow-500" />
+                        </div>
+                        {gameState === 'waiting' && (
+                            <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleBet} disabled={betAmount <= 0 || balance < betAmount}>
+                                Bet
+                            </Button>
+                        )}
+                        {gameState === 'playing' && (
+                            <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleCashOut}>
+                                Cash Out
+                            </Button>
+                        )}
+                        {(gameState === 'crashed' || gameState === 'cashed_out') && (
+                            <Button className="w-full" onClick={handleReset} variant="secondary">
+                                Play Again
+                            </Button>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card className="flex-1">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Auto Play</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="auto-bet">Auto Bet</Label>
+                            <Switch id="auto-bet" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="auto-cashout">Auto Cashout</Label>
+                            <Switch id="auto-cashout" />
+                        </div>
+                        <div className='relative'>
+                            <Input type="text" placeholder='Multiplier' defaultValue={"1.50"} />
+                            <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>x</span>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
-            </CardContent>
-        </Card>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
-            <Card className="flex-1">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-base">Bet Controls</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">-</Button>
-                    <Input defaultValue="1.00" className="text-center" />
-                    <Button variant="outline" size="sm">+</Button>
-                    <Coins className="text-yellow-500" />
-                </div>
-                {gameState === 'waiting' && (
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleBet}>
-                    Bet
-                </Button>
-                )}
-                {gameState === 'playing' && (
-                    <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleCashOut}>
-                        Cash Out
-                    </Button>
-                )}
-                {gameState === 'crashed' && (
-                <Button className="w-full" onClick={handleReset} variant="secondary">
-                    Play Again
-                </Button>
-                )}
-            </CardContent>
-            </Card>
-            
-            <Card className="flex-1">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-base">Auto Play</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                <Label htmlFor="auto-bet">Auto Bet</Label>
-                <Switch id="auto-bet" />
-                </div>
-                <div className="flex items-center justify-between">
-                <Label htmlFor="auto-cashout">Auto Cashout</Label>
-                <Switch id="auto-cashout" />
-                </div>
-                <div className='relative'>
-                    <Input type="text" placeholder='Multiplier' defaultValue={"1.50"} />
-                    <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>x</span>
-                </div>
-            </CardContent>
-            </Card>
         </div>
-    </div>
-  );
+    );
 }
 
 const VideoPlayGame = () => {
