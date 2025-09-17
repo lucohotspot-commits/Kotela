@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TrendingUp, TrendingDown, Minus, Coins, Star } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, ComposedChart, Bar } from 'recharts';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from '@/components/ui/button';
@@ -13,15 +13,25 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { OrderBook } from '@/components/order-book';
 
+type CoinData = {
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+};
+
 type Coin = {
   name: string;
   symbol: string;
   price: number;
   change: number;
   high: number;
+
   low: number;
   volume: number;
-  history: { time: string; price: number }[];
+  history: CoinData[];
 };
 
 const initialCoinsData: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>[] = [
@@ -35,19 +45,31 @@ const initialCoinsData: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volu
 ];
 
 function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>): Coin {
-    const history = Array.from({ length: 30 }, (_, i) => {
-        const price = coin.price * (1 + (Math.random() - 0.5) * 0.02);
-        return { time: new Date(Date.now() - (30 - i) * 2000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), price };
-    });
-    const prices = history.map(h => h.price);
+    const history: CoinData[] = [];
+    let lastClose = coin.price;
+
+    for (let i = 0; i < 30; i++) {
+        const open = lastClose;
+        const change = (Math.random() - 0.5) * 0.05 * open;
+        const close = open + change;
+        const high = Math.max(open, close) * (1 + Math.random() * 0.02);
+        const low = Math.min(open, close) * (1 - Math.random() * 0.02);
+        const volume = Math.random() * 1000;
+        const time = new Date(Date.now() - (30 - i) * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        history.push({ time, open, high, low, close, volume });
+        lastClose = close;
+    }
+
+    const prices = history.map(h => h.close);
     return {
         ...coin,
         history,
         price: prices[prices.length - 1],
-        change: prices.length > 1 ? prices[prices.length - 1] - prices[0] : 0,
-        high: Math.max(...prices),
-        low: Math.min(...prices),
-        volume: Math.random() * 1000000,
+        change: prices.length > 1 ? prices[prices.length - 1] - history[0].open : 0,
+        high: Math.max(...history.map(h => h.high)),
+        low: Math.min(...history.map(h => h.low)),
+        volume: history.reduce((acc, h) => acc + h.volume, 0),
     };
 }
 
@@ -67,22 +89,28 @@ export default function RatingsClient() {
       prevCoins.map(coin => {
         if (!coin.history || coin.history.length === 0) return coin;
         
-        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const changeFactor = Math.random() * 0.02 - 0.01; // Fluctuate by up to 1%
-        const newPrice = Math.max(0.01, coin.price * (1 + changeFactor));
-        const newHistory = [...coin.history, { time: now, price: newPrice }].slice(-30);
+        const lastData = coin.history[coin.history.length - 1];
+        const open = lastData.close;
+        const change = (Math.random() - 0.5) * 0.05 * open;
+        const close = open + change;
+        const high = Math.max(open, close) * (1 + Math.random() * 0.02);
+        const low = Math.min(open, close) * (1 - Math.random() * 0.02);
+        const volume = Math.random() * 1000;
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
-        const prices = newHistory.map(h => h.price);
-        const firstPrice = newHistory[0].price;
+        const newHistory: CoinData[] = [...coin.history, { time, open, high, low, close, volume }].slice(-30);
+        
+        const prices = newHistory.map(h => h.close);
+        const firstOpen = newHistory[0].open;
 
-        const updatedCoin = {
+        const updatedCoin: Coin = {
           ...coin,
-          price: newPrice,
-          change: newPrice - firstPrice,
+          price: close,
+          change: close - firstOpen,
           history: newHistory,
-          high: Math.max(...prices),
-          low: Math.min(...prices),
-          volume: coin.volume + Math.random() * 1000,
+          high: Math.max(...newHistory.map(h => h.high)),
+          low: Math.min(...newHistory.map(h => h.low)),
+          volume: newHistory.reduce((acc, h) => acc + h.volume, 0),
         };
         
         if (selectedCoin && coin.symbol === selectedCoin.symbol) {
@@ -116,12 +144,29 @@ export default function RatingsClient() {
   const chartData = useMemo(() => selectedCoin?.history || [], [selectedCoin]);
   const chartDomain: [number, number] = useMemo(() => {
     if (!chartData || chartData.length === 0) return [0, 0];
-    const prices = chartData.map(d => d.price);
+    const prices = chartData.map(d => d.high).concat(chartData.map(d => d.low));
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const padding = (max - min) * 0.2 || max * 0.1;
     return [Math.max(0, min - padding), max + padding];
   }, [chartData]);
+  
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="p-2 text-xs bg-background/90 border border-border rounded-none text-foreground">
+          <p>{`Time: ${label}`}</p>
+          <p className="text-green-500">{`Open: ${data.open.toFixed(4)}`}</p>
+          <p className="text-green-500">{`High: ${data.high.toFixed(4)}`}</p>
+          <p className="text-red-500">{`Low: ${data.low.toFixed(4)}`}</p>
+          <p className={data.close > data.open ? 'text-green-500' : 'text-red-500'}>{`Close: ${data.close.toFixed(4)}`}</p>
+          <p>{`Volume: ${data.volume.toFixed(2)}`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
 
   if (!selectedCoin) {
@@ -156,57 +201,50 @@ export default function RatingsClient() {
                     <p><span className='text-muted-foreground'>24h Volume({selectedCoin.symbol}):</span> <span>{selectedCoin.volume.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
                 </div>
             </header>
-            <Card className="w-full">
-                <CardContent className="p-0 sm:p-1">
-                <ChartContainer config={{
-                    price: { label: 'Price', color: 'hsl(var(--primary))' },
-                }} className="h-[250px] w-full">
-                    <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                    <defs>
-                        <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-muted/50" />
-                    <XAxis 
-                        dataKey="time" 
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={8}
-                        tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
-                        className="text-xs"
-                    />
-                    <YAxis 
-                        domain={chartDomain}
-                        tickLine={false}
-                        axisLine={false}
-                        tickMargin={8}
-                        tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
-                        width={80}
-                        className="text-xs"
-                    />
-                    <Tooltip
-                        cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
-                        content={<ChartTooltipContent indicator="dot" labelKey='price'
-                        formatter={(value, name, props) => (
-                            <div className='flex flex-col gap-0.5'>
-                                <span className='font-bold'>${Number(value).toFixed(4)}</span>
-                                <span className='text-xs text-muted-foreground'>{props.payload.time}</span>
-                            </div>
-                        )}
-                        />}
-                    />
-                    <Area 
-                        dataKey="price" 
-                        type="natural" 
-                        fill="url(#chartGradient)"
-                        stroke="hsl(var(--primary))" 
-                        strokeWidth={2}
-                        dot={false}
-                    />
-                    </AreaChart>
-                </ChartContainer>
+            <Card className="w-full bg-transparent">
+                <CardContent className="p-0 sm:p-1 h-[250px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis 
+                            dataKey="time" 
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
+                            className="text-xs fill-muted-foreground"
+                        />
+                        <YAxis 
+                            yAxisId="price"
+                            orientation="right"
+                            domain={chartDomain}
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
+                            width={80}
+                            className="text-xs fill-muted-foreground"
+                        />
+                        <YAxis yAxisId="volume" orientation="right" domain={[0, 'dataMax * 4']} tickLine={false} axisLine={false} tick={false} />
+                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
+                        
+                        <Bar yAxisId="price" dataKey="close" barSize={1} shape={(props) => {
+                            const { x, y, width, height, payload } = props;
+                            const isUp = payload.close > payload.open;
+                            const color = isUp ? '#22c55e' : '#ef4444';
+                            return <>
+                                <rect x={x} y={isUp ? y : y + height} width={width} height={Math.abs(height)} fill={color} />
+                                <line x1={x + width / 2} y1={y} x2={x + width / 2} y2={y + height} stroke={color} strokeWidth={1}/>
+                            </>
+                        }} />
+
+                        <Bar yAxisId="volume" dataKey="volume" barSize={10} >
+                          {chartData.map((entry, index) => (
+                            <rect key={`cell-${index}`} fill={entry.close > entry.open ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}/>
+                          ))}
+                        </Bar>
+                    </ComposedChart>
+                </ResponsiveContainer>
                 </CardContent>
             </Card>
             
