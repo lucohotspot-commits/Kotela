@@ -53,7 +53,7 @@ const gameDetails: { [key: string]: { name: string; description: string, icon: R
   },
   'coin-flip': {
     name: 'Coin Flip',
-    description: 'Double or nothing! Flip a coin to test your luck.',
+    description: 'A quick bonus! Flip a coin to test your luck.',
     icon: <CircleDollarSign className="h-6 w-6" />
   },
   'lucky-dice': {
@@ -100,7 +100,7 @@ const AviatorGame = () => {
                 const elapsedTime = Date.now() - startTime;
                 setFlightTime(elapsedTime);
 
-                const newMultiplier = 1 + (elapsedTime / 1500) * 0.2 + (elapsedTime / 7000) ** 2;
+                const newMultiplier = 1 + (elapsedTime / 2500) * 0.2 + (elapsedTime / 10000) ** 2;
                 setMultiplier(newMultiplier);
 
                 if (elapsedTime >= crashPoint) {
@@ -151,6 +151,7 @@ const AviatorGame = () => {
 
     useEffect(() => {
         const getPathData = (progress: number) => {
+            if (typeof document === 'undefined') return { path: '', point: { x: 0, y: 100 } };
             const width = 100;
             const height = 100;
             const controlX1 = width * 0.3;
@@ -184,128 +185,130 @@ const AviatorGame = () => {
 
     return (
         <div className='flex flex-col items-center gap-4'>
-            <Card className="w-full max-w-4xl overflow-hidden">
-                <CardContent className="p-0">
-                    <div className="relative w-full aspect-video bg-[#0f1923] flex items-center justify-center overflow-hidden">
-                        <div className="absolute inset-0 bg-transparent"
-                            style={{ 
-                                backgroundImage: 'radial-gradient(ellipse at 5% 100%, hsl(207 30% 25% / 0.3), transparent 40%), conic-gradient(from 180deg at 0% 100%, hsl(0 0% 5% / 0.9), hsl(0 0% 5% / 0.5) 10deg, transparent 35deg)',
-                            }}
-                        ></div>
-                        
-                        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                            {gameState === 'waiting' && (
-                                <p className="text-xl font-semibold text-muted-foreground animate-pulse">Waiting for next round...</p>
-                            )}
-                             {gameState === 'cashed_out' && (
-                                <div className="text-center">
-                                    <p className="text-2xl text-green-400 font-bold">You Cashed Out!</p>
-                                    <p className="text-5xl text-white font-bold">{cashOutMultiplier.toFixed(2)}x</p>
-                                </div>
-                            )}
-                            {gameState === 'crashed' && (
-                                <div className="text-center flex flex-col items-center">
-                                    <p className="text-2xl text-destructive font-bold">Flew Away!</p>
-                                    <p className="text-4xl text-white font-bold">{multiplier.toFixed(2)}x</p>
-                                </div>
-                            )}
-                            {(gameState === 'playing') && (
-                                <p
-                                    className="text-white font-bold transition-all duration-100"
-                                    style={{ fontSize: `${multiplierFontSize}rem` }}
-                                >
-                                    {multiplier.toFixed(2)}x
-                                </p>
-                            )}
-                        </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-6xl">
+                <Card className="w-full md:col-span-2 overflow-hidden">
+                    <CardContent className="p-0">
+                        <div className="relative w-full aspect-video bg-[#0f1923] flex items-center justify-center overflow-hidden">
+                            <div className="absolute inset-0 bg-transparent"
+                                style={{ 
+                                    backgroundImage: 'radial-gradient(ellipse at 5% 100%, hsl(207 30% 25% / 0.3), transparent 40%), conic-gradient(from 180deg at 0% 100%, hsl(0 0% 5% / 0.9), hsl(0 0% 5% / 0.5) 10deg, transparent 35deg)',
+                                }}
+                            ></div>
+                            
+                            <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                {gameState === 'waiting' && (
+                                    <p className="text-xl font-semibold text-muted-foreground animate-pulse">Waiting for next round...</p>
+                                )}
+                                {gameState === 'cashed_out' && (
+                                    <div className="text-center">
+                                        <p className="text-2xl text-green-400 font-bold">You Cashed Out!</p>
+                                        <p className="text-5xl text-white font-bold">{cashOutMultiplier.toFixed(2)}x</p>
+                                    </div>
+                                )}
+                                {gameState === 'crashed' && (
+                                    <div className="text-center flex flex-col items-center">
+                                        <p className="text-2xl text-destructive font-bold">Flew Away!</p>
+                                        <p className="text-4xl text-white font-bold">{multiplier.toFixed(2)}x</p>
+                                    </div>
+                                )}
+                                {(gameState === 'playing') && (
+                                    <p
+                                        className="text-white font-bold transition-all duration-100"
+                                        style={{ fontSize: `${multiplierFontSize}rem` }}
+                                    >
+                                        {multiplier.toFixed(2)}x
+                                    </p>
+                                )}
+                            </div>
 
-                        {(gameState === 'playing' || gameState === 'cashed_out') && (
-                            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
-                                <defs>
-                                    <linearGradient id="glow" x1="0" x2="0" y1="0" y2="1">
-                                        <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
-                                        <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
-                                    </linearGradient>
-                                     <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-                                        <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
-                                    </filter>
-                                </defs>
-                                <path
-                                    d={flightPath + ` L ${planePosition.x} 100 L 0 100 Z`}
-                                    fill="rgba(239, 68, 68, 0.2)"
-                                />
-                                <path
-                                    d={flightPath}
-                                    stroke={"#ef4444"}
-                                    strokeWidth="0.5"
-                                    fill="none"
-                                />
-                                <path
-                                    d={flightPath}
-                                    stroke="url(#glow)"
-                                    strokeWidth="1.5"
-                                    fill="none"
-                                    filter="url(#glow-filter)"
-                                />
-                                <g transform={`translate(${planePosition.x}, ${planePosition.y}) rotate(${planeRotation})`}>
-                                     <Plane
-                                        className={cn("h-4 w-4 text-red-500 transition-all ease-linear duration-[50ms]", gameState === 'cashed_out' && 'opacity-50')}
+                            {(gameState === 'playing' || gameState === 'cashed_out') && (
+                                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
+                                    <defs>
+                                        <linearGradient id="glow" x1="0" x2="0" y1="0" y2="1">
+                                            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+                                            <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+                                        </linearGradient>
+                                        <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
+                                            <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
+                                        </filter>
+                                    </defs>
+                                    <path
+                                        d={flightPath + ` L ${planePosition.x} 100 L 0 100 Z`}
+                                        fill="rgba(239, 68, 68, 0.2)"
                                     />
-                                </g>
-                            </svg>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-lg">
-                <Card className="flex-1">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Bet Controls</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center space-x-2">
-                            <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={gameState !== 'waiting'}>-</Button>
-                            <Input value={betAmount.toLocaleString()} className="text-center" readOnly />
-                            <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={gameState !== 'waiting'}>+</Button>
-                            <Coins className="text-yellow-500" />
+                                    <path
+                                        d={flightPath}
+                                        stroke={"#ef4444"}
+                                        strokeWidth="0.5"
+                                        fill="none"
+                                    />
+                                    <path
+                                        d={flightPath}
+                                        stroke="url(#glow)"
+                                        strokeWidth="1.5"
+                                        fill="none"
+                                        filter="url(#glow-filter)"
+                                    />
+                                    <g transform={`translate(${planePosition.x}, ${planePosition.y}) rotate(${planeRotation})`}>
+                                        <Plane
+                                            className={cn("h-4 w-4 text-red-500 transition-all ease-linear duration-[50ms]", gameState === 'cashed_out' && 'opacity-50')}
+                                        />
+                                    </g>
+                                </svg>
+                            )}
                         </div>
-                        {gameState === 'waiting' && (
-                            <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleBet} disabled={betAmount <= 0 || balance < betAmount}>
-                                Bet
-                            </Button>
-                        )}
-                        {gameState === 'playing' && (
-                            <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleCashOut}>
-                                Cash Out
-                            </Button>
-                        )}
-                        {(gameState === 'crashed' || gameState === 'cashed_out') && (
-                            <Button className="w-full" onClick={handleReset} variant="secondary">
-                                Play Again
-                            </Button>
-                        )}
                     </CardContent>
                 </Card>
+                <div className="w-full md:col-span-1 space-y-4">
+                    <Card className="flex-1">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Bet Controls</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center space-x-2">
+                                <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={gameState !== 'waiting'}>-</Button>
+                                <Input value={betAmount.toLocaleString()} className="text-center" readOnly />
+                                <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={gameState !== 'waiting'}>+</Button>
+                                <Coins className="text-yellow-500" />
+                            </div>
+                            {gameState === 'waiting' && (
+                                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleBet} disabled={betAmount <= 0 || balance < betAmount}>
+                                    Bet
+                                </Button>
+                            )}
+                            {gameState === 'playing' && (
+                                <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleCashOut}>
+                                    Cash Out
+                                </Button>
+                            )}
+                            {(gameState === 'crashed' || gameState === 'cashed_out') && (
+                                <Button className="w-full" onClick={handleReset} variant="secondary">
+                                    Play Again
+                                </Button>
+                            )}
+                        </CardContent>
+                    </Card>
 
-                <Card className="flex-1">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-base">Auto Play</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between">
-                            <Label htmlFor="auto-bet">Auto Bet</Label>
-                            <Switch id="auto-bet" />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <Label htmlFor="auto-cashout">Auto Cashout</Label>
-                            <Switch id="auto-cashout" />
-                        </div>
-                        <div className='relative'>
-                            <Input type="text" placeholder='Multiplier' defaultValue={"1.50"} />
-                            <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>x</span>
-                        </div>
-                    </CardContent>
-                </Card>
+                    <Card className="flex-1">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Auto Play</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="auto-bet">Auto Bet</Label>
+                                <Switch id="auto-bet" />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="auto-cashout">Auto Cashout</Label>
+                                <Switch id="auto-cashout" />
+                            </div>
+                            <div className='relative'>
+                                <Input type="text" placeholder='Multiplier' defaultValue={"1.50"} />
+                                <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>x</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     );
