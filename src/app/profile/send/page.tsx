@@ -14,14 +14,18 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 
 const KTC_TO_USD_RATE = 1.25;
 const NETWORK_FEE_KTC = 0.15;
+const SAMPLE_QR_ADDRESS = "0x9f8g7h6j5k4l3m2n1p0qabcde12345fgh67890";
+
 
 export default function SendPage() {
     const [balance, setBalance] = useState(0);
     const [address, setAddress] = useState('');
     const [amount, setAmount] = useState('');
+    const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -44,6 +48,15 @@ export default function SendPage() {
     const handleMaxAmount = () => {
         const max = Math.max(0, balance - NETWORK_FEE_KTC);
         setAmount(max.toString());
+    }
+    
+    const handleSimulateScan = () => {
+        setAddress(SAMPLE_QR_ADDRESS);
+        setIsQrDialogOpen(false);
+        toast({
+            title: "Address Scanned",
+            description: "Recipient address has been populated.",
+        });
     }
 
     const handleSend = () => {
@@ -85,7 +98,7 @@ export default function SendPage() {
                     <BreadcrumbItem>
                         <BreadcrumbLink asChild><Link href="/profile">Profile</Link></BreadcrumbLink>
                     </BreadcrumbItem>
-                    <BreadcrumbSeparator><ChevronRight /></BreadcrumbSeparator>
+                    <Separator><ChevronRight /></Separator>
                     <BreadcrumbItem>
                         <BreadcrumbPage>Send</BreadcrumbPage>
                     </BreadcrumbItem>
@@ -107,7 +120,26 @@ export default function SendPage() {
                             <Input id="address" placeholder="Enter wallet address" value={address} onChange={(e) => setAddress(e.target.value)} />
                             <Button variant="outline" size="icon" onClick={handlePaste}><ClipboardPaste /></Button>
                             <Button variant="outline" size="icon"><BookUser /></Button>
-                            <Button variant="outline" size="icon"><QrCode /></Button>
+                            <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" size="icon"><QrCode /></Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-sm">
+                                    <DialogHeader>
+                                        <DialogTitle>Scan QR Code</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="flex flex-col items-center justify-center space-y-4 py-8">
+                                        <div className="relative w-48 h-48 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                                            <QrCode className="w-24 h-24 text-muted-foreground" />
+                                            <div className="absolute inset-0 border-4 border-primary/50 animate-pulse"></div>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">Position the QR code within the frame.</p>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button onClick={handleSimulateScan} className="w-full">Simulate Scan</Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     </div>
 
@@ -201,4 +233,3 @@ export default function SendPage() {
         </div>
     );
 }
-
