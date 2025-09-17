@@ -33,8 +33,8 @@ export default function Home() {
   }, [refreshData]);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="absolute top-0 right-0 p-4 sm:p-6 flex items-center gap-4">
+    <div className="flex flex-col min-h-screen bg-background">
+      <header className="absolute top-0 right-0 p-4 sm:p-6 flex items-center gap-4 z-10">
         <div className="text-right">
           <p className="text-sm text-muted-foreground">My Points</p>
           <p className="text-2xl font-bold text-primary">{currency.toLocaleString()}</p>
@@ -45,7 +45,7 @@ export default function Home() {
               <ShoppingCart className="mr-2" /> Store
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-4xl">
+          <DialogContent className="max-w-md sm:max-w-4xl">
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
                 <ShoppingCart />
@@ -57,13 +57,13 @@ export default function Home() {
         </Dialog>
       </header>
       
-      <main className="flex-grow flex flex-col items-center justify-center bg-background p-4 sm:p-8 mt-20 sm:mt-0">
+      <main className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 mt-24 sm:mt-8">
         <div className="flex flex-col items-center text-center mb-12">
-          <h1 className="text-5xl font-bold tracking-tight text-primary font-headline">
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-primary font-headline">
             Kotela
           </h1>
-          <p className="mt-2 text-lg text-muted-foreground">
-            How fast can you tap in 30 seconds? Use boosts to get a high score!
+          <p className="mt-2 text-lg text-muted-foreground max-w-prose">
+            Tap once to start the game. Use boosts to get a high score!
           </p>
         </div>
         
@@ -73,8 +73,8 @@ export default function Home() {
           <div className="w-full max-w-md flex flex-col gap-8">
             <Leaderboard scores={scores} />
             <div className="p-4 border rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><Rocket/> My Boosts</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Rocket/> My Boosts</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                         <Rocket className="w-5 h-5 text-yellow-500"/>
                         <span className="font-bold">Rocket x {inventory.rocket || 0}</span>
@@ -105,7 +105,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="w-full p-8 text-center text-sm text-muted-foreground">
+      <footer className="w-full p-8 text-center text-sm text-muted-foreground mt-auto">
         <p>Built with Next.js and Genkit.</p>
          <a href="https://github.com/firebase/studio-kotela" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-primary mt-2">
             <Github size={16} />

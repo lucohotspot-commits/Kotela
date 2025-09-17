@@ -90,7 +90,7 @@ export default {
         },
         'pulse-subtle': {
           '0%, 100%': { transform: 'scale(1)' },
-          '50%': { transform: 'scale(1.05)' },
+          '50%': { transform: 'scale(1.02)' },
         },
       },
       animation: {

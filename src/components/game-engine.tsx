@@ -45,20 +45,22 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     return 1;
   }, [activeBoost]);
 
-  // Score increment logic
+  // Auto-tap / Score increment logic
   useEffect(() => {
-    if (gameState !== "playing") return;
+    if (gameState !== 'playing' || activeEffect === 'timeFreeze') return;
 
     let scoreInterval: NodeJS.Timeout;
+
     if (activeEffect === 'frenzy') {
+      // Frenzy taps super fast
       scoreInterval = setInterval(() => {
-        setScore(s => s + 5 * scoreIncrement); // Frenzy taps fast!
+        setScore(s => s + 5 * scoreIncrement);
       }, 100);
     } else {
-        const tapInterval = setInterval(() => {
-             // Tapping is simulated automatically
-        }, 100);
-        return () => clearInterval(tapInterval);
+      // Normal auto-tap
+      scoreInterval = setInterval(() => {
+        setScore(s => s + scoreIncrement);
+      }, 200);
     }
 
     return () => clearInterval(scoreInterval);
@@ -71,9 +73,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
       if (timeBoostUsed) {
         setTimeLeft(gameDuration);
       }
-    }
-    if (gameState === "playing") {
-      setScore((s) => s + scoreIncrement);
+      setScore(s => s + scoreIncrement); // Give points for the first tap
     }
   }, [gameState, scoreIncrement, timeBoostUsed, gameDuration]);
 
@@ -184,7 +184,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     if (gameState === "idle") return "Tap to Start";
     if (gameState === "ended") return "Game Over";
     if (activeEffect === 'frenzy') return "Frenzy!";
-    return "Tap!";
+    return "Tapping...";
   }, [gameState, activeEffect]);
 
   const CIRCLE_RADIUS = 120;
@@ -269,9 +269,10 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
         </svg>
         <button
           onClick={handleTap}
-          disabled={gameState === "ended" || activeEffect === 'frenzy'}
-          className="relative w-56 h-56 bg-primary rounded-full text-primary-foreground flex flex-col items-center justify-center text-2xl font-bold transition-all duration-300 ease-in-out shadow-lg hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:scale-100 disabled:cursor-not-allowed group"
+          disabled={gameState !== 'idle'}
+          className="relative w-56 h-56 bg-primary rounded-full text-primary-foreground flex flex-col items-center justify-center text-2xl font-bold transition-all duration-300 ease-in-out shadow-lg hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:scale-100 disabled:cursor-not-allowed group data-[state=playing]:animate-pulse-subtle"
           aria-label={tapAreaText}
+          data-state={gameState}
         >
           <Hand className="w-16 h-16 mb-2 transition-transform group-hover:scale-110 group-active:scale-90" />
           <span>{tapAreaText}</span>
