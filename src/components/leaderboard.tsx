@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import type { Score } from "@/lib/storage";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -16,13 +18,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trophy } from "lucide-react";
+import { Trophy, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LeaderboardProps {
   scores: Score[];
 }
 
+const INITIAL_DISPLAY_COUNT = 5;
+
 export function Leaderboard({ scores }: LeaderboardProps) {
+  const [showAll, setShowAll] = useState(false);
+
+  const scoresToShow = showAll ? scores : scores.slice(0, INITIAL_DISPLAY_COUNT);
+
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -30,7 +39,7 @@ export function Leaderboard({ scores }: LeaderboardProps) {
           <Trophy className="h-6 w-6 text-yellow-500" />
           <span>Leaderboard</span>
         </CardTitle>
-        <CardDescription>Your top 10 scores.</CardDescription>
+        <CardDescription>Your top scores.</CardDescription>
       </CardHeader>
       <CardContent>
         {scores.length > 0 ? (
@@ -43,7 +52,7 @@ export function Leaderboard({ scores }: LeaderboardProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {scores.slice(0, 10).map((score, index) => (
+              {scoresToShow.map((score, index) => (
                 <TableRow key={`${score.date}-${score.score}-${index}`}>
                   <TableCell className="font-medium">{index + 1}</TableCell>
                   <TableCell>{score.score.toLocaleString()}</TableCell>
@@ -60,6 +69,27 @@ export function Leaderboard({ scores }: LeaderboardProps) {
           </div>
         )}
       </CardContent>
+      {scores.length > INITIAL_DISPLAY_COUNT && (
+        <CardFooter className="justify-center border-t pt-4">
+          <Button
+            variant="ghost"
+            onClick={() => setShowAll(!showAll)}
+            className="w-full"
+          >
+            {showAll ? (
+              <>
+                <ChevronUp className="mr-2 h-4 w-4" />
+                Show Less
+              </>
+            ) : (
+              <>
+                <ChevronDown className="mr-2 h-4 w-4" />
+                Show More
+              </>
+            )}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
