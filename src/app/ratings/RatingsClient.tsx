@@ -56,30 +56,32 @@ export default function RatingsClient() {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null);
 
-   useEffect(() => {
+  useEffect(() => {
     const initialCoins = initialCoinsData.map(generateInitialCoinState);
     setCoins(initialCoins);
     setSelectedCoin(initialCoins.find(c => c.symbol === 'KTC') || initialCoins[0]);
   }, []);
 
   const updateCoinData = useCallback(() => {
-    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     setCoins(prevCoins =>
       prevCoins.map(coin => {
+        if (!coin.history || coin.history.length === 0) return coin;
+        
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const changeFactor = Math.random() * 0.02 - 0.01; // Fluctuate by up to 1%
         const newPrice = Math.max(0.01, coin.price * (1 + changeFactor));
         const newHistory = [...coin.history, { time: now, price: newPrice }].slice(-30);
         
         const prices = newHistory.map(h => h.price);
-        const lastPrice = coin.history.length > 0 ? coin.history[coin.history.length - 1].price : newPrice;
+        const firstPrice = newHistory[0].price;
 
         const updatedCoin = {
           ...coin,
           price: newPrice,
-          change: newPrice - lastPrice,
+          change: newPrice - firstPrice,
           history: newHistory,
-          high: Math.max(...prices, newPrice),
-          low: Math.min(...prices, newPrice),
+          high: Math.max(...prices),
+          low: Math.min(...prices),
           volume: coin.volume + Math.random() * 1000,
         };
         
@@ -132,34 +134,34 @@ export default function RatingsClient() {
 
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
         <div className="lg:col-span-3 hidden lg:block">
             <OrderBook selectedCoin={selectedCoin} />
         </div>
-        <div className="lg:col-span-6 space-y-4">
-            <header className="flex flex-wrap items-center gap-4 sm:gap-8 border-b pb-4">
+        <div className="lg:col-span-6 space-y-2">
+            <header className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b pb-2">
                 <div>
-                    <h1 className="text-2xl font-bold">{selectedCoin.symbol}/USDT</h1>
-                    <p className='text-sm text-muted-foreground'>{selectedCoin.name}</p>
+                    <h1 className="text-xl font-bold">{selectedCoin.symbol}/USDT</h1>
+                    <p className='text-xs text-muted-foreground'>{selectedCoin.name}</p>
                 </div>
                 <div>
-                    <p className={`text-2xl font-bold ${getChangeColor(selectedCoin.change)}`}>${selectedCoin.price.toFixed(4)}</p>
+                    <p className={`text-xl font-bold ${getChangeColor(selectedCoin.change)}`}>${selectedCoin.price.toFixed(4)}</p>
                 </div>
-                <div className='text-xs sm:text-sm space-y-1'>
+                <div className='text-xs space-y-0.5'>
                     <p><span className='text-muted-foreground'>24h Change:</span> <span className={getChangeColor(selectedCoin.change)}>{selectedCoin.change.toFixed(4)} {((selectedCoin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%</span></p>
                     <p><span className='text-muted-foreground'>24h High:</span> <span>${selectedCoin.high.toFixed(4)}</span></p>
                 </div>
-                 <div className='text-xs sm:text-sm space-y-1'>
+                 <div className='text-xs space-y-0.5'>
                     <p><span className='text-muted-foreground'>24h Low:</span> <span>${selectedCoin.low.toFixed(4)}</span></p>
                     <p><span className='text-muted-foreground'>24h Volume({selectedCoin.symbol}):</span> <span>{selectedCoin.volume.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span></p>
                 </div>
             </header>
             <Card className="w-full">
-                <CardContent className="p-2 sm:p-6">
+                <CardContent className="p-0 sm:p-1">
                 <ChartContainer config={{
                     price: { label: 'Price', color: 'hsl(var(--primary))' },
-                }} className="h-72 sm:h-96 w-full">
-                    <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
+                }} className="h-64 sm:h-80 w-full">
+                    <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                         <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
@@ -213,59 +215,59 @@ export default function RatingsClient() {
                     <TabsTrigger value="sell">Sell</TabsTrigger>
                 </TabsList>
                 <TabsContent value="buy">
-                    <div className="p-4 border rounded-none">
-                        <div className="space-y-4">
-                            <h3 className="font-semibold">Buy {selectedCoin.symbol}</h3>
-                            <Input type="number" placeholder={`Price (USDT)`} defaultValue={selectedCoin.price.toFixed(4)} readOnly />
-                            <Input type="number" placeholder={`Amount (${selectedCoin.symbol})`} />
+                    <div className="p-2 border rounded-none">
+                        <div className="space-y-2">
+                            <h3 className="font-semibold text-sm">Buy {selectedCoin.symbol}</h3>
+                            <Input type="number" placeholder={`Price (USDT)`} defaultValue={selectedCoin.price.toFixed(4)} readOnly className="h-8 text-xs"/>
+                            <Input type="number" placeholder={`Amount (${selectedCoin.symbol})`} className="h-8 text-xs"/>
                             <Slider defaultValue={[50]} max={100} step={1} />
-                             <p className='text-sm text-muted-foreground'>Available: 0.00 USDT</p>
-                            <Button className="w-full bg-green-600 hover:bg-green-700 text-white">Buy {selectedCoin.symbol}</Button>
+                             <p className='text-xs text-muted-foreground'>Available: 0.00 USDT</p>
+                            <Button className="w-full bg-green-600 hover:bg-green-700 text-white h-9">Buy {selectedCoin.symbol}</Button>
                         </div>
                     </div>
                 </TabsContent>
                  <TabsContent value="sell">
-                     <div className="p-4 border rounded-none">
-                        <div className="space-y-4">
-                            <h3 className="font-semibold">Sell {selectedCoin.symbol}</h3>
-                            <Input type="number" placeholder="Price (USDT)" defaultValue={selectedCoin.price.toFixed(4)} readOnly />
-                            <Input type="number" placeholder={`Amount (${selectedCoin.symbol})`} />
+                     <div className="p-2 border rounded-none">
+                        <div className="space-y-2">
+                            <h3 className="font-semibold text-sm">Sell {selectedCoin.symbol}</h3>
+                            <Input type="number" placeholder="Price (USDT)" defaultValue={selectedCoin.price.toFixed(4)} readOnly className="h-8 text-xs" />
+                            <Input type="number" placeholder={`Amount (${selectedCoin.symbol})`} className="h-8 text-xs"/>
                             <Slider defaultValue={[50]} max={100} step={1} />
-                            <p className='text-sm text-muted-foreground'>Available: 0.00 {selectedCoin.symbol}</p>
-                            <Button className="w-full" variant="destructive">Sell {selectedCoin.symbol}</Button>
+                            <p className='text-xs text-muted-foreground'>Available: 0.00 {selectedCoin.symbol}</p>
+                            <Button className="w-full h-9" variant="destructive">Sell {selectedCoin.symbol}</Button>
                         </div>
                     </div>
                 </TabsContent>
             </Tabs>
         </div>
         <div className="lg:col-span-3">
-             <Card className="w-full">
-                <CardHeader className='p-4'>
-                <CardTitle className="flex items-center gap-2 text-base">
+             <Card className="w-full h-full">
+                <CardHeader className='p-2 border-b'>
+                <CardTitle className="flex items-center gap-2 text-sm">
                     <span>Market</span>
                 </CardTitle>
                 </CardHeader>
                 <CardContent className='p-0'>
                 <Table>
                     <TableHeader>
-                    <TableRow>
-                        <TableHead className="text-xs h-8">Pair</TableHead>
-                        <TableHead className="text-xs h-8 text-right">Price</TableHead>
-                        <TableHead className="text-xs h-8 text-right">% Change</TableHead>
+                    <TableRow className='h-8'>
+                        <TableHead className="text-xs h-auto px-2">Pair</TableHead>
+                        <TableHead className="text-xs h-auto px-2 text-right">Price</TableHead>
+                        <TableHead className="text-xs h-auto px-2 text-right">% Change</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
                     {coins.map((coin) => (
-                        <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50">
-                        <TableCell className='py-2'>
+                        <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50 h-8">
+                        <TableCell className='py-1 px-2'>
                             <div className="flex items-center gap-2">
-                                <Star className={`h-4 w-4 ${coin.symbol === selectedCoin.symbol ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/50'}`}/>
+                                <Star className={`h-3 w-3 ${coin.symbol === selectedCoin.symbol ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/50'}`}/>
                                 <div className="font-bold text-xs">{coin.symbol}/USDT</div>
                             </div>
                         </TableCell>
-                        <TableCell className="text-right font-mono text-xs py-2">${coin.price.toFixed(4)}</TableCell>
-                        <TableCell className={`text-right font-mono text-xs py-2 ${getChangeColor(coin.change)}`}>
-                            {coin.change > 0 ? '+' : ''}{((coin.change / (selectedCoin.price - coin.change)) * 100).toFixed(2)}%
+                        <TableCell className="text-right font-mono text-xs py-1 px-2">${coin.price.toFixed(4)}</TableCell>
+                        <TableCell className={`text-right font-mono text-xs py-1 px-2 ${getChangeColor(coin.change)}`}>
+                            {coin.change > 0 ? '+' : ''}{((coin.change / (coin.price - coin.change)) * 100).toFixed(2)}%
                         </TableCell>
                         </TableRow>
                     ))}
@@ -277,5 +279,3 @@ export default function RatingsClient() {
     </div>
   );
 }
-
-    
