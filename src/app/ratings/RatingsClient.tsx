@@ -160,7 +160,7 @@ export default function RatingsClient() {
                 <CardContent className="p-0 sm:p-1">
                 <ChartContainer config={{
                     price: { label: 'Price', color: 'hsl(var(--primary))' },
-                }} className="h-64 sm:h-80 w-full">
+                }} className="h-[250px] w-full">
                     <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                         <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
@@ -209,36 +209,47 @@ export default function RatingsClient() {
                 </ChartContainer>
                 </CardContent>
             </Card>
-            <Tabs defaultValue="buy" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="buy">Buy</TabsTrigger>
-                    <TabsTrigger value="sell">Sell</TabsTrigger>
-                </TabsList>
-                <TabsContent value="buy">
-                    <div className="p-2 border rounded-none">
-                        <div className="space-y-2">
-                            <h3 className="font-semibold text-sm">Buy {selectedCoin.symbol}</h3>
-                            <Input type="number" placeholder={`Price (USDT)`} defaultValue={selectedCoin.price.toFixed(4)} readOnly className="h-8 text-xs"/>
-                            <Input type="number" placeholder={`Amount (${selectedCoin.symbol})`} className="h-8 text-xs"/>
-                            <Slider defaultValue={[50]} max={100} step={1} />
-                             <p className='text-xs text-muted-foreground'>Available: 0.00 USDT</p>
-                            <Button className="w-full bg-green-600 hover:bg-green-700 text-white h-9">Buy {selectedCoin.symbol}</Button>
-                        </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+                {/* Buy Form */}
+                <div className="space-y-2">
+                    <p className='text-xs text-muted-foreground'>Avbl: 0.00000000 USDT</p>
+                    <div className='relative'>
+                        <Input type="text" placeholder='Price' defaultValue={selectedCoin.price.toFixed(4)} className='pr-16' />
+                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
-                </TabsContent>
-                 <TabsContent value="sell">
-                     <div className="p-2 border rounded-none">
-                        <div className="space-y-2">
-                            <h3 className="font-semibold text-sm">Sell {selectedCoin.symbol}</h3>
-                            <Input type="number" placeholder="Price (USDT)" defaultValue={selectedCoin.price.toFixed(4)} readOnly className="h-8 text-xs" />
-                            <Input type="number" placeholder={`Amount (${selectedCoin.symbol})`} className="h-8 text-xs"/>
-                            <Slider defaultValue={[50]} max={100} step={1} />
-                            <p className='text-xs text-muted-foreground'>Available: 0.00 {selectedCoin.symbol}</p>
-                            <Button className="w-full h-9" variant="destructive">Sell {selectedCoin.symbol}</Button>
-                        </div>
+                    <div className='relative'>
+                        <Input type="number" placeholder='Amount' className='pr-16' />
+                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>{selectedCoin.symbol}</span>
                     </div>
-                </TabsContent>
-            </Tabs>
+                    <Slider defaultValue={[50]} max={100} step={1} />
+                    <div className='relative'>
+                        <Input type="number" placeholder='Total' className='pr-16' />
+                         <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
+                    </div>
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white">Buy {selectedCoin.symbol}</Button>
+                </div>
+
+                {/* Sell Form */}
+                <div className="space-y-2">
+                    <p className='text-xs text-muted-foreground'>Avbl: 0.00000000 {selectedCoin.symbol}</p>
+                    <div className='relative'>
+                        <Input type="text" placeholder='Price' defaultValue={selectedCoin.price.toFixed(4)} className='pr-16' />
+                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
+                    </div>
+                    <div className='relative'>
+                        <Input type="number" placeholder='Amount' className='pr-16' />
+                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>{selectedCoin.symbol}</span>
+                    </div>
+                    <Slider defaultValue={[50]} max={100} step={1} />
+                     <div className='relative'>
+                        <Input type="number" placeholder='Total' className='pr-16' />
+                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
+                    </div>
+                    <Button className="w-full" variant="destructive">Sell {selectedCoin.symbol}</Button>
+                </div>
+            </div>
+
         </div>
         <div className="lg:col-span-3">
              <Card className="w-full h-full">
@@ -251,9 +262,9 @@ export default function RatingsClient() {
                 <Table>
                     <TableHeader>
                     <TableRow className='h-8'>
-                        <TableHead className="text-xs h-auto px-2">Pair</TableHead>
-                        <TableHead className="text-xs h-auto px-2 text-right">Price</TableHead>
-                        <TableHead className="text-xs h-auto px-2 text-right">% Change</TableHead>
+                        <TableHead className="text-xs h-auto p-2">Pair</TableHead>
+                        <TableHead className="text-xs h-auto p-2 text-right">Price</TableHead>
+                        <TableHead className="text-xs h-auto p-2 text-right">% Change</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
