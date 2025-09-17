@@ -49,6 +49,7 @@ const verificationSteps = [
     { step: 1, title: "Personal Info" },
     { step: 2, title: "Upload Document" },
     { step: 3, title: "Selfie" },
+    { step: 4, title: "Review" },
 ];
 
 export default function VerifyPage() {
@@ -196,6 +197,7 @@ export default function VerifyPage() {
   
   const watchedYear = form.watch('dob_year');
   const watchedMonth = form.watch('dob_month');
+  const formValues = form.watch();
 
   const years = getYears();
   const months = getMonths();
@@ -203,6 +205,7 @@ export default function VerifyPage() {
 
   const isStep1Valid = form.watch('country') && form.watch('phoneNumber') && form.watch('surname') && form.watch('dob_day') && form.watch('dob_month') && form.watch('dob_year') && !form.getFieldState('country').invalid && !form.getFieldState('phoneNumber').invalid && !form.getFieldState('surname').invalid && !form.getFieldState('dob_day').invalid && !form.getFieldState('dob_month').invalid && !form.getFieldState('dob_year').invalid;
   const isStep2Valid = form.watch('documentType') && documentPreview;
+  const isStep3Valid = !!selfie;
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
@@ -412,7 +415,7 @@ export default function VerifyPage() {
                             )}
                         />
 
-                        {form.watch('documentType') && uploadMode === 'select' && (
+                        {form.watch('documentType') && uploadMode === 'select' && !documentPreview && (
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setUploadMode('upload')}>
                                     <FileUp className="h-8 w-8" />
@@ -425,7 +428,7 @@ export default function VerifyPage() {
                             </div>
                         )}
                         
-                        {uploadMode === 'upload' && (
+                        {uploadMode === 'upload' && !documentPreview && (
                             <FormItem>
                                 <FormLabel>Upload your document</FormLabel>
                                 <FormControl>
@@ -435,7 +438,7 @@ export default function VerifyPage() {
                             </FormItem>
                         )}
 
-                        {uploadMode === 'camera' && (
+                        {uploadMode === 'camera' && !documentPreview && (
                              <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
                                 <video id="doc-video" className="w-full h-full object-cover" autoPlay muted playsInline />
                                 {hasCameraPermission === false && (
@@ -533,9 +536,6 @@ export default function VerifyPage() {
                             {selfie ? (
                                 <>
                                 <Button onClick={handleRetakeSelfie} variant="outline">Retake</Button>
-                                <Button disabled>
-                                    <Check className="mr-2" /> Selfie Ready
-                                </Button>
                                 </>
                             ) : selfieUploadMode === 'camera' ? (
                                 <Button onClick={handleCaptureSelfie} disabled={!hasCameraPermission}>
@@ -549,15 +549,81 @@ export default function VerifyPage() {
                          <Button onClick={prevStep} variant="outline">
                             <ArrowLeft className="mr-2" /> Back
                         </Button>
-                         <Button type="submit" size="lg" disabled={!selfie || !isStep1Valid || !isStep2Valid}>Submit for Verification</Button>
+                         <Button onClick={nextStep} disabled={!isStep3Valid}>
+                            Next <ArrowRight className="ml-2" />
+                        </Button>
                     </CardFooter>
                 </Card>
             )}
+
+            {step === 4 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Step 4: Review Information</CardTitle>
+                  <CardDescription>Please review your details carefully before submitting.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4 rounded-lg border p-4">
+                    <h4 className="font-semibold text-lg">Personal Information</h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <Label className="text-muted-foreground">Name</Label>
+                            <p>{formValues.givenName} {formValues.middleName} {formValues.surname}</p>
+                        </div>
+                        <div>
+                            <Label className="text-muted-foreground">Date of Birth</Label>
+                            <p>{formValues.dob_day}/{formValues.dob_month}/{formValues.dob_year}</p>
+                        </div>
+                        <div>
+                            <Label className="text-muted-foreground">Country</Label>
+                            <p>{formValues.country}</p>
+                        </div>
+                        <div>
+                            <Label className="text-muted-foreground">Phone Number</Label>
+                            <p>{formValues.phoneNumber}</p>
+                        </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 rounded-lg border p-4">
+                    <h4 className="font-semibold text-lg">Documents</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {documentPreview && (
+                            <div className="space-y-2">
+                                <Label>Document ({formValues.documentType})</Label>
+                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                    <Image src={documentPreview} alt="Document preview" layout="fill" objectFit="contain" />
+                                </div>
+                            </div>
+                        )}
+                        {selfie && (
+                            <div className="space-y-2">
+                                <Label>Selfie</Label>
+                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                    <Image src={selfie} alt="Selfie preview" layout="fill" objectFit="contain" />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="justify-between">
+                  <Button onClick={prevStep} variant="outline">
+                    <ArrowLeft className="mr-2" /> Back
+                  </Button>
+                  <Button type="submit" size="lg" disabled={!isStep1Valid || !isStep2Valid || !isStep3Valid}>
+                    Submit for Verification
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+
         </form>
       </Form>
       <canvas ref={canvasRef} className="hidden"></canvas>
     </div>
   );
 }
+
 
     
