@@ -138,15 +138,23 @@ export default function VerifyPage() {
   const handleCaptureDocument = () => {
     const video = document.getElementById('doc-video') as HTMLVideoElement;
     if (video && canvasRef.current) {
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const context = canvas.getContext('2d');
-      context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-      const dataUri = canvas.toDataURL('image/jpeg');
-      form.setValue('document', dataUri, { shouldValidate: true });
-      setDocumentPreview(dataUri);
-      setUploadMode('select'); // Go back to selection
+        const canvas = canvasRef.current;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext('2d');
+        if (context) {
+            context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            const dataUri = canvas.toDataURL('image/jpeg');
+            
+            form.setValue('document', dataUri, { shouldValidate: true });
+            setDocumentPreview(dataUri);
+            
+            // Stop camera stream
+            const stream = video.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+        }
+        setUploadMode('select');
     }
   };
 
@@ -513,9 +521,7 @@ export default function VerifyPage() {
             )}
         </form>
       </Form>
+      <canvas ref={canvasRef} className="hidden"></canvas>
     </div>
   );
 }
-
-
-    
