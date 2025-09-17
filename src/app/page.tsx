@@ -20,6 +20,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import { useUserLocation } from '@/hooks/use-user-location';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BlogWidget } from '@/components/blog-widget';
 
 export default function Home() {
   const [scores, setScores] = useState<Score[]>([]);
@@ -126,6 +127,9 @@ export default function Home() {
                         <span className="font-bold text-xs">Score Bomb x {inventory.scoreBomb || 0}</span>
                     </div>
                 </div>
+            </div>
+            <div className="hidden lg:block w-full">
+                <BlogWidget />
             </div>
           </div>
         </div>

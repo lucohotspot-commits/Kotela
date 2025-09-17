@@ -3,13 +3,14 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Pickaxe, Coins, TrendingUp, User, Gift } from "lucide-react"
+import { Pickaxe, Coins, TrendingUp, User, Gift, Newspaper } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/", label: "Mine", icon: Pickaxe },
   { href: "/leaderboard", label: "Bonus", icon: Gift },
   { href: "/ratings", label: "Ratings", icon: TrendingUp },
+  { href: "/news", label: "News", icon: Newspaper },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
@@ -19,7 +20,7 @@ export function DesktopNav() {
   return (
     <nav className="hidden items-center gap-2 md:flex">
       {navItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname === item.href || (pathname.startsWith(item.href) && item.href !== "/");
         return (
           <Button
             key={item.href}
