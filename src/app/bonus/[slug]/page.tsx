@@ -126,6 +126,7 @@ const AviatorGame = () => {
             }
         }
         return () => clearInterval(gameLoop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameState, autoBetEnabled, autoCashoutEnabled, autoCashoutMultiplier]);
 
     const handleBet = () => {
@@ -165,7 +166,6 @@ const AviatorGame = () => {
 
     useEffect(() => {
         const getPathData = (progress: number) => {
-            if (typeof document === 'undefined') return { path: '', point: { x: 0, y: 100 } };
             const width = 100;
             const height = 100;
             const controlX1 = width * 0.3;
@@ -188,7 +188,9 @@ const AviatorGame = () => {
             return { path: subPath, point };
         };
         
-        setPathData(getPathData(planeX));
+        if (typeof document !== 'undefined') {
+            setPathData(getPathData(planeX));
+        }
 
     }, [planeX]);
 
@@ -884,5 +886,3 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
-    
