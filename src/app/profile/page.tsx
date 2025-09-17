@@ -51,7 +51,7 @@ export default function ProfilePage() {
     refreshCurrency();
   }, []);
   
-  const walletAddress = "0x1a2b3c4d5e6f7g8h9i0j...";
+  const walletAddress = "0x1a2b3c4d5e6f7g8h9i0jabcde12345fgh67890";
   const referralLink = "https://kotela.com/join/user123";
 
   const handleCopy = (text: string, type: string) => {
@@ -123,9 +123,9 @@ export default function ProfilePage() {
                         </p>
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="wallet-address">Wallet Address</Label>
+                      <Label htmlFor="wallet-address-deposit">Wallet Address</Label>
                       <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <span id="wallet-address" className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
+                        <span id="wallet-address-deposit" className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
                         <Button variant="ghost" size="icon" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
                             <Copy className="h-4 w-4" />
                         </Button>
@@ -199,21 +199,47 @@ export default function ProfilePage() {
             </div>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-            <CardTitle>Wallet Address</CardTitle>
-            <CardDescription>Use this address to receive KTC tokens.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
-                <Button variant="ghost" size="icon" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
-                    <Copy className="h-4 w-4" />
-                </Button>
+      
+      <Dialog>
+        <Card>
+            <CardHeader>
+                <CardTitle>Wallet Address</CardTitle>
+                <CardDescription>Use this address to receive KTC tokens.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <DialogTrigger asChild>
+                    <button className="flex items-center justify-between p-3 bg-muted rounded-lg w-full text-left">
+                        <span className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
+                        <div className="flex items-center gap-2">
+                            <QrCode className="h-4 w-4" />
+                            <Copy className="h-4 w-4" />
+                        </div>
+                    </button>
+                </DialogTrigger>
+            </CardContent>
+        </Card>
+        <DialogContent className="max-w-sm">
+            <DialogHeader>
+                <DialogTitle>Your Wallet Address</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center space-y-4 pt-4">
+                <div className='p-4 bg-white rounded-lg'>
+                    <QrCode className="h-48 w-48 text-black" />
+                </div>
+                <p className='text-sm text-muted-foreground break-all text-center'>{walletAddress}</p>
             </div>
-        </CardContent>
-      </Card>
+            <DialogFooter className="grid grid-cols-2 gap-2 pt-4">
+                <Button variant="outline" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
+                    <Copy className="mr-2" />
+                    Copy
+                </Button>
+                <Button>
+                    <Download className="mr-2" />
+                    Save
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <Card>
         <CardHeader>
@@ -328,3 +354,4 @@ export default function ProfilePage() {
   );
 }
 
+    
