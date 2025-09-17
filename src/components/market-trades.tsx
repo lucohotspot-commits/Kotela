@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from './ui/scroll-area';
 
 type Coin = {
     price: number;
@@ -71,7 +72,7 @@ export function MarketTrades({ selectedCoin }: MarketTradesProps) {
                     </TabsList>
                 </Tabs>
             </div>
-            <div className='p-0 h-[240px] overflow-y-auto'>
+            <ScrollArea className='h-[240px]'>
                 <Table>
                     <TableHeader>
                         <TableRow className='h-8'>
@@ -90,7 +91,7 @@ export function MarketTrades({ selectedCoin }: MarketTradesProps) {
                         ))}
                     </TableBody>
                 </Table>
-            </div>
+            </ScrollArea>
         </div>
     );
 }
