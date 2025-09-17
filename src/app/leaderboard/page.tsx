@@ -137,7 +137,7 @@ export default function LeaderboardPage() {
                         <TableCell>
                             <div className="flex items-center gap-2">
                                 <span className="text-green-500 font-semibold text-base">{game.apr}</span>
-                                {game.isHot && <Badge variant="destructive">HOT</Badge>}
+                                {game.isHot && <Badge variant="outline" className="border-red-500 text-red-500">HOT</Badge>}
                             </div>
                         </TableCell>
                         <TableCell>
