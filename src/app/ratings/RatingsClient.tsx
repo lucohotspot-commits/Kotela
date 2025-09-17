@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -22,7 +23,7 @@ type Coin = {
   history: { time: string; price: number }[];
 };
 
-const initialCoins: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>[] = [
+const initialCoinsData: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>[] = [
   { name: 'Bitcoin', symbol: 'BTC', price: 68000 },
   { name: 'Ethereum', symbol: 'ETH', price: 3500 },
   { name: 'Solana', symbol: 'SOL', price: 150 },
@@ -41,6 +42,7 @@ function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high'
     return {
         ...coin,
         history,
+        price: prices[prices.length - 1],
         change: prices.length > 1 ? prices[prices.length - 1] - prices[prices.length - 2] : 0,
         high: Math.max(...prices),
         low: Math.min(...prices),
@@ -50,8 +52,14 @@ function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high'
 
 
 export default function RatingsClient() {
-  const [coins, setCoins] = useState<Coin[]>(() => initialCoins.map(generateInitialCoinState));
-  const [selectedCoin, setSelectedCoin] = useState<Coin>(coins[4]); // Default to Kotela
+  const [coins, setCoins] = useState<Coin[]>([]);
+  const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null);
+
+  useEffect(() => {
+    const initialCoins = initialCoinsData.map(generateInitialCoinState);
+    setCoins(initialCoins);
+    setSelectedCoin(initialCoins.find(c => c.symbol === 'KTC') || initialCoins[0]);
+  }, []);
 
   const updateCoinData = useCallback(() => {
     const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -85,9 +93,10 @@ export default function RatingsClient() {
 
 
   useEffect(() => {
+    if (coins.length === 0) return;
     const interval = setInterval(updateCoinData, 2000);
     return () => clearInterval(interval);
-  }, [updateCoinData]);
+  }, [updateCoinData, coins.length]);
 
   const getChangeColor = (change: number) => {
     if (change > 0) return 'text-green-500';
@@ -101,7 +110,7 @@ export default function RatingsClient() {
     return <Minus className="h-4 w-4" />;
   };
 
-  const chartData = useMemo(() => selectedCoin.history, [selectedCoin]);
+  const chartData = useMemo(() => selectedCoin?.history || [], [selectedCoin]);
   const chartDomain: [number, number] = useMemo(() => {
     if (!chartData || chartData.length === 0) return [0, 0];
     const prices = chartData.map(d => d.price);
@@ -110,6 +119,15 @@ export default function RatingsClient() {
     const padding = (max - min) * 0.2 || max * 0.1;
     return [Math.max(0, min - padding), max + padding];
   }, [chartData]);
+
+
+  if (!selectedCoin) {
+      return (
+        <div className="flex items-center justify-center h-96">
+            <p>Loading market data...</p>
+        </div>
+      );
+  }
 
 
   return (
@@ -222,7 +240,7 @@ export default function RatingsClient() {
                                         </TableRow>
                                     )})}
                                      <TableRow>
-                                        <TableCell colSpan={3} className="py-2 text-lg font-bold text-center ${getChangeColor(selectedCoin.change)}">
+                                        <TableCell colSpan={3} className={`py-2 text-lg font-bold text-center ${getChangeColor(selectedCoin.change)}`}>
                                             {selectedCoin.price.toFixed(4)}
                                         </TableCell>
                                     </TableRow>
@@ -273,7 +291,7 @@ export default function RatingsClient() {
                                         </TableRow>
                                     )})}
                                      <TableRow>
-                                        <TableCell colSpan={3} className="py-2 text-lg font-bold text-center ${getChangeColor(selectedCoin.change)}">
+                                        <TableCell colSpan={3} className={`py-2 text-lg font-bold text-center ${getChangeColor(selectedCoin.change)}`}>
                                             {selectedCoin.price.toFixed(4)}
                                         </TableCell>
                                     </TableRow>
