@@ -96,39 +96,41 @@ export default function Home() {
             <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
           </div>
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
-          <div className="w-full max-w-md flex flex-col gap-6">
-            <Leaderboard scores={scores} />
-            <div className="p-4 border rounded-lg">
-                <h3 className="text-base font-semibold mb-1 flex items-center gap-2"><Rocket/> My Boosts</h3>
-                <p className="text-xs text-muted-foreground mb-3">Activate these power-ups during a game by clicking the buttons below the mining coin.</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Rocket className="w-4 h-4 text-yellow-500"/>
-                        <span className="font-bold text-xs">Rocket x {inventory.rocket || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Bomb className="w-4 h-4 text-red-500"/>
-                        <span className="font-bold text-xs">Missile x {inventory.missile || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Clock className="w-4 h-4 text-blue-500"/>
-                        <span className="font-bold text-xs">Extra Time x {inventory.extraTime || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Snowflake className="w-4 h-4 text-cyan-400"/>
-                        <span className="font-bold text-xs">Freeze Time x {inventory.freezeTime || 0}</span>
-                    </div>
-                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Zap className="w-4 h-4 text-purple-500"/>
-                        <span className="font-bold text-xs">Frenzy x {inventory.frenzy || 0}</span>
-                    </div>
-                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Gift className="w-4 h-4 text-green-500"/>
-                        <span className="font-bold text-xs">Score Bomb x {inventory.scoreBomb || 0}</span>
+          <div className="w-full max-w-md lg:max-w-4xl flex flex-col lg:flex-row gap-6">
+            <div className="w-full max-w-md flex flex-col gap-6">
+                <Leaderboard scores={scores} />
+                <div className="p-4 border rounded-lg">
+                    <h3 className="text-base font-semibold mb-1 flex items-center gap-2"><Rocket/> My Boosts</h3>
+                    <p className="text-xs text-muted-foreground mb-3">Activate these power-ups during a game by clicking the buttons below the mining coin.</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <Rocket className="w-4 h-4 text-yellow-500"/>
+                            <span className="font-bold text-xs">Rocket x {inventory.rocket || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <Bomb className="w-4 h-4 text-red-500"/>
+                            <span className="font-bold text-xs">Missile x {inventory.missile || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <Clock className="w-4 h-4 text-blue-500"/>
+                            <span className="font-bold text-xs">Extra Time x {inventory.extraTime || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <Snowflake className="w-4 h-4 text-cyan-400"/>
+                            <span className="font-bold text-xs">Freeze Time x {inventory.freezeTime || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <Zap className="w-4 h-4 text-purple-500"/>
+                            <span className="font-bold text-xs">Frenzy x {inventory.frenzy || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <Gift className="w-4 h-4 text-green-500"/>
+                            <span className="font-bold text-xs">Score Bomb x {inventory.scoreBomb || 0}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className="hidden lg:block w-full">
+            <div className="hidden lg:block w-full max-w-md">
                 <BlogWidget limit={3} showViewAll={true} />
             </div>
           </div>
