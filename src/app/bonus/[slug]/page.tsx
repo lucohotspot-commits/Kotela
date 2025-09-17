@@ -360,7 +360,7 @@ const SpinWheelGame = () => {
 
         const randomSpins = Math.floor(Math.random() * 5) + 8; // 8 to 13 full spins
         const randomStop = Math.random() * 360;
-        const targetRotation = (rotation - (rotation % 360)) + (randomSpins * 360) + randomStop;
+        const targetRotation = (randomSpins * 360) + randomStop;
         
         setRotation(targetRotation);
 
@@ -430,7 +430,7 @@ const SpinWheelGame = () => {
                     <div className="w-full max-w-xs space-y-4">
                         <div className="flex items-center space-x-2">
                             <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={spinning}>-</Button>
-                            <Input value={betAmount} onChange={(e) => setBetAmoount(Number(e.target.value))} type="number" className="text-center w-24" disabled={spinning} />
+                            <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center w-24" disabled={spinning} />
                             <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={spinning}>+</Button>
                             <Input value={`Bet: ${betAmount.toLocaleString()}`} className="text-center flex-1" disabled />
                         </div>
@@ -481,11 +481,11 @@ const CoinFlipGame = () => {
   return (
      <Card>
         <CardContent className="p-6 flex flex-col items-center justify-center gap-6 text-center">
-            <div className="relative w-48 h-48">
-                 <div className={cn("absolute w-full h-full rounded-full flex items-center justify-center transition-transform duration-1000", flipping && "[transform:rotateY(1800deg)]")} style={{ transformStyle: 'preserve-3d' }}>
+            <div className="relative w-48 h-48 [perspective:1000px]">
+                 <div className={cn("relative w-full h-full rounded-full transition-transform duration-1000", flipping && "[transform:rotateY(1800deg)]")} style={{ transformStyle: 'preserve-3d' }}>
                     <div className="absolute w-full h-full bg-muted rounded-full flex items-center justify-center [backface-visibility:hidden]">
                          { !result && <CircleDollarSign className='w-24 h-24 text-muted-foreground' /> }
-                         { result && <p className='text-6xl font-bold'>{result === choice ? 'WIN' : 'LOSE'}</p>}
+                         { result && <p className={cn('text-6xl font-bold', result === choice ? 'text-green-500' : 'text-red-500')}>{result === choice ? 'WIN' : 'LOSE'}</p>}
                     </div>
                     <div className="absolute w-full h-full bg-yellow-500 rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
                         <p className='text-3xl font-bold text-black'>{result?.toUpperCase()}</p>
@@ -688,3 +688,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
+
+    
