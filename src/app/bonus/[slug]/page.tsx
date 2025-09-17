@@ -467,7 +467,6 @@ const CoinFlipGame = () => {
     const [choice, setChoice] = useState<'heads' | 'tails' | null>(null);
     const [result, setResult] = useState<'heads' | 'tails' | null>(null);
     const [flipping, setFlipping] = useState(false);
-    const [betAmount, setBetAmount] = useState<number>(10);
     const [balance, setBalance] = useState(0);
 
     const refreshBalance = useCallback(() => {
@@ -482,15 +481,9 @@ const CoinFlipGame = () => {
 
     const handleFlip = () => {
         if (!choice || flipping) return;
-        if (balance < betAmount) {
-            toast({ variant: 'destructive', title: "Not enough coins", description: "You don't have enough coins to place this bet." });
-            return;
-        }
 
         setFlipping(true);
         setResult(null);
-        spendCurrency(betAmount);
-        refreshBalance();
 
         setTimeout(() => {
             const outcome = Math.random() > 0.5 ? 'heads' : 'tails';
@@ -498,26 +491,22 @@ const CoinFlipGame = () => {
             setFlipping(false);
 
             if (outcome === choice) {
-                const winnings = betAmount * 2;
+                const winnings = 50;
                 addCurrency(winnings);
                 toast({
                     title: `You won ${winnings.toLocaleString()} coins!`,
-                    description: `It was ${outcome}. Your bet returned 2x.`,
+                    description: `It was ${outcome}.`,
                 });
             } else {
                 toast({
                     variant: 'destructive',
                     title: "Better luck next time!",
-                    description: `It was ${outcome}. You lost your ${betAmount} coin bet.`,
+                    description: `It was ${outcome}.`,
                 });
             }
             refreshBalance();
         }, 2500); // Increased duration for better animation feel
     }
-    
-    const handleBetChange = (amount: number) => {
-        setBetAmount(prev => Math.max(0, prev + amount));
-    };
 
     const CoinFace = ({ children, isFront }: { children: React.ReactNode, isFront?: boolean }) => (
         <div className={cn(
@@ -560,24 +549,17 @@ const CoinFlipGame = () => {
                 </div>
                 
                 <div className="w-full max-w-xs space-y-4">
-                    <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={flipping}>-</Button>
-                        <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center" disabled={flipping} />
-                        <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={flipping}>+</Button>
-                        <Coins className="text-yellow-500" />
-                    </div>
-
                     <div className="flex gap-4 justify-center">
                         <Button variant={choice === 'heads' ? 'default' : 'outline'} onClick={() => setChoice('heads')} disabled={flipping}>Heads</Button>
                         <Button variant={choice === 'tails' ? 'default' : 'outline'} onClick={() => setChoice('tails')} disabled={flipping}>Tails</Button>
                     </div>
 
-                    <Button onClick={handleFlip} disabled={!choice || flipping || betAmount <= 0} size="lg" className="w-full">
-                        {flipping ? 'Flipping...' : `Flip for ${betAmount.toLocaleString()}`}
+                    <Button onClick={handleFlip} disabled={!choice || flipping} size="lg" className="w-full">
+                        {flipping ? 'Flipping...' : 'Flip Coin'}
                     </Button>
                 </div>
                  <p className='text-muted-foreground text-sm h-5'>
-                    {result ? `It was ${result}! You ${result === choice ? 'won!' : 'lost.'}` : 'Choose Heads or Tails & place your bet'}
+                    {result ? `It was ${result}! You ${result === choice ? 'won!' : 'lost.'}` : 'Choose Heads or Tails to get a bonus'}
                 </p>
             </CardContent>
         </Card>
