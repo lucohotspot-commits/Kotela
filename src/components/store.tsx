@@ -71,7 +71,7 @@ export function Store({ onPurchase }: StoreProps) {
       }
       // Automatically close and reset after timeout
       closeAdDialog();
-    }, 30000); // 30-second ad simulation
+    }, 29000); // 29-second ad simulation
   };
   
   const closeAdDialog = () => {
