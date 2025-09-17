@@ -161,10 +161,10 @@ export default function P2PTransferPage() {
             <Card>
                 <CardHeader>
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                        <Tabs defaultValue="buy">
-                            <TabsList className="bg-transparent p-0">
-                                <TabsTrigger value="buy" className="text-2xl font-bold p-0 data-[state=active]:text-primary data-[state=inactive]:text-muted-foreground/50 data-[state=active]:shadow-none">Buy</TabsTrigger>
-                                <TabsTrigger value="sell" className="text-2xl font-bold p-0 ml-4 data-[state=active]:text-primary data-[state=inactive]:text-muted-foreground/50 data-[state=active]:shadow-none">Sell</TabsTrigger>
+                       <Tabs defaultValue="buy">
+                            <TabsList>
+                                <TabsTrigger value="buy">Buy</TabsTrigger>
+                                <TabsTrigger value="sell">Sell</TabsTrigger>
                             </TabsList>
                         </Tabs>
                         <div className="flex items-center gap-4 overflow-x-auto pb-2">
