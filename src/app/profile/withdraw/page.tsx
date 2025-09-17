@@ -24,8 +24,8 @@ const WITHDRAWAL_LIMIT = 2;
 const WITHDRAWAL_WINDOW_MS = 60 * 1000; // 1 minute
 
 const paymentOptions = [
-    { id: 'bank-1', type: 'Bank Transfer', details: 'Wells Fargo - **** 1234', icon: Banknote, category: 'bank' },
-    { id: 'wallet-1', type: 'Crypto Wallet', details: '0x1a2b...c4d5', icon: Wallet, category: 'crypto' },
+    { id: 'bank-1', type: 'Bank Transfer', details: 'Add your bank account', icon: Banknote, category: 'bank' },
+    { id: 'wallet-1', type: 'Crypto Wallet', details: 'Add your wallet address', icon: Wallet, category: 'crypto' },
     { id: 'airtel-1', type: 'Airtel Money', details: 'Mobile Money', icon: Smartphone, category: 'mobile-money' },
     { id: 'mtn-1', type: 'MTN Mobile Money', details: 'Mobile Money', icon: Smartphone, category: 'mobile-money' },
 ];
@@ -34,8 +34,14 @@ export default function WithdrawPage() {
     const [balance, setBalance] = useState(0);
     const [amount, setAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('');
+    
+    // State for payment method details
     const [mobileNumber, setMobileNumber] = useState('');
     const [accountName, setAccountName] = useState('');
+    const [bankName, setBankName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
+    const [walletAddress, setWalletAddress] = useState('');
+
     const [isRateLimited, setIsRateLimited] = useState(false);
     const [cooldown, setCooldown] = useState(0);
     const { toast } = useToast();
@@ -92,10 +98,22 @@ export default function WithdrawPage() {
             toast({ variant: 'destructive', title: 'Payment method required', description: 'Please select a payment method.'});
             return;
         }
+
+        // Validation based on category
         if (selectedPaymentOption?.category === 'mobile-money' && (!mobileNumber || !accountName)) {
             toast({ variant: 'destructive', title: 'Mobile money details required', description: 'Please enter the phone number and account name.'});
             return;
         }
+        if (selectedPaymentOption?.category === 'bank' && (!bankName || !accountNumber || !accountName)) {
+            toast({ variant: 'destructive', title: 'Bank details required', description: 'Please fill in all bank account details.'});
+            return;
+        }
+        if (selectedPaymentOption?.category === 'crypto' && !walletAddress) {
+            toast({ variant: 'destructive', title: 'Wallet address required', description: 'Please enter a valid wallet address.'});
+            return;
+        }
+
+
         if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
             toast({ variant: 'destructive', title: 'Invalid amount', description: 'Please enter a valid amount to withdraw.'});
             return;
@@ -186,7 +204,7 @@ export default function WithdrawPage() {
                     </div>
 
                     {selectedPaymentOption?.category === 'mobile-money' && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in-50">
                             <div className="space-y-2">
                                 <Label htmlFor="mobileNumber">Phone Number</Label>
                                 <Input 
@@ -207,6 +225,30 @@ export default function WithdrawPage() {
                                     disabled={isRateLimited}
                                 />
                             </div>
+                        </div>
+                    )}
+
+                    {selectedPaymentOption?.category === 'bank' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in-50">
+                            <div className="space-y-2">
+                                <Label htmlFor="bankName">Bank Name</Label>
+                                <Input id="bankName" placeholder="e.g. Stanbic Bank" value={bankName} onChange={(e) => setBankName(e.target.value)} disabled={isRateLimited} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="accountName-bank">Account Name</Label>
+                                <Input id="accountName-bank" placeholder="e.g. John Doe" value={accountName} onChange={(e) => setAccountName(e.target.value)} disabled={isRateLimited} />
+                            </div>
+                            <div className="space-y-2 col-span-1 sm:col-span-2">
+                                <Label htmlFor="accountNumber">Account Number</Label>
+                                <Input id="accountNumber" placeholder="e.g. 9030001234567" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} disabled={isRateLimited} />
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedPaymentOption?.category === 'crypto' && (
+                        <div className="space-y-2 animate-in fade-in-50">
+                            <Label htmlFor="walletAddress">Wallet Address</Label>
+                            <Input id="walletAddress" placeholder="Enter wallet address" value={walletAddress} onChange={(e) => setWalletAddress(e.target.value)} disabled={isRateLimited} />
                         </div>
                     )}
                     
