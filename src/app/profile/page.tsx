@@ -2,19 +2,36 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { getCurrency } from '@/lib/storage';
+import { getCurrency, addCurrency } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function ProfilePage() {
   const [currency, setCurrency] = useState(0);
+  const [depositAmount, setDepositAmount] = useState('');
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const refreshCurrency = () => {
     setCurrency(getCurrency());
+  }
+
+  useEffect(() => {
+    refreshCurrency();
   }, []);
   
   const walletAddress = "0x1a2b3c4d5e6f7g8h9i0j...";
@@ -27,15 +44,85 @@ export default function ProfilePage() {
     });
   };
 
+  const handleDeposit = () => {
+    const amount = parseInt(depositAmount, 10);
+    if (!isNaN(amount) && amount > 0) {
+      addCurrency(amount);
+      refreshCurrency();
+      setDepositAmount('');
+      setIsDepositOpen(false);
+      toast({
+        title: "Deposit Successful!",
+        description: `${amount.toLocaleString()} KTC has been added to your wallet.`,
+      });
+    } else {
+       toast({
+        variant: 'destructive',
+        title: "Invalid Amount",
+        description: "Please enter a valid number of coins to deposit.",
+      });
+    }
+  }
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-primary">My Wallet</h1>
         <div className="flex items-center gap-2">
-          <Button>
-            <Upload className="mr-2" />
-            Deposit
-          </Button>
+          <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Upload className="mr-2" />
+                Deposit
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Deposit KTC</DialogTitle>
+                <DialogDescription>
+                  This is a simulation. Enter an amount to add coins to your balance.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                    <div className='p-4 bg-white rounded-lg'>
+                        <QrCode className="h-32 w-32" />
+                    </div>
+                    <p className='text-xs text-muted-foreground text-center max-w-xs'>
+                        Send only KTC to this deposit address. This address does not support NFT deposits.
+                    </p>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="wallet-address">Wallet Address</Label>
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <span id="wallet-address" className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
+                    <Button variant="ghost" size="icon" onClick={handleCopyAddress}>
+                        <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label>Network</Label>
+                  <p className='font-semibold'>Kotela Network</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    placeholder="Enter amount to deposit"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDepositOpen(false)}>Cancel</Button>
+                <Button type="submit" onClick={handleDeposit}>Deposit</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <Button variant="outline">
             <Download className="mr-2" />
             Withdraw
@@ -106,4 +193,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
