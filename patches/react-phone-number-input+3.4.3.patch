@@ -1,0 +1,30 @@
+diff --git a/node_modules/react-phone-number-input/package.json b/node_modules/react-phone-number-input/package.json
+index 5158294..7d37c86 100644
+--- a/node_modules/react-phone-number-input/package.json
++++ b/node_modules/react-phone-number-input/package.json
+@@ -93,6 +93,9 @@
+   "exports": {
+     ".": {
+       "types": "./index.d.ts",
++      "import": "./index.js",
++      "require": "./index.js"
++    },
++    "./flags/*": "./flags/*.svg",
++    "./core": {
++      "types": "./core/index.d.ts",
+       "import": "./core/index.js",
+       "require": "./core/index.cjs"
+     },
+@@ -107,10 +110,6 @@
+       "types": "./max/index.d.ts",
+       "import": "./max/index.js",
+       "require": "./max/index.cjs"
+-    },
+-    "./core": {
+-      "types": "./core/index.d.ts",
+-      "import": "./core/index.js",
+-      "require": "./core/index.cjs"
+     }
+   },
+   "repository": {
+

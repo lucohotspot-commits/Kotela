@@ -178,19 +178,10 @@ const CountrySelectComponent = ({
 }
 
 const FlagComponent = ({ country, countryName }: { country: Country; countryName: string }) => {
-  const Flag = React.useMemo(() => {
-    if (!country || !isCountrySupported(country)) return null
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const { default: flag } = require(`react-phone-number-input/flags/${country}.svg`)
-    return flag
-  }, [country])
-
-  if (!Flag) return null
-
+  // This is a placeholder. In a real app, you'd use an SVG or image component.
   return (
-    <span className="flex h-4 w-6 overflow-hidden rounded-sm bg-foreground/20">
-      <Flag title={countryName} />
+    <span className="flex h-4 w-6 overflow-hidden rounded-sm bg-foreground/20 items-center justify-center text-[10px] font-bold text-background">
+      {country}
     </span>
   )
 }
