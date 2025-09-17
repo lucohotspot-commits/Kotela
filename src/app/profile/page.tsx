@@ -105,15 +105,16 @@ export default function ProfilePage() {
                 Deposit
               </Button>
             </DialogTrigger>
-            <DialogContent className="h-full sm:h-auto sm:max-h-[90vh]">
+            <DialogContent className="sm:max-w-md h-full sm:h-auto flex flex-col">
               <DialogHeader>
                 <DialogTitle>Deposit KTC</DialogTitle>
                 <DialogDescription>
                   This is a simulation. Enter an amount to add coins to your balance.
                 </DialogDescription>
               </DialogHeader>
-              <ScrollArea className="h-full sm:h-auto sm:max-h-[60vh] -mx-6">
-                  <div className="space-y-4 py-4 px-6">
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full pr-6 -mr-6">
+                  <div className="space-y-4 py-4">
                       <div className="flex flex-col items-center justify-center space-y-2">
                           <div className='p-4 bg-white rounded-lg'>
                               <QrCode className="h-32 w-32 text-black" />
@@ -146,7 +147,8 @@ export default function ProfilePage() {
                         />
                       </div>
                   </div>
-              </ScrollArea>
+                </ScrollArea>
+              </div>
               <DialogFooter className="flex-col-reverse sm:flex-row mt-auto pt-4 border-t">
                 <Button type="button" variant="outline" onClick={() => setIsDepositOpen(false)} className='sm:w-auto w-full'>Cancel</Button>
                 <Button type="submit" onClick={handleDeposit} className='sm:w-auto w-full'>Deposit</Button>
@@ -162,9 +164,11 @@ export default function ProfilePage() {
             <Send className="mr-2" />
             Send
           </Button>
-          <Button variant="outline">
-            <Replace className="mr-2" />
-            Transfer
+          <Button variant="outline" asChild>
+            <Link href="/profile/p2p">
+              <Users className="mr-2" />
+              P2P
+            </Link>
           </Button>
         </div>
       </div>
