@@ -56,7 +56,7 @@ export default function RatingsClient() {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null);
 
-  useEffect(() => {
+   useEffect(() => {
     const initialCoins = initialCoinsData.map(generateInitialCoinState);
     setCoins(initialCoins);
     setSelectedCoin(initialCoins.find(c => c.symbol === 'KTC') || initialCoins[0]);
@@ -213,7 +213,7 @@ export default function RatingsClient() {
                     <TabsTrigger value="sell">Sell</TabsTrigger>
                 </TabsList>
                 <TabsContent value="buy">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-lg">
+                    <div className="p-4 border rounded-none">
                         <div className="space-y-4">
                             <h3 className="font-semibold">Buy {selectedCoin.symbol}</h3>
                             <Input type="number" placeholder={`Price (USDT)`} defaultValue={selectedCoin.price.toFixed(4)} readOnly />
@@ -222,49 +222,10 @@ export default function RatingsClient() {
                              <p className='text-sm text-muted-foreground'>Available: 0.00 USDT</p>
                             <Button className="w-full bg-green-600 hover:bg-green-700 text-white">Buy {selectedCoin.symbol}</Button>
                         </div>
-                        <div className="space-y-4">
-                            <h3 className="font-semibold">Order Book</h3>
-                             <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="text-xs h-8">Price(USDT)</TableHead>
-                                        <TableHead className="text-xs h-8 text-right">Amount({selectedCoin.symbol})</TableHead>
-                                        <TableHead className="text-xs h-8 text-right">Total</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {[...Array(5)].map((_, i) => {
-                                        const price = selectedCoin.price * (1 + (Math.random() - 0.45) * 0.01);
-                                        const amount = Math.random() * 2;
-                                        return (
-                                        <TableRow key={i}>
-                                            <TableCell className={`py-1 text-xs text-red-500`}>{price.toFixed(4)}</TableCell>
-                                            <TableCell className="py-1 text-xs text-right">{amount.toFixed(4)}</TableCell>
-                                            <TableCell className="py-1 text-xs text-right">{(price * amount).toFixed(4)}</TableCell>
-                                        </TableRow>
-                                    )})}
-                                     <TableRow>
-                                        <TableCell colSpan={3} className={`py-2 text-lg font-bold text-center ${getChangeColor(selectedCoin.change)}`}>
-                                            {selectedCoin.price.toFixed(4)}
-                                        </TableCell>
-                                    </TableRow>
-                                    {[...Array(5)].map((_, i) => {
-                                        const price = selectedCoin.price * (1 - (Math.random() - 0.45) * 0.01);
-                                        const amount = Math.random() * 2;
-                                        return(
-                                        <TableRow key={i}>
-                                            <TableCell className={`py-1 text-xs text-green-500`}>{price.toFixed(4)}</TableCell>
-                                            <TableCell className="py-1 text-xs text-right">{amount.toFixed(4)}</TableCell>
-                                             <TableCell className="py-1 text-xs text-right">{(price * amount).toFixed(4)}</TableCell>
-                                        </TableRow>
-                                    )})}
-                                </TableBody>
-                            </Table>
-                        </div>
                     </div>
                 </TabsContent>
                  <TabsContent value="sell">
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border rounded-lg">
+                     <div className="p-4 border rounded-none">
                         <div className="space-y-4">
                             <h3 className="font-semibold">Sell {selectedCoin.symbol}</h3>
                             <Input type="number" placeholder="Price (USDT)" defaultValue={selectedCoin.price.toFixed(4)} readOnly />
@@ -272,45 +233,6 @@ export default function RatingsClient() {
                             <Slider defaultValue={[50]} max={100} step={1} />
                             <p className='text-sm text-muted-foreground'>Available: 0.00 {selectedCoin.symbol}</p>
                             <Button className="w-full" variant="destructive">Sell {selectedCoin.symbol}</Button>
-                        </div>
-                        <div className="space-y-4">
-                           <h3 className="font-semibold">Order Book</h3>
-                             <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="text-xs h-8">Price(USDT)</TableHead>
-                                        <TableHead className="text-xs h-8 text-right">Amount({selectedCoin.symbol})</TableHead>
-                                        <TableHead className="text-xs h-8 text-right">Total</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {[...Array(5)].map((_, i) => {
-                                        const price = selectedCoin.price * (1 + (Math.random() - 0.45) * 0.01);
-                                        const amount = Math.random() * 2;
-                                        return (
-                                        <TableRow key={i}>
-                                            <TableCell className={`py-1 text-xs text-red-500`}>{price.toFixed(4)}</TableCell>
-                                            <TableCell className="py-1 text-xs text-right">{amount.toFixed(4)}</TableCell>
-                                            <TableCell className="py-1 text-xs text-right">{(price * amount).toFixed(4)}</TableCell>
-                                        </TableRow>
-                                    )})}
-                                     <TableRow>
-                                        <TableCell colSpan={3} className={`py-2 text-lg font-bold text-center ${getChangeColor(selectedCoin.change)}`}>
-                                            {selectedCoin.price.toFixed(4)}
-                                        </TableCell>
-                                    </TableRow>
-                                    {[...Array(5)].map((_, i) => {
-                                        const price = selectedCoin.price * (1 - (Math.random() - 0.45) * 0.01);
-                                        const amount = Math.random() * 2;
-                                        return(
-                                        <TableRow key={i}>
-                                            <TableCell className={`py-1 text-xs text-green-500`}>{price.toFixed(4)}</TableCell>
-                                            <TableCell className="py-1 text-xs text-right">{amount.toFixed(4)}</TableCell>
-                                             <TableCell className="py-1 text-xs text-right">{(price * amount).toFixed(4)}</TableCell>
-                                        </TableRow>
-                                    )})}
-                                </TableBody>
-                            </Table>
                         </div>
                     </div>
                 </TabsContent>
