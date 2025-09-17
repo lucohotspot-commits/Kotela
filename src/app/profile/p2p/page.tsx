@@ -24,6 +24,7 @@ const advertisersData = [
     name: 'NobleDigital',
     avatar: 'https://picsum.photos/seed/p2p1/40/40',
     isVerified: true,
+    isOnline: true,
     orders: 2388,
     completion: 100,
     rating: 97.9,
@@ -38,6 +39,7 @@ const advertisersData = [
     name: 'Aura-Legal_2417',
     avatar: 'https://picsum.photos/seed/p2p2/40/40',
     isVerified: true,
+    isOnline: false,
     orders: 1923,
     completion: 99.7,
     rating: 85.08,
@@ -52,6 +54,7 @@ const advertisersData = [
     name: 'SEPA-Exchange',
     avatar: 'https://picsum.photos/seed/p2p3/40/40',
     isVerified: false,
+    isOnline: true,
     orders: 3960,
     completion: 97.41,
     rating: 97.41,
@@ -66,6 +69,7 @@ const advertisersData = [
     name: 'CryptoWhale',
     avatar: 'https://picsum.photos/seed/p2p4/40/40',
     isVerified: true,
+    isOnline: true,
     orders: 5012,
     completion: 99.9,
     rating: 99.5,
@@ -118,24 +122,29 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
             <div className="p-4 grid grid-cols-1 md:grid-cols-5 gap-4 items-start">
                 {/* Advertiser Info */}
                 <div className="md:col-span-1">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={advertiser.avatar} />
-                            <AvatarFallback>{advertiser.name.substring(0,2)}</AvatarFallback>
-                        </Avatar>
+                    <div className="flex items-start gap-3">
+                        <div className="relative flex-shrink-0">
+                            <Avatar className="h-10 w-10">
+                                <AvatarFallback>{advertiser.name.substring(0,2)}</AvatarFallback>
+                            </Avatar>
+                            {advertiser.isOnline && (
+                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background rounded-full"></div>
+                            )}
+                        </div>
                         <div className="flex-1">
                             <div className="font-bold text-base flex items-center gap-1">
                                 {advertiser.name}
                                 {advertiser.isVerified && <CheckCircle className="h-4 w-4 text-yellow-500" />}
                             </div>
                             <div className="text-xs text-muted-foreground space-y-1 mt-1">
-                                <div className="flex items-center gap-4">
-                                    <span>Number of completed orders: {advertiser.orders}</span>
-                                    <span>Execution rate: {advertiser.completion.toFixed(2)}%</span>
+                                <div className="flex items-center flex-wrap gap-x-4 gap-y-1">
+                                    <span>{advertiser.orders} orders</span>
+                                    <span className="hidden sm:block">|</span>
+                                    <span>{advertiser.completion.toFixed(2)}% completion</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
-                                    <span>{advertiser.avgReleaseTime} minutes</span>
+                                    <span>Avg. Release: {advertiser.avgReleaseTime} min</span>
                                 </div>
                             </div>
                         </div>
@@ -184,7 +193,7 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
 }
 
 export default function P2PTransferPage() {
-    const [selectedCrypto, setSelectedCrypto] = useState('USDT');
+    const [selectedCrypto, setSelectedCrypto] = useState('KTC');
     const [amount, setAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('All Payments');
     const [region, setRegion] = useState('All Regions');
