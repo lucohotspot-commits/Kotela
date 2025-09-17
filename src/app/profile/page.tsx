@@ -21,8 +21,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const KTC_TO_USD_RATE = 1.25;
+
+const referrals = [
+    { id: 1, user: 'CryptoKing', avatar: 'https://picsum.photos/seed/ref1/40/40', date: '2024-12-10', profit: 150.75 },
+    { id: 2, user: 'SatoshiJr', avatar: 'https://picsum.photos/seed/ref2/40/40', date: '2024-11-25', profit: 75.50 },
+    { id: 3, user: 'CoinDuchess', avatar: 'https://picsum.photos/seed/ref3/40/40', date: '2024-11-18', profit: 225.00 },
+    { id: 4, user: 'MinerMike', avatar: 'https://picsum.photos/seed/ref4/40/40', date: '2024-10-30', profit: 50.25 },
+    { id: 5, user: 'HodlHermit', avatar: 'https://picsum.photos/seed/ref5/40/40', date: '2024-10-15', profit: 300.00 },
+];
 
 export default function ProfilePage() {
   const [currency, setCurrency] = useState(0);
@@ -76,6 +87,8 @@ export default function ProfilePage() {
   
   const currencyAsUSD = (currency * KTC_TO_USD_RATE).toFixed(2);
   const hiddenBalance = "********";
+  
+  const totalReferralProfit = referrals.reduce((acc, ref) => acc + ref.profit, 0);
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
@@ -222,19 +235,59 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-4 text-center border-t pt-4">
                 <div>
                     <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Users className="h-4 w-4" /> Friends Invited</p>
-                    <p className="text-2xl font-bold">0</p>
+                    <p className="text-2xl font-bold">{referrals.length}</p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Coins className="h-4 w-4" /> Total Earnings</p>
-                    <p className="text-2xl font-bold flex items-center justify-center gap-1">0</p>
+                    <p className="text-2xl font-bold flex items-center justify-center gap-1">{totalReferralProfit.toLocaleString()}</p>
                 </div>
             </div>
         </CardContent>
         <CardFooter>
-            <Button variant="outline" className="w-full">
-                View Referral Details
-                <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                        View Referral Details
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Referral Details</DialogTitle>
+                        <DialogDescription>
+                            Here's a list of users you've referred and the profit you've earned.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className='max-h-[50vh]'>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>User</TableHead>
+                                    <TableHead>Date Joined</TableHead>
+                                    <TableHead className="text-right">Profit Earned (KTC)</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {referrals.map((referral) => (
+                                    <TableRow key={referral.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar>
+                                                    <AvatarImage src={referral.avatar} alt={referral.user} />
+                                                    <AvatarFallback>{referral.user.substring(0,2)}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="font-medium">{referral.user}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">{referral.date}</TableCell>
+                                        <TableCell className="text-right font-semibold text-green-500">{referral.profit.toFixed(2)}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+                </DialogContent>
+            </Dialog>
         </CardFooter>
       </Card>
       
