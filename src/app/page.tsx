@@ -7,7 +7,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -42,7 +42,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
       <header className="py-4">
-        <div className="container mx-auto flex w-full flex-col items-start sm:flex-row sm:items-center justify-between gap-4">
+        <div className="container mx-auto flex w-full flex-col items-start sm:flex-row sm:items-start justify-between gap-4">
             <div className="mr-auto">
                  <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">
                     Mine
@@ -138,11 +138,11 @@ export default function Home() {
       </main>
 
       <footer className="w-full p-6 text-center text-xs text-muted-foreground">
-        <p>Built with Next.js and Genkit.</p>
-         <a href="https://github.com/firebase/studio-kotela" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary mt-1">
-            <Github size={14} />
-            View on GitHub
-         </a>
+        <p>Built with love from kotel</p>
+         <Link href="/ratings" className="inline-flex items-center gap-1 hover:text-primary mt-1">
+            <TrendingUp size={14} />
+            View on the trading platform
+         </Link>
       </footer>
     </div>
   );
