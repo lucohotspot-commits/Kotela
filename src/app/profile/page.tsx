@@ -89,7 +89,7 @@ export default function ProfilePage() {
                 Deposit
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Deposit KTC</DialogTitle>
                 <DialogDescription>
@@ -98,8 +98,8 @@ export default function ProfilePage() {
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="flex flex-col items-center justify-center space-y-2">
-                    <div className='p-4 bg-white rounded-lg'>
-                        <QrCode className="h-32 w-32" />
+                    <div className='p-4 bg-card rounded-lg'>
+                        <QrCode className="h-32 w-32 bg-white text-black p-2 rounded-md" />
                     </div>
                     <p className='text-xs text-muted-foreground text-center max-w-xs'>
                         Send only KTC to this deposit address. This address does not support NFT deposits.
@@ -129,7 +129,7 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-              <DialogFooter>
+              <DialogFooter className="flex-col-reverse sm:flex-row">
                 <Button type="button" variant="outline" onClick={() => setIsDepositOpen(false)}>Cancel</Button>
                 <Button type="submit" onClick={handleDeposit}>Deposit</Button>
               </DialogFooter>
