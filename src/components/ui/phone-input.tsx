@@ -5,7 +5,6 @@ import { Check, ChevronsUpDown } from "lucide-react"
 import * as React from "react"
 import {
   Country,
-  parsePhoneNumber,
   PhoneNumber as PhoneNumberType,
 } from "libphonenumber-js/core"
 import "react-phone-number-input/style.css"
@@ -15,6 +14,7 @@ import PhoneInputWithCountry, {
   isPossiblePhoneNumber,
   PhoneInputProps,
   Props,
+  parsePhoneNumber,
 } from "react-phone-number-input"
 
 import { Button } from "@/components/ui/button"
@@ -33,6 +33,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "./scroll-area"
 
 type PhoneInputComponentProps = React.ForwardRefExoticComponent<
   Props<PhoneInputProps> & React.RefAttributes<HTMLInputElement>
@@ -136,40 +137,41 @@ const CountrySelectComponent = ({
         <Command>
           <CommandList>
             <CommandInput placeholder="Search country..." />
-            <CommandEmpty>No country found.</CommandEmpty>
-            <CommandGroup>
-              {options
-                .filter((x) => x.value)
-                .map((option) => (
-                  <CommandItem
-                    className="gap-2"
-                    key={option.value}
-                    onSelect={() => handleSelect(option.value)}
-                  >
-                    <FlagComponent
-                      country={option.value}
-                      countryName={option.label}
-                    />
-                    <span className="flex-1 text-sm">{option.label}</span>
-                    {option.value && (
-                      <span className="text-sm text-foreground/50">
-                        {`+${
-                          parsePhoneNumber(
-                            `+${option.value}1`,
-                            option.value,
-                          )?.countryCallingCode
-                        }`}
-                      </span>
-                    )}
-                    <Check
-                      className={cn(
-                        "ml-auto h-4 w-4",
-                        option.value === value ? "opacity-100" : "opacity-0",
+            <ScrollArea className="h-72">
+              <CommandEmpty>No country found.</CommandEmpty>
+              <CommandGroup>
+                {options
+                  .filter((x) => x.value)
+                  .map((option) => (
+                    <CommandItem
+                      className="gap-2"
+                      key={option.value}
+                      onSelect={() => handleSelect(option.value)}
+                    >
+                      <FlagComponent
+                        country={option.value}
+                        countryName={option.label}
+                      />
+                      <span className="flex-1 text-sm">{option.label}</span>
+                      {option.value && (
+                        <span className="text-sm text-foreground/50">
+                          {`+${
+                            parsePhoneNumber(
+                              `+${option.value}1`,
+                            )?.countryCallingCode
+                          }`}
+                        </span>
                       )}
-                    />
-                  </CommandItem>
-                ))}
-            </CommandGroup>
+                      <Check
+                        className={cn(
+                          "ml-auto h-4 w-4",
+                          option.value === value ? "opacity-100" : "opacity-0",
+                        )}
+                      />
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+            </ScrollArea>
           </CommandList>
         </Command>
       </PopoverContent>
@@ -177,8 +179,7 @@ const CountrySelectComponent = ({
   )
 }
 
-const FlagComponent = ({ country, countryName }: { country: Country; countryName: string }) => {
-  // This is a placeholder. In a real app, you'd use an SVG or image component.
+const FlagComponent = ({ country }: { country: Country; countryName: string }) => {
   return (
     <span className="flex h-4 w-6 overflow-hidden rounded-sm bg-foreground/20 items-center justify-center text-[10px] font-bold text-background">
       {country}
