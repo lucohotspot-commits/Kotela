@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from 'react';
@@ -9,11 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { Search, PlayCircle, Plane, Disc, CircleDollarSign, Dice5 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 
 const bonusGames = [
   {
     name: 'Video Play',
+    slug: 'video-play',
     icon: <PlayCircle className="h-8 w-8 text-red-500" />,
     apr: '5.42%',
     isHot: true,
@@ -22,6 +25,7 @@ const bonusGames = [
   },
   {
     name: 'Aviator',
+    slug: 'aviator',
     icon: <Plane className="h-8 w-8 text-blue-500" />,
     apr: 'Up to 25x',
     isHot: true,
@@ -30,6 +34,7 @@ const bonusGames = [
   },
   {
     name: 'Spin the Wheel',
+    slug: 'spin-the-wheel',
     icon: <Disc className="h-8 w-8 text-purple-500" />,
     apr: '0.88%',
     isHot: false,
@@ -38,6 +43,7 @@ const bonusGames = [
   },
   {
     name: 'Coin Flip',
+    slug: 'coin-flip',
     icon: <CircleDollarSign className="h-8 w-8 text-yellow-500" />,
     apr: '2x or 0x',
     isHot: false,
@@ -46,6 +52,7 @@ const bonusGames = [
   },
     {
     name: 'Lucky Dice',
+    slug: 'lucky-dice',
     icon: <Dice5 className="h-8 w-8 text-green-500" />,
     apr: '10.00%',
     isHot: true,
@@ -154,8 +161,10 @@ export default function LeaderboardPage() {
                             </div>
                         </TableCell>
                         <TableCell className="text-right">
-                            <Button className='bg-yellow-500 hover:bg-yellow-600 text-black'>
-                                {game.action}
+                           <Button asChild className='bg-yellow-500 hover:bg-yellow-600 text-black'>
+                                <Link href={`/bonus/${game.slug}`}>
+                                    {game.action}
+                                </Link>
                             </Button>
                         </TableCell>
                         </TableRow>
