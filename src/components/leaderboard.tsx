@@ -35,28 +35,28 @@ export function Leaderboard({ scores }: LeaderboardProps) {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-6 w-6 text-yellow-500" />
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <Trophy className="h-5 w-5 text-yellow-500" />
           <span>Leaderboard</span>
         </CardTitle>
-        <CardDescription>Your top scores.</CardDescription>
+        <CardDescription className="text-sm">Your top scores.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-2">
         {scores.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Rank</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead className="text-right">Date</TableHead>
+                <TableHead className="w-[80px] text-xs">Rank</TableHead>
+                <TableHead className="text-xs">Score</TableHead>
+                <TableHead className="text-right text-xs">Date</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {scoresToShow.map((score, index) => (
                 <TableRow key={`${score.date}-${score.score}-${index}`}>
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell>{score.score.toLocaleString()}</TableCell>
-                  <TableCell className="text-right text-sm text-muted-foreground">
+                  <TableCell className="font-medium text-sm">{index + 1}</TableCell>
+                  <TableCell className="text-sm">{score.score.toLocaleString()}</TableCell>
+                  <TableCell className="text-right text-xs text-muted-foreground">
                     {new Date(score.date).toLocaleDateString()}
                   </TableCell>
                 </TableRow>
@@ -64,17 +64,17 @@ export function Leaderboard({ scores }: LeaderboardProps) {
             </TableBody>
           </Table>
         ) : (
-          <div className="text-center text-muted-foreground border-2 border-dashed rounded-lg p-8">
-            <p>No scores yet. Be the first!</p>
+          <div className="text-center text-muted-foreground border-2 border-dashed rounded-lg p-6">
+            <p className="text-sm">No scores yet. Be the first!</p>
           </div>
         )}
       </CardContent>
       {scores.length > INITIAL_DISPLAY_COUNT && (
-        <CardFooter className="justify-center border-t pt-4">
+        <CardFooter className="justify-center border-t pt-3 pb-3">
           <Button
             variant="ghost"
             onClick={() => setShowAll(!showAll)}
-            className="w-full"
+            className="w-full h-8 text-sm"
           >
             {showAll ? (
               <>

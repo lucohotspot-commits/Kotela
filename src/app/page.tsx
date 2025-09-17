@@ -35,74 +35,74 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="absolute top-0 right-0 p-4 sm:p-6 flex items-center gap-2 sm:gap-4 z-10">
+       <header className="absolute top-0 right-0 p-4 flex items-center gap-2 z-10">
         <div className="text-right">
-          <p className="text-xs sm:text-sm text-muted-foreground">My Points</p>
-          <p className="text-xl sm:text-2xl font-bold text-primary">{currency.toLocaleString()}</p>
+          <p className="text-xs text-muted-foreground">My Points</p>
+          <p className="text-xl font-bold text-primary">{currency.toLocaleString()}</p>
         </div>
         <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="lg" className="text-sm sm:text-base px-4 sm:px-8">
-              <ShoppingCart className="mr-2 h-4 w-4 sm:h-auto sm:w-auto" /> Store
+            <Button variant="outline" size="sm">
+              <ShoppingCart className="mr-2" /> Store
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-auto">
+          <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-[90vh] sm:max-h-[800px]">
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
                 <ShoppingCart />
                 Boost Store
               </DialogTitle>
             </DialogHeader>
-            <ScrollArea className="h-full">
-              <div className="p-1">
+            <ScrollArea className="h-full -mx-6">
+              <div className="px-6 pb-6">
                 <Store onPurchase={refreshData} />
               </div>
             </ScrollArea>
           </DialogContent>
         </Dialog>
       </header>
-      
-      <main className="flex-grow flex flex-col items-center justify-center p-4 sm:p-8 mt-24 sm:mt-8">
-        <div className="flex flex-col items-center text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-primary font-headline">
+
+      <main className="flex-grow flex flex-col items-center justify-center p-4 pt-20 sm:pt-4">
+        <div className="flex flex-col items-center text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
             Kotela
           </h1>
-          <p className="mt-2 text-lg text-muted-foreground max-w-prose">
+          <p className="mt-2 text-base text-muted-foreground max-w-prose">
             Tap once to start the game. Use boosts to get a high score!
           </p>
         </div>
         
-        <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-12 lg:gap-16">
+        <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-16">
           <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
-          <div className="w-full max-w-md flex flex-col gap-8">
+          <div className="w-full max-w-md flex flex-col gap-6">
             <Leaderboard scores={scores} />
             <div className="p-4 border rounded-lg">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2"><Rocket/> My Boosts</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <h3 className="text-base font-semibold mb-3 flex items-center gap-2"><Rocket/> My Boosts</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Rocket className="w-5 h-5 text-yellow-500"/>
-                        <span className="font-bold">Rocket x {inventory.rocket || 0}</span>
+                        <Rocket className="w-4 h-4 text-yellow-500"/>
+                        <span className="font-bold text-xs">Rocket x {inventory.rocket || 0}</span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Bomb className="w-5 h-5 text-red-500"/>
-                        <span className="font-bold">Missile x {inventory.missile || 0}</span>
+                        <Bomb className="w-4 h-4 text-red-500"/>
+                        <span className="font-bold text-xs">Missile x {inventory.missile || 0}</span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Clock className="w-5 h-5 text-blue-500"/>
-                        <span className="font-bold">Extra Time x {inventory.extraTime || 0}</span>
+                        <Clock className="w-4 h-4 text-blue-500"/>
+                        <span className="font-bold text-xs">Extra Time x {inventory.extraTime || 0}</span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Snowflake className="w-5 h-5 text-cyan-400"/>
-                        <span className="font-bold">Freeze Time x {inventory.freezeTime || 0}</span>
+                        <Snowflake className="w-4 h-4 text-cyan-400"/>
+                        <span className="font-bold text-xs">Freeze Time x {inventory.freezeTime || 0}</span>
                     </div>
                      <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Zap className="w-5 h-5 text-purple-500"/>
-                        <span className="font-bold">Frenzy x {inventory.frenzy || 0}</span>
+                        <Zap className="w-4 h-4 text-purple-500"/>
+                        <span className="font-bold text-xs">Frenzy x {inventory.frenzy || 0}</span>
                     </div>
                      <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <Gift className="w-5 h-5 text-green-500"/>
-                        <span className="font-bold">Score Bomb x {inventory.scoreBomb || 0}</span>
+                        <Gift className="w-4 h-4 text-green-500"/>
+                        <span className="font-bold text-xs">Score Bomb x {inventory.scoreBomb || 0}</span>
                     </div>
                 </div>
             </div>
@@ -110,10 +110,10 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="w-full p-8 text-center text-sm text-muted-foreground mt-auto">
+      <footer className="w-full p-6 text-center text-xs text-muted-foreground">
         <p>Built with Next.js and Genkit.</p>
-         <a href="https://github.com/firebase/studio-kotela" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-primary mt-2">
-            <Github size={16} />
+         <a href="https://github.com/firebase/studio-kotela" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary mt-1">
+            <Github size={14} />
             View on GitHub
          </a>
       </footer>

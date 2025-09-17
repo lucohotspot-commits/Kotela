@@ -72,29 +72,29 @@ export function Store({ onPurchase }: StoreProps) {
 
 
   return (
-    <div className="space-y-6">
-        <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary">
-            <Coins className="w-6 h-6 text-yellow-500"/>
-            <span className='text-xl'>{currency.toLocaleString()}</span>
+    <div className="space-y-4">
+        <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary px-2">
+            <Coins className="w-5 h-5 text-yellow-500"/>
+            <span className='text-lg'>{currency.toLocaleString()}</span>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {boosts.map((boost) => (
-              <Card key={boost.id} className="flex flex-col shadow-sm hover:shadow-md transition-shadow duration-300">
-                <CardHeader className="flex-row items-center gap-4 space-y-0 pb-4">
+              <Card key={boost.id} className="flex flex-col shadow-sm hover:shadow-lg transition-shadow duration-300">
+                <CardHeader className="flex-row items-start gap-4 space-y-0 pb-2">
                     <div className="p-3 bg-muted rounded-full">
-                        <boost.icon className={`w-6 h-6 ${boost.color}`}/>
+                        <boost.icon className={`w-5 h-5 ${boost.color}`}/>
                     </div>
-                    <div className="space-y-1">
-                        <CardTitle>{boost.name}</CardTitle>
-                        <CardDescription>{boost.description}</CardDescription>
+                    <div className="space-y-0.5">
+                        <CardTitle className="text-base">{boost.name}</CardTitle>
+                        <CardDescription className="text-xs">{boost.description}</CardDescription>
                     </div>
                 </CardHeader>
-                <CardFooter className="flex-grow flex items-center justify-between mt-auto pt-4 border-t">
+                <CardFooter className="flex-grow flex items-center justify-between mt-auto pt-3 pb-3 px-4 border-t">
                   {boost.free ? (
                      <AlertDialog>
                       <AlertDialogTrigger asChild>
-                         <Button variant="outline" className='w-full'>
+                         <Button variant="outline" size="sm" className='w-full'>
                             <Youtube className="mr-2 text-red-600"/> Watch Ad
                         </Button>
                       </AlertDialogTrigger>
@@ -128,11 +128,11 @@ export function Store({ onPurchase }: StoreProps) {
                     </AlertDialog>
                   ) : (
                     <>
-                        <div className="font-bold text-lg flex items-center gap-1.5">
-                            <Coins className="w-5 h-5 text-yellow-500" />
+                        <div className="font-bold text-base flex items-center gap-1">
+                            <Coins className="w-4 h-4 text-yellow-500" />
                             {boost.cost.toLocaleString()}
                         </div>
-                        <Button onClick={() => handlePurchase(boost.id, boost.cost)} disabled={currency < boost.cost}>
+                        <Button onClick={() => handlePurchase(boost.id, boost.cost)} disabled={currency < boost.cost} size="sm">
                             Buy
                         </Button>
                     </>
