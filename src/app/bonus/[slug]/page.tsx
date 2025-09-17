@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plane, Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react';
+import { Plane, Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, ChevronLeft } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -64,10 +64,14 @@ const gameDetails: { [key: string]: { name: string; description: string, icon: R
 };
 
 const videos = [
-    { id: 1, title: 'Learn Next.js in 100 Seconds', duration: '1:40', reward: 50, youtubeId: 'Sklc_fQB-B0', watchTime: 60 },
-    { id: 2, title: 'The story of Genkit', duration: '6:37', reward: 75, youtubeId: 'j8-k0f9vR8g', watchTime: 60 },
-    { id: 3, title: 'Fireship Explains The End', duration: '3:00', reward: 100, youtubeId: 'c5Gf0_C3F10', watchTime: 60 },
-    { id: 4, title: 'The Most Important New UI Framework', duration: '9:25', reward: 150, youtubeId: 'pS8hhKM30iY', watchTime: 60 },
+    { id: 1, title: 'Learn App Hosting', duration: '1:40', reward: 50, youtubeId: 'Vxa_DzLtlTI', watchTime: 60 },
+    { id: 2, title: 'AI-powered Apps with Firebase', duration: '6:37', reward: 75, youtubeId: 'LXb3EKWsInQ', watchTime: 60 },
+    { id: 3, title: 'Get Started with Firebase', duration: '3:00', reward: 100, youtubeId: 'Vxa_DzLtlTI', watchTime: 60 },
+    { id: 4, title: 'Firebase Crashlytics', duration: '9:25', reward: 150, youtubeId: 'Vxa_DzLtlTI', watchTime: 60 },
+    { id: 5, title: 'Firebase Remote Config', duration: '5:10', reward: 125, youtubeId: 'Vxa_DzLtlTI', watchTime: 60 },
+    { id: 6, title: 'Build a Gen AI chat app', duration: '8:15', reward: 200, youtubeId: 'LXb3EKWsInQ', watchTime: 60 },
+    { id: 7, title: 'What is Genkit?', duration: '4:30', reward: 110, youtubeId: 'Vxa_DzLtlTI', watchTime: 60 },
+    { id: 8, title: 'The future of AI', duration: '12:00', reward: 250, youtubeId: 'LXb3EKWsInQ', watchTime: 60 },
 ]
 
 const AviatorGame = () => {
@@ -338,6 +342,15 @@ const VideoPlayGame = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
     const [claimedRewards, setClaimedRewards] = useState<number[]>([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const videosPerPage = 4;
+
+    const paginatedVideos = useMemo(() => {
+        const startIndex = currentPage * videosPerPage;
+        return videos.slice(startIndex, startIndex + videosPerPage);
+    }, [currentPage]);
+    
+    const totalPages = Math.ceil(videos.length / videosPerPage);
 
     const handleSelectVideo = (video: typeof videos[0]) => {
         setSelectedVideo(video);
@@ -422,35 +435,56 @@ const VideoPlayGame = () => {
                 </Card>
             </div>
             <div className="lg:col-span-1">
-                <Card>
+                <Card className='flex flex-col'>
                     <CardHeader>
                         <CardTitle>Playlist</CardTitle>
                     </CardHeader>
-                    <CardContent className='p-2'>
-                        <ScrollArea className="h-[420px] pr-2">
-                            <div className="space-y-2">
-                            {videos.map(video => (
-                                <button key={video.id} onClick={() => handleSelectVideo(video)} className={cn("flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-muted", selectedVideo.id === video.id && "bg-muted")}>
-                                    <div className="relative w-[120px] h-[68px] flex-shrink-0">
-                                        <Image src={getThumbnailUrl(video.youtubeId)} alt={video.title} fill className="rounded-md object-cover" />
-                                        {isClaimed(video.id) && (
-                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
-                                                <CheckCircle className="w-6 h-6 text-green-400" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className='flex-1'>
-                                        <p className="font-semibold text-xs leading-tight">{video.title}</p>
-                                        <p className="text-xs text-muted-foreground">{video.duration}</p>
-                                         {isClaimed(video.id) && (
-                                            <Badge variant="secondary" className='mt-1 text-green-600 bg-green-500/10 text-[10px] px-1.5 py-0'>Claimed</Badge>
-                                        )}
-                                    </div>
-                                </button>
-                            ))}
-                            </div>
-                        </ScrollArea>
+                    <CardContent className='p-2 flex-grow'>
+                        <div className="space-y-2">
+                        {paginatedVideos.map(video => (
+                            <button key={video.id} onClick={() => handleSelectVideo(video)} className={cn("flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-muted", selectedVideo.id === video.id && "bg-muted")}>
+                                <div className="relative w-32 h-[72px] flex-shrink-0">
+                                    <Image src={getThumbnailUrl(video.youtubeId)} alt={video.title} fill className="rounded-md object-cover" />
+                                    {isClaimed(video.id) && (
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
+                                            <CheckCircle className="w-6 h-6 text-green-400" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className='flex-1'>
+                                    <p className="font-semibold text-sm leading-tight">{video.title}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{video.duration}</p>
+                                     {isClaimed(video.id) && (
+                                        <Badge variant="secondary" className='mt-1 text-green-600 bg-green-500/10 text-[10px] px-1.5 py-0'>Claimed</Badge>
+                                    )}
+                                </div>
+                            </button>
+                        ))}
+                        </div>
                     </CardContent>
+                    <CardFooter className="flex justify-between items-center p-2 border-t">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => p - 1)}
+                            disabled={currentPage === 0}
+                        >
+                            <ChevronLeft className="mr-1" />
+                            Prev
+                        </Button>
+                        <span className="text-sm text-muted-foreground">
+                            Page {currentPage + 1} of {totalPages}
+                        </span>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setCurrentPage(p => p + 1)}
+                            disabled={currentPage >= totalPages - 1}
+                        >
+                            Next
+                            <ChevronRight className="ml-1" />
+                        </Button>
+                    </CardFooter>
                 </Card>
             </div>
         </div>
@@ -915,5 +949,3 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
-    
