@@ -21,11 +21,13 @@ import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
 import { ChevronRight, ShieldCheck, Camera, Check, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { PhoneInput } from '@/components/ui/phone-input';
+import { CountrySelect } from '@/components/ui/country-select';
 
 const formSchema = z.object({
-  firstName: z.string().min(2, { message: "First name must be at least 2 characters." }),
+  country: z.string({ required_error: "Please select a country." }),
+  phoneNumber: z.string().min(10, { message: "Please enter a valid phone number." }),
   surname: z.string().min(2, { message: "Surname must be at least 2 characters." }),
   givenName: z.string().optional(),
   middleName: z.string().optional(),
@@ -47,7 +49,6 @@ export default function VerifyPage() {
   const form = useForm<VerificationFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
       surname: "",
       givenName: "",
       middleName: "",
@@ -117,7 +118,7 @@ export default function VerifyPage() {
   
   const progress = (step / 3) * 100;
 
-  const isStep1Valid = form.watch('firstName') && form.watch('surname') && form.watch('dob') && !form.getFieldState('firstName').invalid && !form.getFieldState('surname').invalid && !form.getFieldState('dob').invalid;
+  const isStep1Valid = form.watch('country') && form.watch('phoneNumber') && form.watch('surname') && form.watch('dob') && !form.getFieldState('country').invalid && !form.getFieldState('phoneNumber').invalid && !form.getFieldState('surname').invalid && !form.getFieldState('dob').invalid;
   const isStep2Valid = form.watch('document') && form.watch('document').length > 0;
 
   return (
@@ -156,13 +157,30 @@ export default function VerifyPage() {
                         <CardDescription>Enter your legal name and date of birth exactly as they appear on your government-issued ID.</CardDescription>
                     </CardHeader>
                     <CardContent className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                        <FormField control={form.control} name="firstName" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>First Name (Required)</FormLabel>
-                                <FormControl><Input placeholder="John" {...field} /></FormControl>
+                        <FormField
+                            control={form.control}
+                            name="country"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Country (Required)</FormLabel>
+                                    <CountrySelect onValueChange={field.onChange} defaultValue={field.value} />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="phoneNumber"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Phone Number (Required)</FormLabel>
+                                <FormControl>
+                                    <PhoneInput international defaultCountry="US" {...field} />
+                                </FormControl>
                                 <FormMessage />
-                            </FormItem>
-                        )} />
+                                </FormItem>
+                            )}
+                        />
                          <FormField control={form.control} name="surname" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Surname (Required)</FormLabel>
