@@ -78,7 +78,9 @@ export default function ProfilePage() {
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-primary">My Wallet</h1>
+        <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
+            <User className="h-6 w-6" /> My Wallet
+        </h1>
         <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
           <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
             <DialogTrigger asChild>
