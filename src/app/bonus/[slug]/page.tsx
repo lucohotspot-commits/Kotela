@@ -312,7 +312,7 @@ const SpinWheelGame = () => {
     const [rotation, setRotation] = useState(0);
     const [spinning, setSpinning] = useState(false);
     const [betAmount, setBetAmount] = useState(10);
-    const [balance, setBalance] = useState(getCurrency());
+    const [balance, setBalance] = useState(0);
 
     const segments = [
         { value: 2, style: 'bg-green-500/50', textColor: 'text-green-50' },
@@ -350,8 +350,9 @@ const SpinWheelGame = () => {
         const randomSpins = Math.floor(Math.random() * 5) + 8; // 8 to 13 full spins
         const randomStop = Math.random() * 360;
         const targetRotation = rotation + (randomSpins * 360) + randomStop;
-
-        const prizeIndex = Math.floor(((targetRotation + segmentAngle / 2) % 360) / segmentAngle);
+        
+        const normalizedRotation = (targetRotation % 360 + 360) % 360;
+        const prizeIndex = Math.floor((normalizedRotation + segmentAngle / 2) / segmentAngle);
         const prizeMultiplier = segments[segments.length - 1 - prizeIndex].value;
 
         setRotation(targetRotation);
@@ -387,8 +388,8 @@ const SpinWheelGame = () => {
                     <div className="absolute -top-4 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-primary z-10"></div>
                     <div
                         className={cn(
-                            "relative w-full h-full rounded-full border-8 border-primary/20 transition-transform duration-[7000ms] ease-out",
-                            !spinning && "animate-[spin_30s_linear_infinite]"
+                            "relative w-full h-full rounded-full border-8 border-primary/20",
+                            spinning ? "transition-transform duration-[7000ms] ease-out" : "animate-[spin_30s_linear_infinite]"
                         )}
                         style={{ transform: `rotate(${rotation}deg)` }}
                     >
