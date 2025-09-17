@@ -230,14 +230,20 @@ export default function RatingsClient() {
                         
                         <Bar yAxisId="price" dataKey="close" barSize={1} shape={(props) => {
                             const { x, y, width, height, payload } = props;
+                            if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
                             const isUp = payload.close > payload.open;
                             const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-5))';
                             const candleWidth = 4;
-                            const candleX = (x ?? 0) + (width ?? 0)/2 - candleWidth/2;
+                            const candleX = x + width/2 - candleWidth/2;
+                             
+                            const highY = Math.min(y, y + height);
+                             const lowY = Math.max(y, y + height);
+                             const bodyY = isUp ? y + height : y;
+                             const bodyHeight = height;
 
                             return <>
-                                <rect x={candleX} y={isUp ? y : (y ?? 0) + (height ?? 0)} width={candleWidth} height={Math.abs(height ?? 0)} fill={color} />
-                                <line x1={(x ?? 0) + (width ?? 0) / 2} y1={payload.high > payload.low ? (isUp ? y : (y ?? 0) + (height ?? 0)) : y} x2={(x ?? 0) + (width ?? 0) / 2} y2={(y ?? 0) + height} stroke={color} strokeWidth={1}/>
+                               <line x1={candleX + candleWidth/2} y1={highY} x2={candleX + candleWidth/2} y2={lowY} stroke={color} strokeWidth={1}/>
+                               <rect x={candleX} y={bodyY} width={candleWidth} height={Math.abs(bodyHeight)} fill={color} />
                             </>
                         }} />
 
@@ -275,16 +281,16 @@ export default function RatingsClient() {
                     <p className='text-xs text-muted-foreground'>Avbl: 0.00000000 {selectedCoin.symbol}</p>
                     <div className='relative'>
                         <Input type="text" placeholder='Price' defaultValue={selectedCoin.price.toFixed(4)} className='pr-16' />
-                        <span className='absolute right-3 top-1/2 -translate-y-1'2 text-xs font-semibold text-muted-foreground'>USDT</span>
+                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
                     <div className='relative'>
                         <Input type="number" placeholder='Amount' className='pr-16' />
-                        <span className='absolute right-3 top-1/2 -translate-y-1'2 text-xs font-semibold text-muted-foreground'>{selectedCoin.symbol}</span>
+                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>{selectedCoin.symbol}</span>
                     </div>
                     <Slider defaultValue={[50]} max={100} step={1} />
                      <div className='relative'>
                         <Input type="number" placeholder='Total' className='pr-16' />
-                        <span className='absolute right-3 top-1/2 -translate-y-1'2 text-xs font-semibold text-muted-foreground'>USDT</span>
+                        <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
                     <Button className="w-full" variant="destructive">Sell {selectedCoin.symbol}</Button>
                 </div>
@@ -316,7 +322,7 @@ export default function RatingsClient() {
                             </TableCell>
                             <TableCell className="text-right font-mono text-xs py-1 px-2">${coin.price.toFixed(4)}</TableCell>
                             <TableCell className={`text-right font-mono text-xs py-1 px-2 ${getChangeColor(coin.change)}`}>
-                                {coin.change > 0 ? '+' : ''}{((coin.change / (coin.price - selectedCoin.change)) * 100).toFixed(2)}%
+                                {coin.change > 0 ? '+' : ''}{((coin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%
                             </TableCell>
                             </TableRow>
                         ))}
@@ -330,5 +336,7 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
 
     
