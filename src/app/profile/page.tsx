@@ -105,49 +105,49 @@ export default function ProfilePage() {
                 Deposit
               </Button>
             </DialogTrigger>
-            <DialogContent className="h-full sm:h-auto sm:max-h-[90vh] flex flex-col">
+            <DialogContent className="h-full sm:h-auto sm:max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle>Deposit KTC</DialogTitle>
                 <DialogDescription>
                   This is a simulation. Enter an amount to add coins to your balance.
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex-grow overflow-y-auto -mx-6 px-6">
-                <div className="space-y-4 py-4">
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                        <div className='p-4 bg-white rounded-lg'>
-                            <QrCode className="h-32 w-32 text-black" />
-                        </div>
-                        <p className='text-xs text-muted-foreground text-center max-w-xs'>
-                            Send only KTC to this deposit address. This address does not support NFT deposits.
-                        </p>
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="wallet-address-deposit">Wallet Address</Label>
-                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                        <span id="wallet-address-deposit" className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
-                        <Button variant="ghost" size="icon" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
-                            <Copy className="h-4 w-4" />
-                        </Button>
+              <ScrollArea className="h-full sm:h-auto sm:max-h-[60vh] -mx-6">
+                  <div className="space-y-4 py-4 px-6">
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                          <div className='p-4 bg-white rounded-lg'>
+                              <QrCode className="h-32 w-32 text-black" />
+                          </div>
+                          <p className='text-xs text-muted-foreground text-center max-w-xs'>
+                              Send only KTC to this deposit address. This address does not support NFT deposits.
+                          </p>
                       </div>
-                    </div>
-                    <div className="space-y-1">
-                      <Label>Network</Label>
-                      <p className='font-semibold'>Kotela Network</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="amount">Amount</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="Enter amount to deposit"
-                        value={depositAmount}
-                        onChange={(e) => setDepositAmount(e.target.value)}
-                      />
-                    </div>
-                </div>
-              </div>
-              <DialogFooter className="flex-col-reverse sm:flex-row mt-auto pt-4 border-t -mx-6 px-6 pb-6 sm:pb-6">
+                      <div className="space-y-1">
+                        <Label htmlFor="wallet-address-deposit">Wallet Address</Label>
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <span id="wallet-address-deposit" className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
+                          <Button variant="ghost" size="icon" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
+                              <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label>Network</Label>
+                        <p className='font-semibold'>Kotela Network</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="amount">Amount</Label>
+                        <Input
+                          id="amount"
+                          type="number"
+                          placeholder="Enter amount to deposit"
+                          value={depositAmount}
+                          onChange={(e) => setDepositAmount(e.target.value)}
+                        />
+                      </div>
+                  </div>
+              </ScrollArea>
+              <DialogFooter className="flex-col-reverse sm:flex-row mt-auto pt-4 border-t">
                 <Button type="button" variant="outline" onClick={() => setIsDepositOpen(false)} className='sm:w-auto w-full'>Cancel</Button>
                 <Button type="submit" onClick={handleDeposit} className='sm:w-auto w-full'>Deposit</Button>
               </DialogFooter>
