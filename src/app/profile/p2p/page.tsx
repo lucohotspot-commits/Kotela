@@ -82,6 +82,55 @@ const advertisersData = [
   },
 ];
 
+const sellAdvertisersData = [
+    {
+        name: 'QuickSente',
+        avatar: 'https://picsum.photos/seed/p2psell1/40/40',
+        isVerified: true,
+        isOnline: true,
+        orders: 1542,
+        completion: 99.8,
+        rating: 98.5,
+        price: 0.99,
+        available: 18000.00,
+        limitMin: 100,
+        limitMax: 15000,
+        payments: ['Jpesa', 'Pesapal'],
+        avgReleaseTime: 4,
+    },
+    {
+        name: 'UGExchange',
+        avatar: 'https://picsum.photos/seed/p2psell2/40/40',
+        isVerified: false,
+        isOnline: true,
+        orders: 850,
+        completion: 98.5,
+        rating: 97.2,
+        price: 0.98,
+        available: 9500.00,
+        limitMin: 50,
+        limitMax: 5000,
+        payments: ['TransID', 'Pesapal'],
+        avgReleaseTime: 6,
+    },
+    {
+        name: 'NaijaCrypto',
+        avatar: 'https://picsum.photos/seed/p2psell3/40/40',
+        isVerified: true,
+        isOnline: false,
+        orders: 3201,
+        completion: 99.1,
+        rating: 99.0,
+        price: 1.00,
+        available: 50000.00,
+        limitMin: 200,
+        limitMax: 20000,
+        payments: ['TransID', 'Bank Transfer'],
+        avgReleaseTime: 2,
+    },
+];
+
+
 const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'KTC', 'SHIB', 'USDC'];
 const allPaymentMethods = ['All Payments', 'SEPA (EU) bank transfer', 'Bank Transfer', 'SEPA Instant', 'ZEN', 'Pesapal', 'Jpesa', 'TransID'];
 const fiatCurrencies = ['USDT', 'EUR', 'USD', 'UGX', 'KES', 'NGN'];
@@ -103,6 +152,12 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
         }
         if (payment.toLowerCase().includes('sepa')) {
             return 'bg-blue-500';
+        }
+        if (payment.toLowerCase().includes('jpesa') || payment.toLowerCase().includes('pesapal')) {
+            return 'bg-green-500';
+        }
+        if (payment.toLowerCase().includes('transid')) {
+            return 'bg-purple-500';
         }
         return 'bg-gray-400';
     }
@@ -154,10 +209,10 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
                 {/* Price */}
                 <div className="text-sm">
                     <p className="text-xs text-muted-foreground md:hidden">Price</p>
-                    <p className="flex items-baseline gap-1">
+                    <div className="flex items-baseline gap-1">
                         <span className="text-lg font-semibold">{priceDisplay(advertiser.price)}</span>
                         <span className="text-base text-muted-foreground font-serif">{fiatCurrency}</span>
-                    </p>
+                    </div>
                 </div>
                 
                 {/* Available / Limit */}
@@ -202,14 +257,15 @@ export default function P2PTransferPage() {
     const { toast } = useToast();
 
     const advertisers = useMemo(() => {
+        const sourceData = tradeMode === 'buy' ? advertisersData : sellAdvertisersData;
         const rate = conversionRates[fiatCurrency] || 1;
-        return advertisersData.map(ad => ({
+        return sourceData.map(ad => ({
             ...ad,
             price: ad.price * rate,
             limitMin: ad.limitMin * rate,
             limitMax: ad.limitMax * rate
         }));
-    }, [fiatCurrency]);
+    }, [fiatCurrency, tradeMode]);
 
     const filteredAdvertisers = useMemo(() => {
         let result = advertisers;
