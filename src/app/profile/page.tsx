@@ -112,7 +112,7 @@ export default function ProfilePage() {
                   This is a simulation. Enter an amount to add coins to your balance.
                 </DialogDescription>
               </DialogHeader>
-              <ScrollArea className="flex-grow -mx-6 px-6">
+              <div className="flex-grow overflow-y-auto -mx-6 px-6">
                 <div className="space-y-4 py-4">
                     <div className="flex flex-col items-center justify-center space-y-2">
                         <div className='p-4 bg-white rounded-lg'>
@@ -146,10 +146,10 @@ export default function ProfilePage() {
                       />
                     </div>
                 </div>
-              </ScrollArea>
-              <DialogFooter className="flex-col-reverse sm:flex-row mt-auto pt-4 border-t">
-                <Button type="button" variant="outline" onClick={() => setIsDepositOpen(false)}>Cancel</Button>
-                <Button type="submit" onClick={handleDeposit}>Deposit</Button>
+              </div>
+              <DialogFooter className="flex-col-reverse sm:flex-row mt-auto pt-4 border-t -mx-6 px-6 pb-6 sm:pb-6">
+                <Button type="button" variant="outline" onClick={() => setIsDepositOpen(false)} className='sm:w-auto w-full'>Cancel</Button>
+                <Button type="submit" onClick={handleDeposit} className='sm:w-auto w-full'>Deposit</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -356,5 +356,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
