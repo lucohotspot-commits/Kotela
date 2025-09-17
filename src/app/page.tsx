@@ -6,7 +6,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -45,7 +45,7 @@ export default function Home() {
               <ShoppingCart className="mr-2" /> Store
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[625px]">
+          <DialogContent className="sm:max-w-4xl">
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
                 <ShoppingCart />
@@ -74,18 +74,30 @@ export default function Home() {
             <Leaderboard scores={scores} />
             <div className="p-4 border rounded-lg">
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><Rocket/> My Boosts</h3>
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                         <Rocket className="w-5 h-5 text-yellow-500"/>
-                        <span className="font-bold">Rocket (2x) x {inventory.rocket || 0}</span>
+                        <span className="font-bold">Rocket x {inventory.rocket || 0}</span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                         <Bomb className="w-5 h-5 text-red-500"/>
-                        <span className="font-bold">Missile (3x) x {inventory.missile || 0}</span>
+                        <span className="font-bold">Missile x {inventory.missile || 0}</span>
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                         <Clock className="w-5 h-5 text-blue-500"/>
-                        <span className="font-bold">Extra Time (+10s) x {inventory.extraTime || 0}</span>
+                        <span className="font-bold">Extra Time x {inventory.extraTime || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                        <Snowflake className="w-5 h-5 text-cyan-400"/>
+                        <span className="font-bold">Freeze Time x {inventory.freezeTime || 0}</span>
+                    </div>
+                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                        <Zap className="w-5 h-5 text-purple-500"/>
+                        <span className="font-bold">Frenzy x {inventory.frenzy || 0}</span>
+                    </div>
+                     <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                        <Gift className="w-5 h-5 text-green-500"/>
+                        <span className="font-bold">Score Bomb x {inventory.scoreBomb || 0}</span>
                     </div>
                 </div>
             </div>

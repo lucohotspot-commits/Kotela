@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrency, spendCurrency, addBoost } from '@/lib/storage';
-import { Rocket, Coins, Bomb, Clock,Youtube } from 'lucide-react';
+import { Rocket, Coins, Bomb, Clock, Youtube, Zap, Gift, Snowflake } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -26,6 +26,9 @@ const boosts = [
   { id: 'rocket', name: 'Rocket Boost', description: '2x score multiplier for 5s.', cost: 500, icon: Rocket, color: "text-yellow-500" },
   { id: 'missile', name: 'Missile Boost', description: '3x score multiplier for 3s.', cost: 1500, icon: Bomb, color: "text-red-500" },
   { id: 'extraTime', name: 'Extra Time', description: 'Adds 10 seconds to the game.', cost: 0, icon: Clock, color: "text-blue-500", free: true },
+  { id: 'freezeTime', name: 'Freeze Time', description: 'Pause the timer for 5s.', cost: 2000, icon: Snowflake, color: "text-cyan-400" },
+  { id: 'frenzy', name: 'Frenzy', description: 'Auto-tap for 3 seconds.', cost: 2500, icon: Zap, color: "text-purple-500" },
+  { id: 'scoreBomb', name: 'Score Bomb', description: 'Instantly get 1,000 points.', cost: 3000, icon: Gift, color: "text-green-500" },
 ];
 
 
@@ -75,7 +78,7 @@ export function Store({ onPurchase }: StoreProps) {
             <span className='text-xl'>{currency.toLocaleString()}</span>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {boosts.map((boost) => (
               <Card key={boost.id} className="flex flex-col shadow-md hover:shadow-lg transition-all duration-300">
                 <CardHeader className="flex-row items-center gap-4 space-y-0 pb-4">

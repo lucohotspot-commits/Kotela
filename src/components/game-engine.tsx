@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Hand, Repeat, AlertTriangle, TimerIcon, Rocket, Bomb, Clock } from "lucide-react";
+import { Hand, Repeat, AlertTriangle, TimerIcon, Rocket, Bomb, Clock, Zap, Gift, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { addScore, useBoost } from "@/lib/storage";
 import { checkForPrivacyIssues } from "@/app/actions";
@@ -19,6 +19,7 @@ const BASE_GAME_DURATION = 30; // 30 seconds
 
 type GameState = "idle" | "playing" | "ended";
 type Boost = "rocket" | "missile" | null;
+type ActiveBoostEffect = 'scoreMultiplier' | 'frenzy' | 'timeFreeze' | null;
 
 interface GameEngineProps {
   onGameEnd: () => void;
@@ -36,6 +37,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
   const [activeBoost, setActiveBoost] = useState<Boost>(null);
   const [boostTimeLeft, setBoostTimeLeft] = useState(0);
   const [timeBoostUsed, setTimeBoostUsed] = useState(false);
+  const [activeEffect, setActiveEffect] = useState<ActiveBoostEffect>(null);
 
   const scoreIncrement = useMemo(() => {
     if (activeBoost === 'rocket') return 2;
@@ -47,12 +49,20 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
   useEffect(() => {
     if (gameState !== "playing") return;
 
-    const scoreInterval = setInterval(() => {
-      // Tapping is simulated automatically
-    }, 100); 
+    let scoreInterval: NodeJS.Timeout;
+    if (activeEffect === 'frenzy') {
+      scoreInterval = setInterval(() => {
+        setScore(s => s + 5 * scoreIncrement); // Frenzy taps fast!
+      }, 100);
+    } else {
+        const tapInterval = setInterval(() => {
+             // Tapping is simulated automatically
+        }, 100);
+        return () => clearInterval(tapInterval);
+    }
 
     return () => clearInterval(scoreInterval);
-  }, [gameState, scoreIncrement]);
+  }, [gameState, scoreIncrement, activeEffect]);
 
 
   const handleTap = useCallback(() => {
@@ -69,7 +79,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
 
   // Timer logic
   useEffect(() => {
-    if (gameState !== "playing") return;
+    if (gameState !== "playing" || activeEffect === 'timeFreeze') return;
 
     if (timeLeft <= 0) {
       setGameState("ended");
@@ -81,19 +91,20 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [gameState, timeLeft]);
+  }, [gameState, timeLeft, activeEffect]);
   
   // Boost timer logic
   useEffect(() => {
-    if (activeBoost && boostTimeLeft > 0 && gameState === 'playing') {
+    if (activeEffect && boostTimeLeft > 0 && gameState === 'playing') {
       const boostTimerId = setInterval(() => {
         setBoostTimeLeft(prev => prev - 1);
       }, 1000);
       return () => clearInterval(boostTimerId);
-    } else if (activeBoost && boostTimeLeft <= 0) {
+    } else if (activeEffect && boostTimeLeft <= 0) {
       setActiveBoost(null);
+      setActiveEffect(null);
     }
-  }, [activeBoost, boostTimeLeft, gameState]);
+  }, [activeEffect, boostTimeLeft, gameState]);
 
   // Game end logic
   useEffect(() => {
@@ -102,6 +113,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
       onGameEnd();
       setActiveBoost(null);
       setBoostTimeLeft(0);
+      setActiveEffect(null);
 
       const gameData = JSON.stringify({
         finalScore: score,
@@ -118,13 +130,33 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
   }, [gameState, score, onGameEnd]);
 
   const activateBoost = (boostType: 'rocket' | 'missile') => {
-    if ((inventory[boostType] || 0) > 0 && gameState === 'playing' && !activeBoost) {
+    if ((inventory[boostType] || 0) > 0 && gameState === 'playing' && !activeEffect) {
       useBoost(boostType);
       setActiveBoost(boostType);
-      setBoostTimeLeft(boostType === 'rocket' ? 5 : 3); // 5s for rocket, 3s for missile
+      setActiveEffect('scoreMultiplier');
+      setBoostTimeLeft(boostType === 'rocket' ? 5 : 3);
       refreshInventory();
     }
   }
+
+  const activateEffectBoost = (boostType: 'frenzy' | 'freezeTime') => {
+    if ((inventory[boostType] || 0) > 0 && gameState === 'playing' && !activeEffect) {
+      useBoost(boostType);
+      setActiveEffect(boostType);
+      setBoostTimeLeft(boostType === 'frenzy' ? 3 : 5);
+      refreshInventory();
+    }
+  };
+  
+  const activateInstantBoost = (boostType: 'scoreBomb') => {
+    if ((inventory[boostType] || 0) > 0 && gameState === 'playing') {
+      useBoost(boostType);
+      if (boostType === 'scoreBomb') {
+        setScore(s => s + 1000);
+      }
+      refreshInventory();
+    }
+  };
 
   const activateTimeBoost = () => {
     if ((inventory.extraTime || 0) > 0 && gameState === 'idle' && !timeBoostUsed) {
@@ -145,13 +177,15 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     setActiveBoost(null);
     setBoostTimeLeft(0);
     setTimeBoostUsed(false);
+    setActiveEffect(null);
   };
 
   const tapAreaText = useMemo(() => {
     if (gameState === "idle") return "Tap to Start";
     if (gameState === "ended") return "Game Over";
+    if (activeEffect === 'frenzy') return "Frenzy!";
     return "Tap!";
-  }, [gameState]);
+  }, [gameState, activeEffect]);
 
   const CIRCLE_RADIUS = 120;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
@@ -162,8 +196,36 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
   const boostTextColor = useMemo(() => {
     if (activeBoost === 'rocket') return 'text-yellow-500';
     if (activeBoost === 'missile') return 'text-red-500';
+    if (activeEffect === 'frenzy') return 'text-purple-500';
+    if (activeEffect === 'timeFreeze') return 'text-cyan-400';
     return 'text-foreground';
-  }, [activeBoost]);
+  }, [activeBoost, activeEffect]);
+  
+  const BoostStatus = () => {
+    if (!activeEffect || gameState !== 'playing') return null;
+  
+    let icon = null;
+    let text = '';
+  
+    if (activeEffect === 'scoreMultiplier') {
+      icon = activeBoost === 'rocket' ? <Rocket className="h-4 w-4" /> : <Bomb className="h-4 w-4" />;
+      text = `${scoreIncrement}x Boost! (${boostTimeLeft}s)`;
+    } else if (activeEffect === 'timeFreeze') {
+      icon = <Snowflake className="h-4 w-4" />;
+      text = `Time Frozen! (${boostTimeLeft}s)`;
+    } else if (activeEffect === 'frenzy') {
+      icon = <Zap className="h-4 w-4" />;
+      text = `Frenzy! (${boostTimeLeft}s)`;
+    }
+  
+    return (
+      <span className={`flex items-center gap-1 font-bold ${boostTextColor}`}>
+        {icon}
+        {text}
+      </span>
+    );
+  };
+
 
   return (
     <div className="w-full max-w-md flex flex-col items-center gap-8">
@@ -178,13 +240,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
           <p className="text-center text-sm text-muted-foreground mt-2 flex items-center justify-center gap-2">
             <TimerIcon className="h-4 w-4" />
             <span>{timeLeft}s remaining</span>
-            {activeBoost && (
-              <span className={`flex items-center gap-1 font-bold ${boostTextColor}`}>
-                {activeBoost === 'rocket' && <Rocket className="h-4 w-4" />}
-                {activeBoost === 'missile' && <Bomb className="h-4 w-4" />}
-                {scoreIncrement}x Boost! ({boostTimeLeft}s)
-              </span>
-            )}
+            <BoostStatus />
           </p>
         </div>
       </div>
@@ -213,7 +269,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
         </svg>
         <button
           onClick={handleTap}
-          disabled={gameState === "ended"}
+          disabled={gameState === "ended" || activeEffect === 'frenzy'}
           className="relative w-56 h-56 bg-primary rounded-full text-primary-foreground flex flex-col items-center justify-center text-2xl font-bold transition-all duration-300 ease-in-out shadow-lg hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:scale-100 disabled:cursor-not-allowed group"
           aria-label={tapAreaText}
         >
@@ -222,7 +278,7 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-4">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         {gameState === 'idle' && (
            <Button
             onClick={activateTimeBoost}
@@ -230,36 +286,22 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
             size="lg"
             variant="outline"
           >
-            <Clock className="mr-2 h-4 w-4" />
+            <Clock className="mr-2" />
             Use Extra Time ({inventory.extraTime || 0})
           </Button>
         )}
         {gameState === 'playing' && (
           <>
-          <Button
-            onClick={() => activateBoost('rocket')}
-            disabled={(inventory.rocket || 0) <= 0 || !!activeBoost}
-            size="lg"
-            variant="outline"
-          >
-            <Rocket className="mr-2 h-4 w-4" />
-            Activate Rocket ({inventory.rocket || 0})
-          </Button>
-          <Button
-            onClick={() => activateBoost('missile')}
-            disabled={(inventory.missile || 0) <= 0 || !!activeBoost}
-            size="lg"
-            variant="destructive"
-            className="bg-red-500 hover:bg-red-600 text-white"
-          >
-            <Bomb className="mr-2 h-4 w-4" />
-            Activate Missile ({inventory.missile || 0})
-          </Button>
+            <Button onClick={() => activateBoost('rocket')} disabled={(inventory.rocket || 0) <= 0 || !!activeEffect} variant="outline"><Rocket />({inventory.rocket || 0})</Button>
+            <Button onClick={() => activateBoost('missile')} disabled={(inventory.missile || 0) <= 0 || !!activeEffect} variant="destructive"><Bomb />({inventory.missile || 0})</Button>
+            <Button onClick={() => activateEffectBoost('freezeTime')} disabled={(inventory.freezeTime || 0) <= 0 || !!activeEffect} variant="outline" className="text-cyan-400 border-cyan-400 hover:bg-cyan-400 hover:text-white"><Snowflake />({inventory.freezeTime || 0})</Button>
+            <Button onClick={() => activateEffectBoost('frenzy')} disabled={(inventory.frenzy || 0) <= 0 || !!activeEffect} variant="outline" className="text-purple-500 border-purple-500 hover:bg-purple-500 hover:text-white"><Zap />({inventory.frenzy || 0})</Button>
+            <Button onClick={() => activateInstantBoost('scoreBomb')} disabled={(inventory.scoreBomb || 0) <= 0} variant="outline" className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white"><Gift />({inventory.scoreBomb || 0})</Button>
           </>
         )}
         {gameState === "ended" && (
           <Button onClick={resetGame} size="lg" className="mt-4">
-            <Repeat className="mr-2 h-4 w-4" />
+            <Repeat className="mr-2" />
             Play Again
           </Button>
         )}
