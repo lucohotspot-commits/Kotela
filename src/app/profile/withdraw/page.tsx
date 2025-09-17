@@ -8,12 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass, Smartphone } from 'lucide-react';
-import { getCurrency, spendCurrency } from '@/lib/storage';
+import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass, Smartphone, CheckCircle, Clock } from 'lucide-react';
+import { getCurrency, spendCurrency, getWithdrawals, addWithdrawal, type Withdrawal } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+
 
 const KTC_TO_USD_RATE = 1.25;
 const USD_TO_UGX_RATE = 3800;
@@ -34,6 +38,7 @@ export default function WithdrawPage() {
     const [balance, setBalance] = useState(0);
     const [amount, setAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('');
+    const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
     
     // State for payment method details
     const [mobileNumber, setMobileNumber] = useState('');
@@ -48,8 +53,13 @@ export default function WithdrawPage() {
     
     const selectedPaymentOption = paymentOptions.find(p => p.id === paymentMethod);
 
-    useEffect(() => {
+    const refreshAllData = () => {
         setBalance(getCurrency());
+        setWithdrawals(getWithdrawals());
+    }
+
+    useEffect(() => {
+        refreshAllData();
         checkRateLimit();
     }, []);
 
@@ -94,23 +104,33 @@ export default function WithdrawPage() {
         }
 
         const withdrawAmount = parseFloat(amount);
-        if (!paymentMethod) {
+        if (!paymentMethod || !selectedPaymentOption) {
             toast({ variant: 'destructive', title: 'Payment method required', description: 'Please select a payment method.'});
             return;
         }
 
+        let paymentDetails = {};
         // Validation based on category
-        if (selectedPaymentOption?.category === 'mobile-money' && (!mobileNumber || !accountName)) {
-            toast({ variant: 'destructive', title: 'Mobile money details required', description: 'Please enter the phone number and account name.'});
-            return;
+        if (selectedPaymentOption?.category === 'mobile-money') {
+            if (!mobileNumber || !accountName) {
+                toast({ variant: 'destructive', title: 'Mobile money details required', description: 'Please enter the phone number and account name.'});
+                return;
+            }
+            paymentDetails = { type: selectedPaymentOption.type, mobileNumber, accountName };
         }
-        if (selectedPaymentOption?.category === 'bank' && (!bankName || !accountNumber || !accountName)) {
-            toast({ variant: 'destructive', title: 'Bank details required', description: 'Please fill in all bank account details.'});
-            return;
+        if (selectedPaymentOption?.category === 'bank') {
+            if (!bankName || !accountNumber || !accountName) {
+                toast({ variant: 'destructive', title: 'Bank details required', description: 'Please fill in all bank account details.'});
+                return;
+            }
+            paymentDetails = { type: selectedPaymentOption.type, bankName, accountNumber, accountName };
         }
-        if (selectedPaymentOption?.category === 'crypto' && !walletAddress) {
-            toast({ variant: 'destructive', title: 'Wallet address required', description: 'Please enter a valid wallet address.'});
-            return;
+        if (selectedPaymentOption?.category === 'crypto') {
+            if (!walletAddress) {
+                toast({ variant: 'destructive', title: 'Wallet address required', description: 'Please enter a valid wallet address.'});
+                return;
+            }
+            paymentDetails = { type: selectedPaymentOption.type, walletAddress };
         }
 
 
@@ -125,7 +145,14 @@ export default function WithdrawPage() {
 
         const success = spendCurrency(withdrawAmount + WITHDRAWAL_FEE_KTC);
         if (success) {
-            setBalance(getCurrency());
+            const newWithdrawal: Omit<Withdrawal, 'id'> = {
+                amount: withdrawAmount,
+                date: new Date().toISOString(),
+                status: 'pending',
+                paymentMethod: paymentDetails
+            };
+            addWithdrawal(newWithdrawal);
+            refreshAllData();
             setAmount('');
             
             const timestamps: number[] = JSON.parse(localStorage.getItem(WITHDRAWAL_TIMESTAMPS_KEY) || '[]');
@@ -133,8 +160,8 @@ export default function WithdrawPage() {
             localStorage.setItem(WITHDRAWAL_TIMESTAMPS_KEY, JSON.stringify(timestamps));
 
             toast({
-                title: 'Withdrawal Initiated',
-                description: `${withdrawAmount.toLocaleString()} KTC is being sent to your selected account.`,
+                title: 'Withdrawal Request Submitted',
+                description: `Your request to withdraw ${withdrawAmount.toLocaleString()} KTC is pending approval.`,
             });
         }
     };
@@ -142,6 +169,28 @@ export default function WithdrawPage() {
     const amountAsUSD = (parseFloat(amount) || 0) * KTC_TO_USD_RATE;
     const totalToReceiveKTC = (parseFloat(amount) || 0);
     const totalToReceiveUGX = totalToReceiveKTC * KTC_TO_UGX_RATE;
+
+    const StatusBadge = ({ status }: { status: 'pending' | 'approved' | 'rejected' }) => {
+        const variants = {
+            pending: {
+                icon: <Hourglass className="h-3 w-3" />,
+                text: 'Pending',
+                className: 'bg-yellow-500/10 text-yellow-600',
+            },
+            approved: {
+                icon: <CheckCircle className="h-3 w-3" />,
+                text: 'Approved',
+                className: 'bg-green-500/10 text-green-600',
+            },
+            rejected: {
+                icon: <XCircle className="h-3 w-3" />,
+                text: 'Rejected',
+                className: 'bg-red-500/10 text-red-600',
+            },
+        };
+        const { icon, text, className } = variants[status];
+        return <Badge variant="outline" className={cn('gap-1', className)}>{icon}{text}</Badge>;
+    };
 
     return (
         <div className="w-full max-w-2xl mx-auto space-y-6">
@@ -305,6 +354,47 @@ export default function WithdrawPage() {
                     </Button>
                 </CardFooter>
             </Card>
+
+            {withdrawals.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Recent Withdrawals</CardTitle>
+                        <CardDescription>Your recent withdrawal requests and their status.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead>Method</TableHead>
+                                    <TableHead className="text-right">Status</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {withdrawals.map((w) => (
+                                    <TableRow key={w.id}>
+                                        <TableCell className="text-xs text-muted-foreground">
+                                            {new Date(w.date).toLocaleString()}
+                                        </TableCell>
+                                        <TableCell className="font-semibold">
+                                            {w.amount.toLocaleString()} KTC
+                                        </TableCell>
+                                        <TableCell className="text-xs">
+                                            {w.paymentMethod.type}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <StatusBadge status={w.status} />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+            )}
         </div>
     );
 }
+
+    

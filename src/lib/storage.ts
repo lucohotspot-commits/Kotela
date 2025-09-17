@@ -6,9 +6,23 @@ export type Score = {
   date: string;
 };
 
+export type Withdrawal = {
+  id: string;
+  amount: number;
+  date: string;
+  status: 'pending' | 'approved' | 'rejected';
+  paymentMethod: {
+    type: string;
+    [key: string]: any;
+  }
+};
+
+
 const SCORES_KEY = "kotela-scores";
 const CURRENCY_KEY = "kotela-currency";
 const INVENTORY_KEY = "kotela-inventory";
+const WITHDRAWALS_KEY = "kotela-withdrawals";
+
 
 // === Score Management ===
 export function getScores(): Score[] {
@@ -128,3 +142,36 @@ export function useBoost(boostId: string): boolean {
         return false;
     }
 }
+
+// === Withdrawal Management ===
+export function getWithdrawals(): Withdrawal[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const withdrawalsJSON = localStorage.getItem(WITHDRAWALS_KEY);
+    if (withdrawalsJSON) {
+      const withdrawals = JSON.parse(withdrawalsJSON) as Withdrawal[];
+      return withdrawals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
+    return [];
+  } catch (error) {
+    console.error("Failed to retrieve withdrawals:", error);
+    return [];
+  }
+}
+
+export function addWithdrawal(withdrawal: Omit<Withdrawal, 'id'>): void {
+  if (typeof window === "undefined") return;
+  try {
+    const currentWithdrawals = getWithdrawals();
+    const newWithdrawal: Withdrawal = {
+      ...withdrawal,
+      id: new Date().toISOString() + Math.random().toString(),
+    };
+    const updatedWithdrawals = [newWithdrawal, ...currentWithdrawals];
+    localStorage.setItem(WITHDRAWALS_KEY, JSON.stringify(updatedWithdrawals));
+  } catch (error) {
+    console.error("Failed to save withdrawal:", error);
+  }
+}
+
+    
