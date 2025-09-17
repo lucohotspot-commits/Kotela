@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { getCurrency, addCurrency } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const KTC_TO_USD_RATE = 1.25;
 
@@ -207,6 +208,13 @@ export default function ProfilePage() {
                 <span className="text-sm">Unverified</span>
                 <ArrowRight className="h-4 w-4" />
               </div>
+            </div>
+            <div className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <Moon className="h-5 w-5 text-muted-foreground" />
+                    <span className="font-medium">Dark Mode</span>
+                </div>
+                <ThemeToggle />
             </div>
              <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
               <div className="flex items-center gap-3">
