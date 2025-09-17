@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
+import { OrderBook } from '@/components/order-book';
 
 type Coin = {
   name: string;
@@ -35,7 +36,7 @@ const initialCoinsData: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volu
 
 function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>): Coin {
     const history = Array.from({ length: 30 }, (_, i) => {
-        const price = coin.price * (1 + (Math.random() - 0.5) * 0.1);
+        const price = coin.price * (1 + (Math.random() - 0.5) * 0.02);
         return { time: new Date(Date.now() - (30 - i) * 2000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), price };
     });
     const prices = history.map(h => h.price);
@@ -43,7 +44,7 @@ function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high'
         ...coin,
         history,
         price: prices[prices.length - 1],
-        change: prices.length > 1 ? prices[prices.length - 1] - prices[prices.length - 2] : 0,
+        change: prices.length > 1 ? prices[prices.length - 1] - prices[0] : 0,
         high: Math.max(...prices),
         low: Math.min(...prices),
         volume: Math.random() * 1000000,
@@ -132,7 +133,10 @@ export default function RatingsClient() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-9 space-y-4">
+        <div className="lg:col-span-3 hidden lg:block">
+            <OrderBook selectedCoin={selectedCoin} />
+        </div>
+        <div className="lg:col-span-6 space-y-4">
             <header className="flex flex-wrap items-center gap-4 sm:gap-8 border-b pb-4">
                 <div>
                     <h1 className="text-2xl font-bold">{selectedCoin.symbol}/USDT</h1>
@@ -339,7 +343,7 @@ export default function RatingsClient() {
                         </TableCell>
                         <TableCell className="text-right font-mono text-xs py-2">${coin.price.toFixed(4)}</TableCell>
                         <TableCell className={`text-right font-mono text-xs py-2 ${getChangeColor(coin.change)}`}>
-                            {coin.change > 0 ? '+' : ''}{((coin.change / (coin.price - coin.change)) * 100).toFixed(2)}%
+                            {coin.change > 0 ? '+' : ''}{((coin.change / (selectedCoin.price - coin.change)) * 100).toFixed(2)}%
                         </TableCell>
                         </TableRow>
                     ))}
@@ -351,3 +355,5 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
