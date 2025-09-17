@@ -78,7 +78,7 @@ const AviatorGame = () => {
     const [betAmount, setBetAmount] = useState(10);
     const [balance, setBalance] = useState(0);
     const [cashOutMultiplier, setCashOutMultiplier] = useState(0);
-    const [pathData, setPathData = useState({ path: '', point: { x: 0, y: 100 } });
+    const [pathData, setPathData] = useState({ path: '', point: { x: 0, y: 100 } });
 
     const refreshBalance = useCallback(() => {
         setBalance(getCurrency());
@@ -316,7 +316,7 @@ const VideoPlayGame = () => {
     const [selectedVideo, setSelectedVideo] = useState(videos[0]);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [claimedRewards, setClaimedRewards = useState<number[]>([]);
+    const [claimedRewards, setClaimedRewards] = useState<number[]>([]);
 
     const handleSelectVideo = (video: typeof videos[0]) => {
         setSelectedVideo(video);
@@ -443,7 +443,7 @@ const SpinWheelGame = () => {
     const [betAmount, setBetAmount] = useState(10);
     const [balance, setBalance] = useState(0);
     const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
-    const [spinResult, setSpinResult = useState<{ multiplier: number; winnings: number } | null>(null);
+    const [spinResult, setSpinResult] = useState<{ multiplier: number; winnings: number } | null>(null);
 
     const segments = useMemo(() => [
         { value: 2, color: 'bg-green-500/50', textColor: 'text-green-50' },
