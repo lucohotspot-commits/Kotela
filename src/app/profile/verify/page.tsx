@@ -296,7 +296,7 @@ export default function VerifyPage() {
                         <CardDescription>Enter your legal name and date of birth exactly as they appear on your government-issued ID.</CardDescription>
                     </CardHeader>
                     <CardContent className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                        <div className="sm:col-span-2">
+                        <div className="col-span-1 sm:col-span-2">
                            <FormField
                                 control={form.control}
                                 name="phoneNumber"
@@ -330,13 +330,13 @@ export default function VerifyPage() {
                             </FormItem>
                         )} />
                          <FormField control={form.control} name="middleName" render={({ field }) => (
-                            <FormItem className="sm:col-span-2">
+                            <FormItem className="col-span-1 sm:col-span-2">
                                 <FormLabel>Middle Name (Optional)</FormLabel>
                                 <FormControl><Input placeholder="James" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
-                        <div className="sm:col-span-2 grid grid-cols-3 gap-3">
+                        <div className="col-span-1 sm:col-span-2 grid grid-cols-3 gap-3">
                             <FormField
                                 control={form.control}
                                 name="dob_month"
@@ -713,5 +713,3 @@ export default function VerifyPage() {
     </div>
   );
 }
-
-    
