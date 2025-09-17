@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass } from 'lucide-react';
+import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass, Smartphone } from 'lucide-react';
 import { getCurrency, spendCurrency } from '@/lib/storage';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,18 +23,24 @@ const WITHDRAWAL_TIMESTAMPS_KEY = 'kotela-withdrawal-timestamps';
 const WITHDRAWAL_LIMIT = 2;
 const WITHDRAWAL_WINDOW_MS = 60 * 1000; // 1 minute
 
-const savedPaymentMethods = [
-    { id: 'bank-1', type: 'Bank Transfer', details: 'Wells Fargo - **** 1234', icon: Banknote },
-    { id: 'wallet-1', type: 'Crypto Wallet', details: '0x1a2b...c4d5', icon: Wallet },
+const paymentOptions = [
+    { id: 'bank-1', type: 'Bank Transfer', details: 'Wells Fargo - **** 1234', icon: Banknote, category: 'bank' },
+    { id: 'wallet-1', type: 'Crypto Wallet', details: '0x1a2b...c4d5', icon: Wallet, category: 'crypto' },
+    { id: 'airtel-1', type: 'Airtel Money', details: 'Mobile Money', icon: Smartphone, category: 'mobile-money' },
+    { id: 'mtn-1', type: 'MTN Mobile Money', details: 'Mobile Money', icon: Smartphone, category: 'mobile-money' },
 ];
 
 export default function WithdrawPage() {
     const [balance, setBalance] = useState(0);
     const [amount, setAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('');
+    const [mobileNumber, setMobileNumber] = useState('');
+    const [accountName, setAccountName] = useState('');
     const [isRateLimited, setIsRateLimited] = useState(false);
     const [cooldown, setCooldown] = useState(0);
     const { toast } = useToast();
+    
+    const selectedPaymentOption = paymentOptions.find(p => p.id === paymentMethod);
 
     useEffect(() => {
         setBalance(getCurrency());
@@ -84,6 +90,10 @@ export default function WithdrawPage() {
         const withdrawAmount = parseFloat(amount);
         if (!paymentMethod) {
             toast({ variant: 'destructive', title: 'Payment method required', description: 'Please select a payment method.'});
+            return;
+        }
+        if (selectedPaymentOption?.category === 'mobile-money' && (!mobileNumber || !accountName)) {
+            toast({ variant: 'destructive', title: 'Mobile money details required', description: 'Please enter the phone number and account name.'});
             return;
         }
         if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
@@ -157,7 +167,7 @@ export default function WithdrawPage() {
                                 <SelectValue placeholder="Select a payment method" />
                             </SelectTrigger>
                             <SelectContent>
-                                {savedPaymentMethods.map(method => {
+                                {paymentOptions.map(method => {
                                     const Icon = method.icon;
                                     return (
                                         <SelectItem key={method.id} value={method.id}>
@@ -174,6 +184,31 @@ export default function WithdrawPage() {
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {selectedPaymentOption?.category === 'mobile-money' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="mobileNumber">Phone Number</Label>
+                                <Input 
+                                    id="mobileNumber" 
+                                    placeholder="e.g. 0771234567" 
+                                    value={mobileNumber}
+                                    onChange={(e) => setMobileNumber(e.target.value)}
+                                    disabled={isRateLimited}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="accountName">Account Name</Label>
+                                <Input 
+                                    id="accountName" 
+                                    placeholder="e.g. John Doe"
+                                    value={accountName}
+                                    onChange={(e) => setAccountName(e.target.value)}
+                                    disabled={isRateLimited}
+                                />
+                            </div>
+                        </div>
+                    )}
                     
 
                     <div className="space-y-2">
