@@ -20,12 +20,21 @@ const KTC_TO_USD_RATE = 1.25;
 const NETWORK_FEE_KTC = 0.15;
 const SAMPLE_QR_ADDRESS = "0x9f8g7h6j5k4l3m2n1p0qabcde12345fgh67890";
 
+const referrals = [
+    { id: 1, user: 'CryptoKing', avatar: 'https://picsum.photos/seed/ref1/40/40', walletAddress: '0x1a2b3c4d5e6f7g8h9i0jabcde12345fgh67890' },
+    { id: 2, user: 'SatoshiJr', avatar: 'https://picsum.photos/seed/ref2/40/40', walletAddress: '0x2b3c4d5e6f7g8h9i0jabcde12345fgh678901a' },
+    { id: 3, user: 'CoinDuchess', avatar: 'https://picsum.photos/seed/ref3/40/40', walletAddress: '0x3c4d5e6f7g8h9i0jabcde12345fgh678901a2b' },
+    { id: 4, user: 'MinerMike', avatar: 'https://picsum.photos/seed/ref4/40/40', walletAddress: '0x4d5e6f7g8h9i0jabcde12345fgh678901a2b3c' },
+    { id: 5, user: 'HodlHermit', avatar: 'https://picsum.photos/seed/ref5/40/40', walletAddress: '0x5e6f7g8h9i0jabcde12345fgh678901a2b3c4d' },
+];
+
 
 export default function SendPage() {
     const [balance, setBalance] = useState(0);
     const [address, setAddress] = useState('');
     const [amount, setAmount] = useState('');
     const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
+    const [isAddressBookOpen, setIsAddressBookOpen] = useState(false);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -58,6 +67,11 @@ export default function SendPage() {
             description: "Recipient address has been populated.",
         });
     }
+
+    const handleSelectReferral = (walletAddress: string) => {
+        setAddress(walletAddress);
+        setIsAddressBookOpen(false);
+    };
 
     const handleSend = () => {
         const sendAmount = parseFloat(amount);
@@ -119,7 +133,30 @@ export default function SendPage() {
                         <div className="flex gap-2">
                             <Input id="address" placeholder="Enter wallet address" value={address} onChange={(e) => setAddress(e.target.value)} />
                             <Button variant="outline" size="icon" onClick={handlePaste}><ClipboardPaste /></Button>
-                            <Button variant="outline" size="icon"><BookUser /></Button>
+                             <Dialog open={isAddressBookOpen} onOpenChange={setIsAddressBookOpen}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" size="icon"><BookUser /></Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Select a Recipient</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-2 py-4">
+                                        {referrals.map(referral => (
+                                            <button key={referral.id} onClick={() => handleSelectReferral(referral.walletAddress)} className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted text-left">
+                                                <Avatar>
+                                                    <AvatarImage src={referral.avatar} alt={referral.user} />
+                                                    <AvatarFallback>{referral.user.substring(0,2)}</AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex-1">
+                                                    <p className="font-semibold">{referral.user}</p>
+                                                    <p className="text-xs text-muted-foreground truncate">{referral.walletAddress}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
                             <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
                                 <DialogTrigger asChild>
                                     <Button variant="outline" size="icon"><QrCode /></Button>
@@ -232,4 +269,5 @@ export default function SendPage() {
             </Card>
         </div>
     );
-}
+
+    
