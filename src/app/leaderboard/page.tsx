@@ -66,7 +66,7 @@ const DurationButton = ({ duration, selected, onClick, special }: { duration: st
         >
           {duration}
         </Button>
-        <div className="absolute top-0 right-0 w-0 h-0 border-t-8 border-l-8 border-t-yellow-400 border-l-transparent z-0"></div>
+        <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-yellow-400 [clip-path:polygon(100%_0,0_0,100%_100%)]"></div>
       </div>
     );
   }
@@ -86,10 +86,15 @@ const DurationButton = ({ duration, selected, onClick, special }: { duration: st
 
 export default function LeaderboardPage() {
   const [selectedDurations, setSelectedDurations] = useState<{[key: string]: string}>({});
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleDurationSelect = (game: string, duration: string) => {
     setSelectedDurations(prev => ({...prev, [game]: duration}));
   }
+
+  const filteredGames = bonusGames.filter(game => 
+    game.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="flex-grow flex flex-col items-center">
@@ -101,7 +106,12 @@ export default function LeaderboardPage() {
           <CardDescription>Play games to earn more coins and rewards.</CardDescription>
             <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search Game" className="pl-10" />
+                <Input 
+                  placeholder="Search Game" 
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
         </CardHeader>
         <CardContent>
@@ -116,7 +126,7 @@ export default function LeaderboardPage() {
                     </TableRow>
                     </TableHeader>
                     <TableBody>
-                    {bonusGames.map((game) => (
+                    {filteredGames.map((game) => (
                         <TableRow key={game.name}>
                         <TableCell>
                             <div className="flex items-center gap-3">
@@ -138,7 +148,7 @@ export default function LeaderboardPage() {
                                         duration={d}
                                         selected={selectedDurations[game.name] === d}
                                         onClick={() => handleDurationSelect(game.name, d)}
-                                        special={d === '120'}
+                                        special={game.name === 'Lucky Dice' && d === '120'}
                                     />
                                 ))}
                             </div>
