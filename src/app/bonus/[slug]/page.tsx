@@ -463,48 +463,101 @@ const SpinWheelGame = () => {
 }
 
 const CoinFlipGame = () => {
-  const [choice, setChoice] = useState<'heads' | 'tails' | null>(null);
-  const [result, setResult] = useState<'heads' | 'tails' | null>(null);
-  const [flipping, setFlipping] = useState(false);
+    const { toast } = useToast();
+    const [choice, setChoice] = useState<'heads' | 'tails' | null>(null);
+    const [result, setResult] = useState<'heads' | 'tails' | null>(null);
+    const [flipping, setFlipping] = useState(false);
+    const [betAmount, setBetAmount] = useState<number>(10);
+    const [balance, setBalance] = useState(0);
 
-  const handleFlip = () => {
-    if (!choice) return;
-    setFlipping(true);
-    setResult(null);
-    setTimeout(() => {
-      const outcome = Math.random() > 0.5 ? 'heads' : 'tails';
-      setResult(outcome);
-      setFlipping(false);
-    }, 1500);
-  }
+    const refreshBalance = useCallback(() => {
+        setBalance(getCurrency());
+    }, []);
 
-  return (
-     <Card>
-        <CardContent className="p-6 flex flex-col items-center justify-center gap-6 text-center">
-            <div className="relative w-48 h-48 [perspective:1000px]">
-                 <div className={cn("relative w-full h-full rounded-full transition-transform duration-1000", flipping && "[transform:rotateY(1800deg)]")} style={{ transformStyle: 'preserve-3d' }}>
-                    <div className="absolute w-full h-full bg-muted rounded-full flex items-center justify-center [backface-visibility:hidden]">
-                         { !result && <CircleDollarSign className='w-24 h-24 text-muted-foreground' /> }
-                         { result && <p className={cn('text-6xl font-bold', result === choice ? 'text-green-500' : 'text-red-500')}>{result === choice ? 'WIN' : 'LOSE'}</p>}
-                    </div>
-                    <div className="absolute w-full h-full bg-yellow-500 rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-                        <p className='text-3xl font-bold text-black'>{result?.toUpperCase()}</p>
+    useEffect(() => {
+        refreshBalance();
+        window.addEventListener('storage', refreshBalance);
+        return () => window.removeEventListener('storage', refreshBalance);
+    }, [refreshBalance]);
+
+    const handleFlip = () => {
+        if (!choice || flipping) return;
+        if (balance < betAmount) {
+            toast({ variant: 'destructive', title: "Not enough coins", description: "You don't have enough coins to place this bet." });
+            return;
+        }
+
+        setFlipping(true);
+        setResult(null);
+        spendCurrency(betAmount);
+        refreshBalance();
+
+        setTimeout(() => {
+            const outcome = Math.random() > 0.5 ? 'heads' : 'tails';
+            setResult(outcome);
+            setFlipping(false);
+
+            if (outcome === choice) {
+                const winnings = betAmount * 2;
+                addCurrency(winnings);
+                toast({
+                    title: `You won ${winnings.toLocaleString()} coins!`,
+                    description: `It was ${outcome}. Your bet returned 2x.`,
+                });
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: "Better luck next time!",
+                    description: `It was ${outcome}. You lost your ${betAmount} coin bet.`,
+                });
+            }
+            refreshBalance();
+
+        }, 1500);
+    }
+    
+    const handleBetChange = (amount: number) => {
+        setBetAmount(prev => Math.max(0, prev + amount));
+    };
+
+    return (
+        <Card>
+            <CardContent className="p-6 flex flex-col items-center justify-center gap-6 text-center">
+                <div className="relative w-48 h-48 [perspective:1000px]">
+                    <div className={cn("relative w-full h-full rounded-full transition-transform duration-1000", flipping && "[transform:rotateY(1800deg)]")} style={{ transformStyle: 'preserve-3d' }}>
+                        <div className="absolute w-full h-full bg-muted rounded-full flex items-center justify-center [backface-visibility:hidden]">
+                            {!result && <CircleDollarSign className='w-24 h-24 text-muted-foreground' />}
+                            {result && <p className={cn('text-6xl font-bold', result === choice ? 'text-green-500' : 'text-red-500')}>{result === choice ? 'WIN' : 'LOSE'}</p>}
+                        </div>
+                        <div className="absolute w-full h-full bg-yellow-500 rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
+                            <p className='text-3xl font-bold text-black'>{result?.toUpperCase()}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <p className='text-muted-foreground'>
-                {result ? `It was ${result}! You ${result === choice ? 'won!' : 'lost.'}` : 'Choose Heads or Tails'}
-            </p>
-            <div className="flex gap-4">
-                <Button variant={choice === 'heads' ? 'default' : 'outline'} onClick={() => setChoice('heads')} disabled={flipping}>Heads</Button>
-                <Button variant={choice === 'tails' ? 'default' : 'outline'} onClick={() => setChoice('tails')} disabled={flipping}>Tails</Button>
-            </div>
-            <Button onClick={handleFlip} disabled={!choice || flipping} size="lg">
-                {flipping ? 'Flipping...' : 'Flip Coin'}
-            </Button>
-        </CardContent>
-     </Card>
-  )
+                
+                <div className="w-full max-w-xs space-y-4">
+                    <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={flipping}>-</Button>
+                        <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center" disabled={flipping} />
+                        <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={flipping}>+</Button>
+                        <Coins className="text-yellow-500" />
+                    </div>
+
+                    <div className="flex gap-4 justify-center">
+                        <Button variant={choice === 'heads' ? 'default' : 'outline'} onClick={() => setChoice('heads')} disabled={flipping}>Heads</Button>
+                        <Button variant={choice === 'tails' ? 'default' : 'outline'} onClick={() => setChoice('tails')} disabled={flipping}>Tails</Button>
+                    </div>
+
+                    <Button onClick={handleFlip} disabled={!choice || flipping || betAmount <= 0} size="lg" className="w-full">
+                        {flipping ? 'Flipping...' : `Flip for ${betAmount.toLocaleString()}`}
+                    </Button>
+                </div>
+                 <p className='text-muted-foreground text-sm'>
+                    {result ? `It was ${result}! You ${result === choice ? 'won!' : 'lost.'}` : 'Choose Heads or Tails & place your bet'}
+                </p>
+            </CardContent>
+        </Card>
+    )
 }
 
 const LuckyDiceGame = () => {
