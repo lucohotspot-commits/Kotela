@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -72,6 +73,11 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      transitionDuration: {
+        'coin-flip': '2500ms',
+        'plane-move': '50ms',
+        'spin-wheel': '7000ms',
+      },
       keyframes: {
         'accordion-down': {
           from: {
@@ -113,3 +119,5 @@ export default {
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
+
+    

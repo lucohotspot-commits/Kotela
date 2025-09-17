@@ -268,7 +268,7 @@ const AviatorGame = () => {
                                     />
                                     <g transform={`translate(${planePosition.x}, ${planePosition.y}) rotate(${planeRotation})`}>
                                         <Plane
-                                            className={cn("h-4 w-4 text-red-500 transition-all ease-linear duration-[50ms]", gameState === 'cashed_out' && 'opacity-50')}
+                                            className={cn("h-4 w-4 text-red-500 transition-all ease-linear duration-plane-move", gameState === 'cashed_out' && 'opacity-50')}
                                         />
                                     </g>
                                 </svg>
@@ -634,7 +634,7 @@ const SpinWheelGame = () => {
                         <div
                             className={cn(
                                 "relative w-full h-full rounded-full border-8 border-primary/20",
-                                spinning ? "transition-transform duration-[7000ms] ease-out" : ""
+                                spinning ? "transition-transform ease-out duration-spin-wheel" : ""
                             )}
                             style={{ transform: `rotate(${rotation}deg)` }}
                         >
@@ -775,7 +775,7 @@ const CoinFlipGame = () => {
             <CardContent className="p-6 flex flex-col items-center justify-center gap-6 text-center">
                 <div className="relative w-48 h-48 [perspective:1200px]">
                     <div className={cn(
-                        "relative w-full h-full transition-transform duration-[2500ms] ease-in-out",
+                        "relative w-full h-full transition-transform ease-in-out duration-coin-flip",
                         flipping && "[transform:rotateY(1800deg)]",
                         result && (hasWon ? "animate-bounce" : "animate-pulse-subtle")
                      )} style={{ transformStyle: 'preserve-3d' }}>
@@ -1009,3 +1009,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
+
+    
