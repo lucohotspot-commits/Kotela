@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "video-thumb-1",
+      "description": "Abstract gradient",
+      "imageUrl": "https://picsum.photos/seed/vt1/400/225",
+      "imageHint": "abstract gradient"
+    },
+    {
+      "id": "video-thumb-2",
+      "description": "Mountain landscape",
+      "imageUrl": "https://picsum.photos/seed/vt2/400/225",
+      "imageHint": "mountain landscape"
+    },
+    {
+      "id": "video-thumb-3",
+      "description": "City skyline",
+      "imageUrl": "https://picsum.photos/seed/vt3/400/225",
+      "imageHint": "city skyline"
+    },
+    {
+      "id": "video-thumb-4",
+      "description": "Forest path",
+      "imageUrl": "https://picsum.photos/seed/vt4/400/225",
+      "imageHint": "forest path"
+    }
+  ]
 }
