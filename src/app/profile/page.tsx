@@ -299,7 +299,7 @@ export default function ProfilePage() {
             <Link href="/profile/verify" className="p-4 flex items-center justify-between hover:bg-muted/50">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Identity Verification</span>
+                <span className="font-medium">KYC Verification</span>
               </div>
                <div className="flex items-center gap-2 text-yellow-600">
                 <span className="text-sm">Unverified</span>

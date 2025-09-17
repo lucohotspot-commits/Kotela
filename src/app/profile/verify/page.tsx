@@ -238,7 +238,7 @@ export default function VerifyPage() {
             <ChevronRight />
           </BreadcrumbSeparator>
           <BreadcrumbItem>
-            <BreadcrumbPage>Identity Verification</BreadcrumbPage>
+            <BreadcrumbPage>KYC Verification</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -246,7 +246,7 @@ export default function VerifyPage() {
       <div className="space-y-4">
           <div className="flex items-center gap-2">
               <ShieldCheck className="h-6 w-6" />
-              <h1 className="text-2xl font-bold">Identity Verification</h1>
+              <h1 className="text-2xl font-bold">KYC Verification</h1>
           </div>
 
           <div className="flex items-center justify-between">
