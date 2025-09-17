@@ -93,13 +93,13 @@ const AviatorGame = () => {
         let gameLoop: NodeJS.Timeout;
         if (gameState === 'playing') {
             const startTime = Date.now();
-            const crashPoint = (Math.random() * 10 + 2) * 1000;
+            const crashPoint = (Math.random() * 15 + 2) * 1000; // Slower progression
 
             gameLoop = setInterval(() => {
                 const elapsedTime = Date.now() - startTime;
                 setFlightTime(elapsedTime);
 
-                const newMultiplier = 1 + (elapsedTime / 1000) * 0.2 + (elapsedTime / 5000) ** 2;
+                const newMultiplier = 1 + (elapsedTime / 1500) * 0.2 + (elapsedTime / 7000) ** 2; // Slower multiplier
                 setMultiplier(newMultiplier);
 
                 if (elapsedTime >= crashPoint) {
@@ -145,7 +145,7 @@ const AviatorGame = () => {
         setBetAmount(prev => Math.max(1, prev + amount));
     }
 
-    const planeX = Math.min(100, (flightTime / 8000) * 100);
+    const planeX = Math.min(100, (flightTime / 12000) * 100); // Slower plane movement
     const planeY = 100 - Math.pow(planeX / 100, 0.5) * 80;
 
     const multiplierFontSize = Math.min(10, 2 + multiplier / 5);
@@ -177,8 +177,11 @@ const AviatorGame = () => {
                                 </div>
                             )}
                             {gameState === 'crashed' && (
-                                <div className="text-center">
-                                    <p className="text-3xl font-bold text-destructive">Flew Away!</p>
+                                <div className="text-center flex flex-col items-center">
+                                    <div className="flex items-center gap-2">
+                                        <Plane className="h-8 w-8 text-destructive" />
+                                        <p className="text-3xl font-bold text-destructive">Flew Away!</p>
+                                    </div>
                                     <p className="text-2xl text-white font-bold">{multiplier.toFixed(2)}x</p>
                                 </div>
                             )}
@@ -192,12 +195,12 @@ const AviatorGame = () => {
                             )}
                         </div>
 
-                        {(gameState === 'playing' || gameState === 'crashed' || gameState === 'cashed_out') && (
+                        {(gameState === 'playing' || gameState === 'cashed_out') && (
                             <div className="absolute h-full w-full">
                                 <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
                                     <path
                                         d={`M 0 100 C 30 100, 70 60, 100 20`}
-                                        stroke={gameState === 'crashed' ? "#ef4444" : "#facc15"}
+                                        stroke={"#ef4444"}
                                         strokeWidth="0.5"
                                         fill="none"
                                         strokeDasharray="1"
@@ -206,11 +209,11 @@ const AviatorGame = () => {
                                     />
                                 </svg>
                                 <Plane
-                                    className={cn("h-8 w-8 text-red-500 absolute bottom-0 left-0 transform transition-all ease-linear duration-[50ms]", gameState === 'cashed_out' && 'opacity-50')}
+                                    className={cn("h-8 w-8 text-red-500 absolute bottom-0 left-0 transform -translate-x-1/2 translate-y-1/2 transition-all ease-linear duration-[50ms]", gameState === 'cashed_out' && 'opacity-50')}
                                     style={{
                                         left: `${planeX}%`,
                                         bottom: `${100 - planeY}%`,
-                                        transform: `rotate(${-(planeX / 2)}deg)  translate(-50%, 50%)`,
+                                        transform: `translate(-50%, 50%) rotate(${-(planeX / 3)}deg)`,
                                     }}
                                 />
                             </div>
