@@ -73,24 +73,29 @@ const videos = [
 const AviatorGame = () => {
   const [multiplier, setMultiplier] = useState(1.00);
   const [gameState, setGameState] = useState<'waiting' | 'playing' | 'crashed'>('waiting');
+  const [flightTime, setFlightTime] = useState(0); // in ms
 
   useEffect(() => {
     let gameLoop: NodeJS.Timeout;
     if (gameState === 'playing') {
-      const crashPoint = Math.random() * 10 + 1; // Plane flies away between 1x and 11x
+      const startTime = Date.now();
+      const crashPoint = (Math.random() * 10 + 2) * 1000; // Plane flies away after 2-12 seconds
+
       gameLoop = setInterval(() => {
-        setMultiplier(m => {
-            const nextMultiplier = m + 0.01;
-            if (nextMultiplier >= crashPoint) {
-                setGameState('crashed');
-                clearInterval(gameLoop);
-                return crashPoint;
-            }
-            return nextMultiplier;
-        });
-      }, 100);
+        const elapsedTime = Date.now() - startTime;
+        setFlightTime(elapsedTime);
+        
+        const newMultiplier = 1 + (elapsedTime / 1000) * 0.2 + (elapsedTime / 5000) ** 2;
+        setMultiplier(newMultiplier);
+
+        if (elapsedTime >= crashPoint) {
+            setGameState('crashed');
+            clearInterval(gameLoop);
+        }
+      }, 50);
     } else {
       setMultiplier(1.00);
+      setFlightTime(0);
     }
     return () => clearInterval(gameLoop);
   }, [gameState]);
@@ -108,31 +113,71 @@ const AviatorGame = () => {
     setGameState('waiting');
   };
 
+  // plane position based on time
+  const planeX = Math.min(100, (flightTime / 5000) * 100);
+  const planeY = 100 - Math.pow(planeX / 100, 0.5) * 80;
+
+  const multiplierFontSize = Math.min(10, 2 + multiplier / 5);
+
   return (
     <div className='flex flex-col items-center gap-4'>
-        <Card className="w-full max-w-lg">
-            <CardContent className="p-4">
-            <div className="relative aspect-square h-[300px] mx-auto bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center">
-                {/* Grid background */}
-                <div className="absolute inset-0 z-0" style={{ backgroundImage: 'linear-gradient(rgba(128,128,128,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(128,128,128,0.2) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-                
-                <div className="absolute inset-0 flex items-center justify-center">
-                {gameState === 'playing' && (
-                    <div className="relative">
-                    <Plane className="h-12 w-12 text-primary transform -rotate-45 animate-pulse" />
-                    <p className="absolute -top-8 left-1/2 -translate-x-1/2 text-xl font-bold text-primary">{multiplier.toFixed(2)}x</p>
-                    </div>
-                )}
-                {gameState === 'waiting' && (
-                    <p className="text-xl font-semibold text-muted-foreground">Waiting for next round...</p>
-                )}
-                {gameState === 'crashed' && (
-                    <div className="text-center">
-                    <p className="text-3xl font-bold text-destructive">Flew Away!</p>
-                    <p className="text-md text-muted-foreground">Multiplier: {multiplier.toFixed(2)}x</p>
-                    </div>
-                )}
+        <Card className="w-full max-w-4xl overflow-hidden">
+            <CardContent className="p-0">
+            <div className="relative w-full aspect-video bg-[#1e2024] flex items-center justify-center overflow-hidden">
+                {/* Starburst Background */}
+                <div 
+                    className="absolute inset-0 bg-transparent" 
+                    style={{
+                        backgroundImage: `
+                            radial-gradient(ellipse at 50% 120%, hsla(0,0%,100%,0.05) 0%, transparent 40%),
+                            radial-gradient(circle at 50% 120%, transparent 20%, #1e2024 20.5%, #1e2024 30%, transparent 30.5%, transparent 100%)
+                        `,
+                        backgroundSize: '100% 100%, 80px 80px',
+                    }}
+                ></div>
+
+                 <div className="absolute inset-0 flex items-center justify-center">
+                    {gameState === 'waiting' && (
+                        <p className="text-xl font-semibold text-muted-foreground animate-pulse">Waiting for next round...</p>
+                    )}
+                    {gameState === 'crashed' && (
+                        <div className="text-center z-20">
+                            <p className="text-3xl font-bold text-destructive">Flew Away!</p>
+                            <p className="text-2xl text-white font-bold">{multiplier.toFixed(2)}x</p>
+                        </div>
+                    )}
+                    {(gameState === 'playing' || gameState === 'crashed') && (
+                        <p 
+                            className="text-white font-bold transition-all duration-100"
+                            style={{ fontSize: `${multiplierFontSize}rem`, opacity: gameState === 'crashed' ? 0 : 1 }}
+                        >
+                            {multiplier.toFixed(2)}x
+                        </p>
+                    )}
                 </div>
+
+                {gameState === 'playing' && (
+                  <div 
+                    className="absolute h-full w-full"
+                  >
+                    <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
+                        <path 
+                            d={`M 0 100 C 30 100, 70 60, 100 20`}
+                            stroke="#ef4444"
+                            strokeWidth="0.5"
+                            fill="none"
+                            strokeDasharray="4 4"
+                            pathLength="1"
+                            strokeDashoffset={`${1 - (planeX/100)}`}
+                        />
+                    </svg>
+                     <Plane 
+                        className="h-8 w-8 text-red-500 absolute bottom-0 left-0 transform -translate-y-1/2 -translate-x-1/2 transition-all ease-linear duration-[50ms]" 
+                        style={{ left: `${planeX}%`, bottom: `${100 - planeY}%`, transform: `rotate(${-(planeX/2)}deg)` }}
+                    />
+                  </div>
+                )}
+               
             </div>
             </CardContent>
         </Card>
@@ -360,14 +405,13 @@ const SpinWheelGame = () => {
 
         const randomSpins = Math.floor(Math.random() * 5) + 8; // 8 to 13 full spins
         const randomStop = Math.random() * 360;
-        const targetRotation = (randomSpins * 360) + randomStop;
+        const targetRotation = rotation + (randomSpins * 360) + randomStop;
         
         setRotation(targetRotation);
 
         setTimeout(() => {
             setSpinning(false);
-            const normalizedRotation = (targetRotation % 360 + 360) % 360;
-            const prizeIndex = Math.floor(normalizedRotation / segmentAngle);
+            const prizeIndex = Math.floor((targetRotation % 360) / segmentAngle);
             const prizeMultiplier = segments[prizeIndex].value;
             const winnings = betAmount * prizeMultiplier;
 
