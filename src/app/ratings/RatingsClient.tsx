@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { TrendingUp, TrendingDown, Minus, Coins, Star, Settings, BarChart, Expand } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Coins, Star, Settings, BarChart, Expand, LineChart as LineChartIcon } from 'lucide-react';
 import { ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,12 @@ import { TopMovers } from '@/components/top-movers';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { cn } from '@/lib/utils';
 
 type CoinData = {
   time: string;
@@ -35,6 +41,8 @@ type Coin = {
   volume: number;
   history: CoinData[];
 };
+
+type ChartType = 'candlestick' | 'line';
 
 const initialCoinsData: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>[] = [
   { name: 'Bitcoin', symbol: 'BTC', price: 68000 },
@@ -79,6 +87,7 @@ function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high'
 export default function RatingsClient() {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null);
+  const [chartType, setChartType] = useState<ChartType>('candlestick');
 
   useEffect(() => {
     const initialCoins = initialCoinsData.map(generateInitialCoinState);
@@ -170,6 +179,64 @@ export default function RatingsClient() {
     }
     return null;
   };
+  
+  const ChartComponent = ({ isExpanded = false }: { isExpanded?: boolean }) => (
+    <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={chartData}>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis 
+                dataKey="time" 
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
+                className="text-xs fill-muted-foreground"
+            />
+            <YAxis 
+                yAxisId="price"
+                orientation="right"
+                domain={chartDomain}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
+                className="text-xs fill-muted-foreground"
+            />
+            <YAxis yAxisId="volume" orientation="right" domain={[0, 'dataMax * 4']} tickLine={false} axisLine={false} tick={false} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
+            
+            {chartType === 'candlestick' ? (
+                 <Bar yAxisId="price" dataKey="close" barSize={1} shape={(props) => {
+                    const { x, y, width, height, payload } = props;
+                    if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
+                    const isUp = payload.close > payload.open;
+                    const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-5))';
+                    const candleWidth = 4;
+                    const candleX = x + width/2 - candleWidth/2;
+                        
+                    const highY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.high) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+                    const lowY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.low) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+                    
+                    const bodyY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - Math.max(payload.open, payload.close)) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+                    const bodyHeight = (Math.abs(payload.open - payload.close) / (chartDomain[1] - chartDomain[0])) * (height || 1);
+
+                    return <>
+                        <line x1={candleX + candleWidth/2} y1={highY} x2={candleX + candleWidth/2} y2={lowY} stroke={color} strokeWidth={1}/>
+                        <rect x={candleX} y={bodyY} width={candleWidth} height={bodyHeight} fill={color} />
+                    </>
+                }} />
+            ) : (
+                <Line yAxisId="price" type="monotone" dataKey="close" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+            )}
+
+            <Bar yAxisId="volume" dataKey="volume" barSize={10} >
+                {chartData.map((entry, index) => (
+                <rect key={`cell-${index}`} fill={entry.close > entry.open ? 'hsla(var(--chart-2), 0.4)' : 'hsla(var(--chart-5), 0.4)'}/>
+                ))}
+            </Bar>
+        </ComposedChart>
+    </ResponsiveContainer>
+  );
 
 
   if (!selectedCoin) {
@@ -214,64 +281,22 @@ export default function RatingsClient() {
                     </TabsList>
                 </Tabs>
                 <div className="flex items-center gap-2 text-muted-foreground">
-                    <BarChart className="h-4 w-4 cursor-pointer hover:text-primary" />
+                    <LineChartIcon className={cn("h-4 w-4 cursor-pointer hover:text-primary", chartType === 'line' && 'text-primary')} onClick={() => setChartType('line')} />
+                    <BarChart className={cn("h-4 w-4 cursor-pointer hover:text-primary", chartType === 'candlestick' && 'text-primary')} onClick={() => setChartType('candlestick')} />
                     <Settings className="h-4 w-4 cursor-pointer hover:text-primary" />
-                    <Expand className="h-4 w-4 cursor-pointer hover:text-primary" />
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Expand className="h-4 w-4 cursor-pointer hover:text-primary" />
+                        </DialogTrigger>
+                        <DialogContent className="max-w-[90vw] h-[90vh] p-1">
+                            <ChartComponent isExpanded={true} />
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
 
-            <div className="w-full bg-transparent h-[250px] py-4 pl-4">
-                <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={chartData}>
-                        <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis 
-                            dataKey="time" 
-                            tickLine={false}
-                            axisLine={false}
-                            tickMargin={8}
-                            tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
-                            className="text-xs fill-muted-foreground"
-                        />
-                        <YAxis 
-                            yAxisId="price"
-                            orientation="right"
-                            domain={chartDomain}
-                            tickLine={false}
-                            axisLine={false}
-                            tickMargin={8}
-                            tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
-                            className="text-xs fill-muted-foreground"
-                        />
-                        <YAxis yAxisId="volume" orientation="right" domain={[0, 'dataMax * 4']} tickLine={false} axisLine={false} tick={false} />
-                        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
-                        
-                        <Bar yAxisId="price" dataKey="close" barSize={1} shape={(props) => {
-                            const { x, y, width, height, payload } = props;
-                            if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
-                            const isUp = payload.close > payload.open;
-                            const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-5))';
-                            const candleWidth = 4;
-                            const candleX = x + width/2 - candleWidth/2;
-                             
-                            const highY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.high) / (chartDomain[1] - chartDomain[0])) * (height || 0);
-                            const lowY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.low) / (chartDomain[1] - chartDomain[0])) * (height || 0);
-                            
-                            const bodyY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - Math.max(payload.open, payload.close)) / (chartDomain[1] - chartDomain[0])) * (height || 0);
-                            const bodyHeight = (Math.abs(payload.open - payload.close) / (chartDomain[1] - chartDomain[0])) * (height || 1);
-
-                            return <>
-                               <line x1={candleX + candleWidth/2} y1={highY} x2={candleX + candleWidth/2} y2={lowY} stroke={color} strokeWidth={1}/>
-                               <rect x={candleX} y={bodyY} width={candleWidth} height={bodyHeight} fill={color} />
-                            </>
-                        }} />
-
-                        <Bar yAxisId="volume" dataKey="volume" barSize={10} >
-                          {chartData.map((entry, index) => (
-                            <rect key={`cell-${index}`} fill={entry.close > entry.open ? 'hsla(var(--chart-2), 0.4)' : 'hsla(var(--chart-5), 0.4)'}/>
-                          ))}
-                        </Bar>
-                    </ComposedChart>
-                </ResponsiveContainer>
+            <div className="w-full bg-transparent h-[250px] py-4 pl-4 pr-0">
+                <ChartComponent />
             </div>
             
             <Separator />
@@ -322,43 +347,43 @@ export default function RatingsClient() {
             </div>
         </div>
         <div className="lg:col-span-3 space-y-2 border-l pl-2">
-            <div className="border-b">
-                <div className='p-2'>
-                    <h3 className="font-semibold text-sm">Market</h3>
-                </div>
-                <ScrollArea className='h-[270px]'>
-                    <Table>
-                        <TableHeader>
-                        <TableRow className='h-8'>
-                            <TableHead className="text-xs h-auto p-2">Pair</TableHead>
-                            <TableHead className="text-xs h-auto p-2 text-right">Price</TableHead>
-                            <TableHead className="text-xs h-auto p-2 text-right">% Change</TableHead>
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {coins.map((coin) => (
-                            <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50 h-8">
-                            <TableCell className='py-1 px-2'>
-                                <div className="flex items-center gap-2">
-                                    <Star className={`h-3 w-3 ${coin.symbol === selectedCoin.symbol ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/50'}`}/>
-                                    <div className="font-bold text-xs">{coin.symbol}/USDT</div>
-                                </div>
-                            </TableCell>
-                            <TableCell className="text-right font-mono text-xs py-1 px-2">${coin.price.toFixed(4)}</TableCell>
-                            <TableCell className={`text-right font-mono text-xs py-1 px-2 ${getChangeColor(coin.change)}`}>
-                                {coin.change > 0 ? '+' : ''}{((coin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%
-                            </TableCell>
+            <ScrollArea className="h-[calc(100vh-10rem)]">
+                <div className="border-b">
+                    <div className='p-2'>
+                        <h3 className="font-semibold text-sm">Market</h3>
+                    </div>
+                    <ScrollArea className='h-[270px]'>
+                        <Table>
+                            <TableHeader>
+                            <TableRow className='h-8'>
+                                <TableHead className="text-xs h-auto p-2">Pair</TableHead>
+                                <TableHead className="text-xs h-auto p-2 text-right">Price</TableHead>
+                                <TableHead className="text-xs h-auto p-2 text-right">% Change</TableHead>
                             </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
-                </ScrollArea>
-            </div>
-            <MarketTrades selectedCoin={selectedCoin} />
-            <TopMovers />
+                            </TableHeader>
+                            <TableBody>
+                            {coins.map((coin) => (
+                                <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50 h-8">
+                                <TableCell className='py-1 px-2'>
+                                    <div className="flex items-center gap-2">
+                                        <Star className={`h-3 w-3 ${coin.symbol === selectedCoin.symbol ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/50'}`}/>
+                                        <div className="font-bold text-xs">{coin.symbol}/USDT</div>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="text-right font-mono text-xs py-1 px-2">${coin.price.toFixed(4)}</TableCell>
+                                <TableCell className={`text-right font-mono text-xs py-1 px-2 ${getChangeColor(coin.change)}`}>
+                                    {coin.change > 0 ? '+' : ''}{((coin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                    </ScrollArea>
+                </div>
+                <MarketTrades selectedCoin={selectedCoin} />
+                <TopMovers />
+            </ScrollArea>
         </div>
     </div>
   );
 }
-
-    
