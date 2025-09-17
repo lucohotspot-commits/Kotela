@@ -60,7 +60,7 @@ export default function Home() {
             <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
             <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="absolute top-0 right-0 -mr-4 -mt-4">
+                <Button variant="outline" size="sm" className="absolute top-0 right-0">
                   <ShoppingCart className="mr-2" /> Store
                 </Button>
               </DialogTrigger>
