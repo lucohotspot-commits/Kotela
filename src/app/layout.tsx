@@ -6,6 +6,7 @@ import { Flame } from 'lucide-react';
 import { MobileNav } from '@/components/mobile-nav';
 import { DesktopNav } from '@/components/desktop-nav';
 import { ThemeProvider } from '@/components/theme-provider';
+import { NotificationTicker } from '@/components/notification-ticker';
 
 export const metadata: Metadata = {
   title: 'Kotela',
@@ -45,6 +46,7 @@ export default function RootLayout({
                   <DesktopNav />
                 </div>
               </header>
+              <NotificationTicker />
               <main className="container mx-auto flex-grow p-4 pb-20 md:pb-4">{children}</main>
               <MobileNav />
               <Toaster />
