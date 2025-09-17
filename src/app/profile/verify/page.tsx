@@ -22,11 +22,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
 import { ChevronRight, ShieldCheck, Camera, Check, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { PhoneInput } from '@/components/ui/phone-input';
-import { CountrySelect } from '@/components/ui/country-select';
+import { PhoneInput, type Country } from '@/components/ui/phone-input';
+
 
 const formSchema = z.object({
-  country: z.string({ required_error: "Please select a country." }),
+  country: z.string({ required_error: "Please select a country." }).min(2, "Please select a country."),
   phoneNumber: z.string().min(10, { message: "Please enter a valid phone number." }),
   surname: z.string().min(2, { message: "Surname must be at least 2 characters." }),
   givenName: z.string().optional(),
@@ -49,6 +49,8 @@ export default function VerifyPage() {
   const form = useForm<VerificationFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      country: 'US',
+      phoneNumber: '',
       surname: "",
       givenName: "",
       middleName: "",
@@ -157,30 +159,25 @@ export default function VerifyPage() {
                         <CardDescription>Enter your legal name and date of birth exactly as they appear on your government-issued ID.</CardDescription>
                     </CardHeader>
                     <CardContent className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                        <FormField
-                            control={form.control}
-                            name="country"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Country (Required)</FormLabel>
-                                    <CountrySelect onValueChange={field.onChange} defaultValue={field.value} />
+                        <div className="sm:col-span-2">
+                           <FormField
+                                control={form.control}
+                                name="phoneNumber"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Country & Phone Number (Required)</FormLabel>
+                                    <FormControl>
+                                        <PhoneInput 
+                                            {...field}
+                                            country={form.watch('country') as Country}
+                                            onCountryChange={(country) => form.setValue('country', country)}
+                                        />
+                                    </FormControl>
                                     <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="phoneNumber"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Phone Number (Required)</FormLabel>
-                                <FormControl>
-                                    <PhoneInput international defaultCountry="US" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
                          <FormField control={form.control} name="surname" render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Surname (Required)</FormLabel>

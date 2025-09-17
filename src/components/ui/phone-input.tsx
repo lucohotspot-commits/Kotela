@@ -5,16 +5,14 @@ import { Check, ChevronsUpDown } from "lucide-react"
 import * as React from "react"
 import {
   Country,
-  PhoneNumber as PhoneNumberType,
-} from "libphonenumber-js/core"
+  getCountries,
+  getCountryCallingCode,
+} from "react-phone-number-input/input"
 import "react-phone-number-input/style.css"
 import PhoneInputWithCountry, {
-  CountrySelect,
-  isCountrySupported,
   isPossiblePhoneNumber,
   PhoneInputProps,
   Props,
-  parsePhoneNumber,
 } from "react-phone-number-input"
 
 import { Button } from "@/components/ui/button"
@@ -39,42 +37,34 @@ type PhoneInputComponentProps = React.ForwardRefExoticComponent<
   Props<PhoneInputProps> & React.RefAttributes<HTMLInputElement>
 >
 
+type CustomPhoneInputProps = Omit<
+  React.ComponentPropsWithoutRef<PhoneInputComponentProps>,
+  "onChange"
+> & {
+  onChange: (value: string) => void
+  country?: Country
+  onCountryChange?: (country: Country) => void
+}
+
 const PhoneInput = React.forwardRef<
   React.ElementRef<PhoneInputComponentProps>,
-  Omit<React.ComponentPropsWithoutRef<PhoneInputComponentProps>, "onChange"> & {
-    onChange: (value: string) => void
-  }
->(({ className, onChange, ...props }, ref) => {
+  CustomPhoneInputProps
+>(({ className, onChange, country, onCountryChange, ...props }, ref) => {
   return (
     <PhoneInputWithCountry
       ref={ref}
       className={cn("flex", className)}
       flagComponent={FlagComponent}
-      countrySelectComponent={CountrySelectComponent}
+      countrySelectComponent={(props) => (
+        <CountrySelectComponent {...props} onCountryChange={onCountryChange} />
+      )}
       inputComponent={InputComponent}
-      /**
-       * Format phone number as international format.
-       * @example "+12133734253"
-       * @see https://github.com/catamphetamine/react-phone-number-input#international
-       */
       international
-      /**
-       * Make sure that the country code is always present.
-       * @see https://github.com/catamphetamine/react-phone-number-input#smartcaret
-       */
       smartCaret={false}
-      /**
-       * Always display the country code.
-       * @see https://github.com/catamphetamine/react-phone-number-input#countryselectcomponent
-       */
       countryCallingCodeEditable={false}
-      /**
-       * The `onChange` event is passed to the `InputComponent` and is used to update the `value` of the `PhoneInput` component.
-       *
-       * The `onChange` event is not passed to the `PhoneInput` component directly, because the `value` is managed by the `PhoneInput` component itself.
-       * @see https://github.com/catamphetamine/react-phone-number-input#onchange
-       */
       onChange={(value) => onChange(value || "")}
+      country={country}
+      onCountryChange={onCountryChange}
       {...props}
     />
   )
@@ -99,21 +89,36 @@ type CountrySelectComponentProps = {
   disabled?: boolean
   value: Country
   onChange: (value: Country) => void
-  options: CountrySelectOption[]
+  onCountryChange?: (value: Country) => void
 }
 
 const CountrySelectComponent = ({
   disabled,
   value,
   onChange,
-  options,
+  onCountryChange,
 }: CountrySelectComponentProps) => {
+  const countryOptions = React.useMemo(() => {
+    const countries = getCountries()
+    const callingCodes = countries.map((country) => ({
+      value: country,
+      label: country, // We'll get the proper label from country-list
+      callingCode: getCountryCallingCode(country),
+    }))
+    return callingCodes
+  }, [])
+  
   const handleSelect = React.useCallback(
     (country: Country) => {
       onChange(country)
+      if (onCountryChange) {
+        onCountryChange(country)
+      }
     },
-    [onChange],
+    [onChange, onCountryChange],
   )
+
+  const countryNames = require('country-list').getNameList()
 
   return (
     <Popover>
@@ -140,9 +145,7 @@ const CountrySelectComponent = ({
             <ScrollArea className="h-72">
               <CommandEmpty>No country found.</CommandEmpty>
               <CommandGroup>
-                {options
-                  .filter((x) => x.value)
-                  .map((option) => (
+                {countryOptions.map((option) => (
                     <CommandItem
                       className="gap-2"
                       key={option.value}
@@ -150,18 +153,12 @@ const CountrySelectComponent = ({
                     >
                       <FlagComponent
                         country={option.value}
-                        countryName={option.label}
+                        countryName={countryNames[option.value] || option.label}
                       />
-                      <span className="flex-1 text-sm">{option.label}</span>
-                      {option.value && (
-                        <span className="text-sm text-foreground/50">
-                          {`+${
-                            parsePhoneNumber(
-                              `+${option.value}1`,
-                            )?.countryCallingCode
-                          }`}
-                        </span>
-                      )}
+                      <span className="flex-1 text-sm">{countryNames[option.value] || option.label}</span>
+                      <span className="text-sm text-foreground/50">
+                        {`+${option.callingCode}`}
+                      </span>
                       <Check
                         className={cn(
                           "ml-auto h-4 w-4",
@@ -189,4 +186,4 @@ const FlagComponent = ({ country }: { country: Country; countryName: string }) =
 FlagComponent.displayName = "FlagComponent"
 
 export { PhoneInput, isPossiblePhoneNumber }
-export type { Country, PhoneNumberType }
+export type { Country }
