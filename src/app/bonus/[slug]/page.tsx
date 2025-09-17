@@ -24,7 +24,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/alert-dialog";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -688,5 +688,3 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
-    
