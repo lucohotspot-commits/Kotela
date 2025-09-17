@@ -47,37 +47,39 @@ export default function Home() {
                     Tap the coin to start mining. Use boosts to get a high score!
                 </p>
             </div>
-             <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary px-2">
-                <Coins className="w-5 h-5 text-yellow-500"/>
-                <span className='text-lg'>{currency.toLocaleString()}</span>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary px-2">
+                    <Coins className="w-5 h-5 text-yellow-500"/>
+                    <span className='text-lg'>{currency.toLocaleString()}</span>
+                </div>
+                 <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                        <ShoppingCart className="mr-2" /> Store
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-auto sm:max-h-[800px]">
+                        <DialogHeader>
+                        <DialogTitle className='flex items-center gap-2'>
+                            <ShoppingCart />
+                            Boost Store
+                        </DialogTitle>
+                        </DialogHeader>
+                        <ScrollArea className="h-full -mx-6">
+                        <div className="px-6 pb-6">
+                            <Store onPurchase={refreshData} />
+                        </div>
+                        </ScrollArea>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
       </header>
 
       <main className="relative flex-grow flex flex-col items-center justify-center">
         <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-16">
-          <div className="relative">
+          <div>
             <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
-            <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="absolute top-0 right-0">
-                  <ShoppingCart className="mr-2" /> Store
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-auto sm:max-h-[800px]">
-                <DialogHeader>
-                  <DialogTitle className='flex items-center gap-2'>
-                    <ShoppingCart />
-                    Boost Store
-                  </DialogTitle>
-                </DialogHeader>
-                <ScrollArea className="h-full -mx-6">
-                  <div className="px-6 pb-6">
-                    <Store onPurchase={refreshData} />
-                  </div>
-                </ScrollArea>
-              </DialogContent>
-            </Dialog>
           </div>
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
           <div className="w-full max-w-md flex flex-col gap-6">
