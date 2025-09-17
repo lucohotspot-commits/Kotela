@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from '@/components/ui/breadcrumb';
-import { ChevronRight, ShieldCheck, Camera, Check, AlertCircle, ArrowLeft, ArrowRight, Upload, FileText, CameraIcon, FileUp } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Camera, Check, AlertCircle, ArrowLeft, ArrowRight, Upload, FileText, CameraIcon, FileUp, Hourglass } from 'lucide-react';
 import { PhoneInput, type Country } from '@/components/ui/phone-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getYears, getMonths, getDaysInMonth } from '@/lib/dates';
@@ -67,6 +67,7 @@ export default function VerifyPage() {
   const [step, setStep] = useState(1);
   const [uploadMode, setUploadMode] = useState<'select' | 'upload' | 'camera'>('select');
   const [selfieUploadMode, setSelfieUploadMode] = useState<'select' | 'upload' | 'camera'>('select');
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitted'>('idle');
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -137,7 +138,7 @@ export default function VerifyPage() {
       title: "Verification Submitted",
       description: "Your verification details are being reviewed.",
     });
-    // Maybe redirect or show a success message
+    setSubmissionStatus('submitted');
   }
 
   const handleCaptureSelfie = () => {
@@ -167,7 +168,6 @@ export default function VerifyPage() {
             form.setValue('document', dataUri, { shouldValidate: true });
             setDocumentPreview(dataUri);
             
-            // Stop camera stream
             const stream = video.srcObject as MediaStream;
             stream.getTracks().forEach(track => track.stop());
             video.srcObject = null;
@@ -243,472 +243,493 @@ export default function VerifyPage() {
         </BreadcrumbList>
       </Breadcrumb>
       
-      <div className="space-y-4">
-          <div className="flex items-center gap-2">
-              <ShieldCheck className="h-6 w-6" />
-              <h1 className="text-2xl font-bold">KYC Verification</h1>
-          </div>
-
-          <div className="flex items-center justify-between">
-            {verificationSteps.map((item, index) => {
-              const isCompleted = step > item.step;
-              const isCurrent = step === item.step;
-              
-              return (
-                <div key={item.step} className="flex items-center w-full">
-                  <div className="flex flex-col items-center">
-                      <div
-                          className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
-                              isCompleted ? "bg-primary text-primary-foreground" :
-                              isCurrent ? "border-2 border-primary text-primary" :
-                              "bg-muted text-muted-foreground"
-                          )}
-                      >
-                          {isCompleted ? <Check className="w-5 h-5" /> : item.step}
-                      </div>
-                      <p className={cn(
-                          "text-xs mt-2 text-center",
-                           isCurrent ? "font-bold text-primary" : "text-muted-foreground",
-                           "hidden sm:block"
-                      )}>{item.title}</p>
-                  </div>
-                  
-                  {index < verificationSteps.length - 1 && (
-                      <div className={cn(
-                          "h-0.5 mx-4",
-                          "flex-1",
-                          isCompleted ? "bg-primary" : "bg-muted"
-                      )}></div>
-                  )}
+      {submissionStatus === 'submitted' ? (
+         <Card className="text-center">
+            <CardHeader>
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                <Hourglass className="h-6 w-6 text-primary animate-spin" />
+              </div>
+              <CardTitle className="mt-4">Verification in Progress</CardTitle>
+              <CardDescription>
+                Your documents have been submitted successfully and are now being reviewed. This usually takes 1-2 business days. We'll notify you once the review is complete.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button asChild className="w-full">
+                <Link href="/profile">Back to Profile</Link>
+              </Button>
+            </CardFooter>
+         </Card>
+      ) : (
+        <>
+            <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                    <ShieldCheck className="h-6 w-6" />
+                    <h1 className="text-2xl font-bold">KYC Verification</h1>
                 </div>
-              );
-            })}
-          </div>
-      </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {step === 1 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Step 1: Personal Information</CardTitle>
-                        <CardDescription>Enter your legal name and date of birth exactly as they appear on your government-issued ID.</CardDescription>
-                    </CardHeader>
-                    <CardContent className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                        <div className="col-span-1 sm:col-span-2">
-                           <FormField
-                                control={form.control}
-                                name="phoneNumber"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Country & Phone Number (Required)</FormLabel>
-                                    <FormControl>
-                                        <PhoneInput 
-                                            {...field}
-                                            country={form.watch('country') as Country}
-                                            onCountryChange={(country) => form.setValue('country', country)}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
+                <div className="flex items-center justify-between">
+                  {verificationSteps.map((item, index) => {
+                    const isCompleted = step > item.step;
+                    const isCurrent = step === item.step;
+                    
+                    return (
+                      <div key={item.step} className="flex items-center w-full">
+                        <div className="flex flex-col items-center">
+                            <div
+                                className={cn(
+                                    "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
+                                    isCompleted ? "bg-primary text-primary-foreground" :
+                                    isCurrent ? "border-2 border-primary text-primary" :
+                                    "bg-muted text-muted-foreground"
                                 )}
-                            />
-                        </div>
-                         <FormField control={form.control} name="surname" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Surname (Required)</FormLabel>
-                                <FormControl><Input placeholder="Doe" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                         <FormField control={form.control} name="givenName" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Given Name (Optional)</FormLabel>
-                                <FormControl><Input placeholder="Michael" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                         <FormField control={form.control} name="middleName" render={({ field }) => (
-                            <FormItem className="col-span-1 sm:col-span-2">
-                                <FormLabel>Middle Name (Optional)</FormLabel>
-                                <FormControl><Input placeholder="James" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
-                        <div className="col-span-1 sm:col-span-2 grid grid-cols-3 gap-3">
-                            <FormField
-                                control={form.control}
-                                name="dob_month"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Month</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Month" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {months.map(month => <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>)}
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <FormField
-                                control={form.control}
-                                name="dob_day"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Day</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} disabled={!watchedMonth}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Day" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {days.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="dob_year"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Year</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Year" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {years.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                        </div>
-                    </CardContent>
-                    <CardFooter className='justify-end'>
-                         <Button onClick={nextStep} disabled={!isStep1Valid}>
-                            Next <ArrowRight className="ml-2" />
-                        </Button>
-                    </CardFooter>
-                </Card>
-            )}
-
-            {step === 2 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Step 2: Document Verification</CardTitle>
-                        <CardDescription>Select the type of document you'd like to upload.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <FormField
-                            control={form.control}
-                            name="documentType"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Document Type</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                    <SelectValue placeholder="Select a document type" />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="passport">Passport</SelectItem>
-                                    <SelectItem value="drivers_license">Driver's License</SelectItem>
-                                    <SelectItem value="national_id">National ID Card</SelectItem>
-                                </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-
-                        {formValues.documentType && (
-                            <>
-                                <FormField control={form.control} name="documentId" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>{documentIdLabels[formValues.documentType] || 'Document ID'}</FormLabel>
-                                        <FormControl><Input placeholder="Enter document number" {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                
-                                <div className="grid grid-cols-3 gap-3">
-                                    <FormField control={form.control} name="expiry_month" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Expiry Month</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
-                                                <SelectContent>
-                                                    {months.map(month => <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="expiry_day" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Expiry Day</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchedExpiryMonth}>
-                                                <FormControl><SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger></FormControl>
-                                                <SelectContent>
-                                                    {expiryDays.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                    <FormField control={form.control} name="expiry_year" render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Expiry Year</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl><SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger></FormControl>
-                                                <SelectContent>
-                                                    {futureYears.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                </div>
-                            </>
-                        )}
-
-
-                        {form.watch('documentType') && uploadMode === 'select' && !documentPreview && (
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setUploadMode('upload')}>
-                                    <FileUp className="h-8 w-8" />
-                                    <span>Upload File</span>
-                                </Button>
-                                <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setUploadMode('camera')}>
-                                    <CameraIcon className="h-8 w-8" />
-                                    <span>Use Camera</span>
-                                </Button>
+                            >
+                                {isCompleted ? <Check className="w-5 h-5" /> : item.step}
                             </div>
-                        )}
+                            <p className={cn(
+                                "text-xs mt-2 text-center",
+                                isCurrent ? "font-bold text-primary" : "text-muted-foreground",
+                                "hidden sm:block"
+                            )}>{item.title}</p>
+                        </div>
                         
-                        {uploadMode === 'upload' && !documentPreview && (
-                            <FormItem>
-                                <FormLabel>Upload your document</FormLabel>
-                                <FormControl>
-                                    <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
+                        {index < verificationSteps.length - 1 && (
+                            <div className={cn(
+                                "h-0.5 mx-4",
+                                isCompleted ? "bg-primary" : "bg-muted",
+                                "flex-1 hidden sm:block"
+                            )}></div>
                         )}
+                      </div>
+                    );
+                  })}
+                </div>
+            </div>
 
-                        {uploadMode === 'camera' && !documentPreview && (
-                             <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
-                                <video id="doc-video" className="w-full h-full object-cover" autoPlay muted playsInline />
-                                {hasCameraPermission === false && (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                                        <AlertCircle className="h-10 w-10 text-destructive mb-2" />
-                                        <p className="font-semibold">Camera Access Denied</p>
-                                    </div>
-                                )}
-                                <Button onClick={handleCaptureDocument} className="absolute bottom-4 z-10" size="lg" disabled={!hasCameraPermission}>
-                                    <Camera className="mr-2" /> Capture Document
-                                </Button>
-                            </div>
-                        )}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                  {step === 1 && (
+                      <Card>
+                          <CardHeader>
+                              <CardTitle>Step 1: Personal Information</CardTitle>
+                              <CardDescription>Enter your legal name and date of birth exactly as they appear on your government-issued ID.</CardDescription>
+                          </CardHeader>
+                          <CardContent className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                              <div className="col-span-1 sm:col-span-2">
+                                <FormField
+                                      control={form.control}
+                                      name="phoneNumber"
+                                      render={({ field }) => (
+                                          <FormItem>
+                                          <FormLabel>Country & Phone Number (Required)</FormLabel>
+                                          <FormControl>
+                                              <PhoneInput 
+                                                  {...field}
+                                                  country={form.watch('country') as Country}
+                                                  onCountryChange={(country) => form.setValue('country', country)}
+                                              />
+                                          </FormControl>
+                                          <FormMessage />
+                                          </FormItem>
+                                      )}
+                                  />
+                              </div>
+                              <FormField control={form.control} name="surname" render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel>Surname (Required)</FormLabel>
+                                      <FormControl><Input placeholder="Doe" {...field} /></FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              )} />
+                              <FormField control={form.control} name="givenName" render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel>Given Name (Optional)</FormLabel>
+                                      <FormControl><Input placeholder="Michael" {...field} /></FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              )} />
+                              <FormField control={form.control} name="middleName" render={({ field }) => (
+                                  <FormItem className="col-span-1 sm:col-span-2">
+                                      <FormLabel>Middle Name (Optional)</FormLabel>
+                                      <FormControl><Input placeholder="James" {...field} /></FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              )} />
+                              <div className="col-span-1 sm:col-span-2 grid grid-cols-3 gap-3">
+                                  <FormField
+                                      control={form.control}
+                                      name="dob_month"
+                                      render={({ field }) => (
+                                      <FormItem>
+                                          <FormLabel>Month</FormLabel>
+                                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                          <FormControl>
+                                              <SelectTrigger>
+                                              <SelectValue placeholder="Month" />
+                                              </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                              {months.map(month => <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>)}
+                                          </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                      </FormItem>
+                                      )}
+                                  />
+                                  <FormField
+                                      control={form.control}
+                                      name="dob_day"
+                                      render={({ field }) => (
+                                      <FormItem>
+                                          <FormLabel>Day</FormLabel>
+                                          <Select onValueChange={field.onChange} value={field.value} disabled={!watchedMonth}>
+                                          <FormControl>
+                                              <SelectTrigger>
+                                              <SelectValue placeholder="Day" />
+                                              </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                              {days.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}
+                                          </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                      </FormItem>
+                                      )}
+                                  />
+                                  <FormField
+                                      control={form.control}
+                                      name="dob_year"
+                                      render={({ field }) => (
+                                      <FormItem>
+                                          <FormLabel>Year</FormLabel>
+                                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                          <FormControl>
+                                              <SelectTrigger>
+                                              <SelectValue placeholder="Year" />
+                                              </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                              {years.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}
+                                          </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                      </FormItem>
+                                      )}
+                                  />
+                              </div>
+                          </CardContent>
+                          <CardFooter className='justify-end'>
+                              <Button onClick={nextStep} disabled={!isStep1Valid}>
+                                  Next <ArrowRight className="ml-2" />
+                              </Button>
+                          </CardFooter>
+                      </Card>
+                  )}
 
-                        {documentPreview && (
-                            <div className="space-y-2">
-                                <Label>Document Preview</Label>
-                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
-                                    <Image src={documentPreview} alt="Document preview" layout="fill" objectFit="contain" />
-                                </div>
-                                <Button variant="link" onClick={() => { setDocumentPreview(null); form.setValue('document', null); setUploadMode('select'); }}>
-                                    Clear and re-upload
-                                </Button>
-                            </div>
-                        )}
+                  {step === 2 && (
+                      <Card>
+                          <CardHeader>
+                              <CardTitle>Step 2: Document Verification</CardTitle>
+                              <CardDescription>Select the type of document you'd like to upload.</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-6">
+                              <FormField
+                                  control={form.control}
+                                  name="documentType"
+                                  render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel>Document Type</FormLabel>
+                                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                      <FormControl>
+                                          <SelectTrigger>
+                                          <SelectValue placeholder="Select a document type" />
+                                          </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                          <SelectItem value="passport">Passport</SelectItem>
+                                          <SelectItem value="drivers_license">Driver's License</SelectItem>
+                                          <SelectItem value="national_id">National ID Card</SelectItem>
+                                      </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                  </FormItem>
+                                  )}
+                              />
 
-                    </CardContent>
-                     <CardFooter className='justify-between'>
-                         <Button onClick={prevStep} variant="outline">
-                            <ArrowLeft className="mr-2" /> Back
+                              {formValues.documentType && (
+                                  <>
+                                      <FormField control={form.control} name="documentId" render={({ field }) => (
+                                          <FormItem>
+                                              <FormLabel>{documentIdLabels[formValues.documentType] || 'Document ID'}</FormLabel>
+                                              <FormControl><Input placeholder="Enter document number" {...field} /></FormControl>
+                                              <FormMessage />
+                                          </FormItem>
+                                      )} />
+                                      
+                                      <div className="grid grid-cols-3 gap-3">
+                                          <FormField control={form.control} name="expiry_month" render={({ field }) => (
+                                              <FormItem>
+                                                  <FormLabel>Expiry Month</FormLabel>
+                                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                      <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
+                                                      <SelectContent>
+                                                          {months.map(month => <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>)}
+                                                      </SelectContent>
+                                                  </Select>
+                                                  <FormMessage />
+                                              </FormItem>
+                                          )} />
+                                          <FormField control={form.control} name="expiry_day" render={({ field }) => (
+                                              <FormItem>
+                                                  <FormLabel>Expiry Day</FormLabel>
+                                                  <Select onValueChange={field.onChange} value={field.value} disabled={!watchedExpiryMonth}>
+                                                      <FormControl><SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger></FormControl>
+                                                      <SelectContent>
+                                                          {expiryDays.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}
+                                                      </SelectContent>
+                                                  </Select>
+                                                  <FormMessage />
+                                              </FormItem>
+                                          )} />
+                                          <FormField control={form.control} name="expiry_year" render={({ field }) => (
+                                              <FormItem>
+                                                  <FormLabel>Expiry Year</FormLabel>
+                                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                      <FormControl><SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger></FormControl>
+                                                      <SelectContent>
+                                                          {futureYears.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}
+                                                      </SelectContent>
+                                                  </Select>
+                                                  <FormMessage />
+                                              </FormItem>
+                                          )} />
+                                      </div>
+                                  </>
+                              )}
+
+
+                              {form.watch('documentType') && uploadMode === 'select' && !documentPreview && (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                      <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setUploadMode('upload')}>
+                                          <FileUp className="h-8 w-8" />
+                                          <span>Upload File</span>
+                                      </Button>
+                                      <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setUploadMode('camera')}>
+                                          <CameraIcon className="h-8 w-8" />
+                                          <span>Use Camera</span>
+                                      </Button>
+                                  </div>
+                              )}
+                              
+                              {uploadMode === 'upload' && !documentPreview && (
+                                  <FormItem>
+                                      <FormLabel>Upload your document</FormLabel>
+                                      <FormControl>
+                                          <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} />
+                                      </FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              )}
+
+                              {uploadMode === 'camera' && !documentPreview && (
+                                  <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
+                                      <video id="doc-video" className="w-full h-full object-cover" autoPlay muted playsInline />
+                                      {hasCameraPermission === false && (
+                                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                                              <AlertCircle className="h-10 w-10 text-destructive mb-2" />
+                                              <p className="font-semibold">Camera Access Denied</p>
+                                          </div>
+                                      )}
+                                      <Button onClick={handleCaptureDocument} className="absolute bottom-4 z-10" size="lg" disabled={!hasCameraPermission}>
+                                          <Camera className="mr-2" /> Capture Document
+                                      </Button>
+                                  </div>
+                              )}
+
+                              {documentPreview && (
+                                  <div className="space-y-2">
+                                      <Label>Document Preview</Label>
+                                      <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                          <Image src={documentPreview} alt="Document preview" layout="fill" objectFit="contain" />
+                                      </div>
+                                      <Button variant="link" onClick={() => { setDocumentPreview(null); form.setValue('document', null); setUploadMode('select'); }}>
+                                          Clear and re-upload
+                                      </Button>
+                                  </div>
+                              )}
+
+                          </CardContent>
+                          <CardFooter className='justify-between'>
+                              <Button onClick={prevStep} variant="outline">
+                                  <ArrowLeft className="mr-2" /> Back
+                              </Button>
+                              <Button onClick={nextStep} disabled={!isStep2Valid}>
+                                  Next <ArrowRight className="ml-2" />
+                              </Button>
+                          </CardFooter>
+                      </Card>
+                  )}
+
+
+                  {step === 3 && (
+                      <Card>
+                          <CardHeader>
+                              <CardTitle>Step 3: Selfie Verification</CardTitle>
+                              <CardDescription>Please provide a clear photo of yourself. Make sure your face is well-lit and centered.</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                              {selfie ? (
+                                  <div className="space-y-2">
+                                      <Label>Selfie Preview</Label>
+                                      <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                          <Image src={selfie} alt="User selfie" layout="fill" objectFit="contain" />
+                                      </div>
+                                  </div>
+                              ) : selfieUploadMode === 'select' ? (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                      <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setSelfieUploadMode('upload')}>
+                                          <FileUp className="h-8 w-8" />
+                                          <span>Upload Photo</span>
+                                      </Button>
+                                      <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setSelfieUploadMode('camera')}>
+                                          <CameraIcon className="h-8 w-8" />
+                                          <span>Use Camera</span>
+                                      </Button>
+                                  </div>
+                              ) : selfieUploadMode === 'upload' ? (
+                                  <FormItem>
+                                      <FormLabel>Upload your selfie</FormLabel>
+                                      <FormControl>
+                                          <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleSelfieFileChange} />
+                                      </FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              ) : ( // camera mode
+                                  <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
+                                      <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                                      {hasCameraPermission === false && (
+                                          <Alert variant="destructive" className="absolute bottom-4 w-auto">
+                                          <AlertCircle className="h-4 w-4" />
+                                          <AlertTitle>Camera Access Denied</AlertTitle>
+                                          <AlertDescription>
+                                              Please enable camera permissions to continue.
+                                          </AlertDescription>
+                                          </Alert>
+                                      )}
+                                      {hasCameraPermission === null && (
+                                          <div className="absolute inset-0 flex items-center justify-center">
+                                              <p className="text-muted-foreground">Requesting camera access...</p>
+                                          </div>
+                                      )}
+                                  </div>
+                              )}
+
+                              
+                              <div className="flex justify-center gap-4">
+                                  {selfie ? (
+                                      <>
+                                      <Button onClick={handleRetakeSelfie} variant="outline">Retake</Button>
+                                      </>
+                                  ) : selfieUploadMode === 'camera' ? (
+                                      <Button onClick={handleCaptureSelfie} disabled={!hasCameraPermission}>
+                                          <Camera className="mr-2" /> Capture Selfie
+                                      </Button>
+                                  ) : null }
+                              </div>
+                              <canvas ref={canvasRef} className="hidden"></canvas>
+                          </CardContent>
+                          <CardFooter className='justify-between'>
+                              <Button onClick={prevStep} variant="outline">
+                                  <ArrowLeft className="mr-2" /> Back
+                              </Button>
+                              <Button onClick={nextStep} disabled={!isStep3Valid}>
+                                  Next <ArrowRight className="ml-2" />
+                              </Button>
+                          </CardFooter>
+                      </Card>
+                  )}
+
+                  {step === 4 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Step 4: Review Information</CardTitle>
+                        <CardDescription>Please review your details carefully before submitting.</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        <div className="space-y-4 rounded-lg border p-4">
+                          <h4 className="font-semibold text-lg">Personal Information</h4>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                  <Label className="text-muted-foreground">Name</Label>
+                                  <p>{formValues.givenName} {formValues.middleName} {formValues.surname}</p>
+                              </div>
+                              <div>
+                                  <Label className="text-muted-foreground">Date of Birth</Label>
+                                  <p>{formValues.dob_day}/{formValues.dob_month}/{formValues.dob_year}</p>
+                              </div>
+                              <div>
+                                  <Label className="text-muted-foreground">Country</Label>
+                                  <p>{formValues.country}</p>
+                              </div>
+                              <div>
+                                  <Label className="text-muted-foreground">Phone Number</Label>
+                                  <p>{formValues.phoneNumber}</p>
+                              </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4 rounded-lg border p-4">
+                          <h4 className="font-semibold text-lg">Documents</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-4">
+                                  <div>
+                                      <Label className="text-muted-foreground">Document Type</Label>
+                                      <p>{formValues.documentType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                                  </div>
+                                  <div>
+                                      <Label className="text-muted-foreground">{documentIdLabels[formValues.documentType] || 'Document ID'}</Label>
+                                      <p>{formValues.documentId}</p>
+                                  </div>
+                                  <div>
+                                      <Label className="text-muted-foreground">Expiry Date</Label>
+                                      <p>{formValues.expiry_day}/{formValues.expiry_month}/{formValues.expiry_year}</p>
+                                  </div>
+                              </div>
+
+                              {documentPreview && (
+                                  <div className="space-y-2">
+                                      <Label>Document</Label>
+                                      <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                          <Image src={documentPreview} alt="Document preview" layout="fill" objectFit="contain" />
+                                      </div>
+                                  </div>
+                              )}
+                              {selfie && (
+                                  <div className="space-y-2">
+                                      <Label>Selfie</Label>
+                                      <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
+                                          <Image src={selfie} alt="Selfie preview" layout="fill" objectFit="contain" />
+                                      </div>
+                                  </div>
+                              )}
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="justify-between">
+                        <Button onClick={prevStep} variant="outline">
+                          <ArrowLeft className="mr-2" /> Back
                         </Button>
-                         <Button onClick={nextStep} disabled={!isStep2Valid}>
-                            Next <ArrowRight className="ml-2" />
+                        <Button type="submit" size="lg" disabled={!isStep1Valid || !isStep2Valid || !isStep3Valid}>
+                          Submit for Verification
                         </Button>
-                    </CardFooter>
-                </Card>
-            )}
+                      </CardFooter>
+                    </Card>
+                  )}
 
-
-            {step === 3 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Step 3: Selfie Verification</CardTitle>
-                        <CardDescription>Please provide a clear photo of yourself. Make sure your face is well-lit and centered.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {selfie ? (
-                             <div className="space-y-2">
-                                <Label>Selfie Preview</Label>
-                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
-                                     <Image src={selfie} alt="User selfie" layout="fill" objectFit="contain" />
-                                </div>
-                            </div>
-                        ) : selfieUploadMode === 'select' ? (
-                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setSelfieUploadMode('upload')}>
-                                    <FileUp className="h-8 w-8" />
-                                    <span>Upload Photo</span>
-                                </Button>
-                                <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setSelfieUploadMode('camera')}>
-                                    <CameraIcon className="h-8 w-8" />
-                                    <span>Use Camera</span>
-                                </Button>
-                            </div>
-                        ) : selfieUploadMode === 'upload' ? (
-                             <FormItem>
-                                <FormLabel>Upload your selfie</FormLabel>
-                                <FormControl>
-                                    <Input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleSelfieFileChange} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        ) : ( // camera mode
-                            <div className="w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center relative">
-                                <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                                {hasCameraPermission === false && (
-                                    <Alert variant="destructive" className="absolute bottom-4 w-auto">
-                                    <AlertCircle className="h-4 w-4" />
-                                    <AlertTitle>Camera Access Denied</AlertTitle>
-                                    <AlertDescription>
-                                        Please enable camera permissions to continue.
-                                    </AlertDescription>
-                                    </Alert>
-                                )}
-                                {hasCameraPermission === null && (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <p className="text-muted-foreground">Requesting camera access...</p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        
-                        <div className="flex justify-center gap-4">
-                            {selfie ? (
-                                <>
-                                <Button onClick={handleRetakeSelfie} variant="outline">Retake</Button>
-                                </>
-                            ) : selfieUploadMode === 'camera' ? (
-                                <Button onClick={handleCaptureSelfie} disabled={!hasCameraPermission}>
-                                    <Camera className="mr-2" /> Capture Selfie
-                                </Button>
-                            ) : null }
-                        </div>
-                        <canvas ref={canvasRef} className="hidden"></canvas>
-                    </CardContent>
-                    <CardFooter className='justify-between'>
-                         <Button onClick={prevStep} variant="outline">
-                            <ArrowLeft className="mr-2" /> Back
-                        </Button>
-                         <Button onClick={nextStep} disabled={!isStep3Valid}>
-                            Next <ArrowRight className="ml-2" />
-                        </Button>
-                    </CardFooter>
-                </Card>
-            )}
-
-            {step === 4 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Step 4: Review Information</CardTitle>
-                  <CardDescription>Please review your details carefully before submitting.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4 rounded-lg border p-4">
-                    <h4 className="font-semibold text-lg">Personal Information</h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <Label className="text-muted-foreground">Name</Label>
-                            <p>{formValues.givenName} {formValues.middleName} {formValues.surname}</p>
-                        </div>
-                        <div>
-                            <Label className="text-muted-foreground">Date of Birth</Label>
-                            <p>{formValues.dob_day}/{formValues.dob_month}/{formValues.dob_year}</p>
-                        </div>
-                        <div>
-                            <Label className="text-muted-foreground">Country</Label>
-                            <p>{formValues.country}</p>
-                        </div>
-                        <div>
-                            <Label className="text-muted-foreground">Phone Number</Label>
-                            <p>{formValues.phoneNumber}</p>
-                        </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 rounded-lg border p-4">
-                    <h4 className="font-semibold text-lg">Documents</h4>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-4">
-                            <div>
-                                <Label className="text-muted-foreground">Document Type</Label>
-                                <p>{formValues.documentType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                            </div>
-                             <div>
-                                <Label className="text-muted-foreground">{documentIdLabels[formValues.documentType] || 'Document ID'}</Label>
-                                <p>{formValues.documentId}</p>
-                            </div>
-                            <div>
-                                <Label className="text-muted-foreground">Expiry Date</Label>
-                                <p>{formValues.expiry_day}/{formValues.expiry_month}/{formValues.expiry_year}</p>
-                            </div>
-                        </div>
-
-                        {documentPreview && (
-                            <div className="space-y-2">
-                                <Label>Document</Label>
-                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
-                                    <Image src={documentPreview} alt="Document preview" layout="fill" objectFit="contain" />
-                                </div>
-                            </div>
-                        )}
-                        {selfie && (
-                            <div className="space-y-2">
-                                <Label>Selfie</Label>
-                                <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
-                                    <Image src={selfie} alt="Selfie preview" layout="fill" objectFit="contain" />
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="justify-between">
-                  <Button onClick={prevStep} variant="outline">
-                    <ArrowLeft className="mr-2" /> Back
-                  </Button>
-                  <Button type="submit" size="lg" disabled={!isStep1Valid || !isStep2Valid || !isStep3Valid}>
-                    Submit for Verification
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
-
-        </form>
-      </Form>
+              </form>
+            </Form>
+        </>
+      )}
       <canvas ref={canvasRef} className="hidden"></canvas>
     </div>
   );
