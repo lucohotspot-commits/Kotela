@@ -78,6 +78,7 @@ const AviatorGame = () => {
     const [betAmount, setBetAmount] = useState(10);
     const [balance, setBalance] = useState(0);
     const [cashOutMultiplier, setCashOutMultiplier] = useState(0);
+    const [pathData, setPathData = useState({ path: '', point: { x: 0, y: 100 } });
 
     const refreshBalance = useCallback(() => {
         setBalance(getCurrency());
@@ -148,33 +149,37 @@ const AviatorGame = () => {
     const maxFlightTime = 15000;
     const planeX = Math.min(100, (flightTime / maxFlightTime) * 100);
 
-    const getPathData = (progress: number) => {
-        const width = 100;
-        const height = 100;
-        const controlX1 = width * 0.3;
-        const controlY1 = height;
-        const controlX2 = width * 0.7;
-        const controlY2 = height * 0.6;
-        const endX = width;
-        const endY = height * 0.2;
-        
-        const path = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
-        
-        const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        tempPath.setAttribute('d', path);
-        const pathLength = tempPath.getTotalLength();
-        
-        const point = tempPath.getPointAtLength(progress * pathLength / 100);
+    useEffect(() => {
+        const getPathData = (progress: number) => {
+            const width = 100;
+            const height = 100;
+            const controlX1 = width * 0.3;
+            const controlY1 = height;
+            const controlX2 = width * 0.7;
+            const controlY2 = height * 0.6;
+            const endX = width;
+            const endY = height * 0.2;
+            
+            const path = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
+            
+            const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            tempPath.setAttribute('d', path);
+            const pathLength = tempPath.getTotalLength();
+            
+            const point = tempPath.getPointAtLength(progress * pathLength / 100);
 
-        const subPath = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${point.x} ${point.y}`;
+            const subPath = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${point.x} ${point.y}`;
+            
+            return { path: subPath, point };
+        };
         
-        return { path: subPath, point };
-    };
+        setPathData(getPathData(planeX));
 
-    const { path: flightPath, point: planePosition } = getPathData(planeX);
+    }, [planeX]);
+
     
+    const { path: flightPath, point: planePosition } = pathData;
     const planeRotation = Math.atan2(planePosition.y - 100, planePosition.x) * (180/Math.PI) + 45;
-
     const multiplierFontSize = Math.min(10, 2 + multiplier / 5);
 
     return (
@@ -311,7 +316,7 @@ const VideoPlayGame = () => {
     const [selectedVideo, setSelectedVideo] = useState(videos[0]);
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [claimedRewards, setClaimedRewards] = useState<number[]>([]);
+    const [claimedRewards, setClaimedRewards = useState<number[]>([]);
 
     const handleSelectVideo = (video: typeof videos[0]) => {
         setSelectedVideo(video);
@@ -438,7 +443,7 @@ const SpinWheelGame = () => {
     const [betAmount, setBetAmount] = useState(10);
     const [balance, setBalance] = useState(0);
     const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
-    const [spinResult, setSpinResult] = useState<{ multiplier: number; winnings: number } | null>(null);
+    const [spinResult, setSpinResult = useState<{ multiplier: number; winnings: number } | null>(null);
 
     const segments = useMemo(() => [
         { value: 2, color: 'bg-green-500/50', textColor: 'text-green-50' },
