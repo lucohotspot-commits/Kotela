@@ -55,7 +55,12 @@ const gameDetails: { [key: string]: { name: string; description: string, icon: R
     name: 'Lucky Dice',
     description: 'Roll the dice and win rewards based on your roll.',
     icon: <Dice5 className="h-6 w-6" />
-  }
+  },
+  'coin-flip': {
+    name: 'Coin Flip',
+    description: 'Flip a coin and double your stake, or lose it all.',
+    icon: <CircleDollarSign className="h-6 w-6" />
+  },
 };
 
 const videos = [
@@ -603,12 +608,31 @@ const CoinFlipGame = () => {
     const [choice, setChoice] = useState<'heads' | 'tails' | null>(null);
     const [result, setResult] = useState<'heads' | 'tails' | null>(null);
     const [flipping, setFlipping] = useState(false);
+    const [betAmount, setBetAmount] = useState(10);
+    const [balance, setBalance] = useState(0);
+    
+    const refreshBalance = useCallback(() => {
+        setBalance(getCurrency());
+    }, []);
+
+    useEffect(() => {
+        refreshBalance();
+        window.addEventListener('storage', refreshBalance);
+        return () => window.removeEventListener('storage', refreshBalance);
+    }, [refreshBalance]);
+
 
     const handleFlip = () => {
         if (!choice || flipping) return;
+        if (balance < betAmount) {
+            toast({ variant: 'destructive', title: "Not enough coins", description: `You need ${betAmount.toLocaleString()} to make this bet.` });
+            return;
+        }
 
         setFlipping(true);
         setResult(null);
+        spendCurrency(betAmount);
+        refreshBalance();
 
         setTimeout(() => {
             const outcome = Math.random() > 0.5 ? 'heads' : 'tails';
@@ -616,21 +640,26 @@ const CoinFlipGame = () => {
             setFlipping(false);
 
             if (outcome === choice) {
-                const winnings = 50;
+                const winnings = betAmount * 2;
                 addCurrency(winnings);
                 toast({
                     title: `You won ${winnings.toLocaleString()} coins!`,
-                    description: `It was ${outcome}.`,
+                    description: `It was ${outcome}. Your balance is now ${(balance - betAmount + winnings).toLocaleString()}.`,
                 });
             } else {
                 toast({
                     variant: 'destructive',
-                    title: "Better luck next time!",
-                    description: `It was ${outcome}.`,
+                    title: `You lost ${betAmount.toLocaleString()} coins.`,
+                    description: `It was ${outcome}. Your balance is now ${(balance - betAmount).toLocaleString()}.`,
                 });
             }
-        }, 2500); // Increased duration for better animation feel
+            refreshBalance();
+        }, 2500); // Animation duration
     }
+    
+    const handleBetChange = (amount: number) => {
+        setBetAmount(prev => Math.max(0, prev + amount));
+    };
 
     const CoinFace = ({ children, isFront }: { children: React.ReactNode, isFront?: boolean }) => (
         <div className={cn(
@@ -672,18 +701,33 @@ const CoinFlipGame = () => {
                     </div>
                 </div>
                 
-                <div className="w-full max-w-xs space-y-4">
+                <div className="w-full max-w-sm space-y-4">
+                    <div className="space-y-2">
+                        <Label>Stake Amount</Label>
+                        <div className="flex items-center space-x-2">
+                            <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={flipping}>-</Button>
+                            <Input 
+                                value={betAmount} 
+                                onChange={(e) => setBetAmount(Number(e.target.value))} 
+                                type="number" 
+                                className="text-center" 
+                                disabled={flipping} 
+                            />
+                            <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={flipping}>+</Button>
+                        </div>
+                    </div>
+                    
                     <div className="flex gap-4 justify-center">
-                        <Button variant={choice === 'heads' ? 'default' : 'outline'} onClick={() => setChoice('heads')} disabled={flipping}>Heads</Button>
-                        <Button variant={choice === 'tails' ? 'default' : 'outline'} onClick={() => setChoice('tails')} disabled={flipping}>Tails</Button>
+                        <Button variant={choice === 'heads' ? 'default' : 'outline'} onClick={() => setChoice('heads')} disabled={flipping} className='flex-1'>Heads</Button>
+                        <Button variant={choice === 'tails' ? 'default' : 'outline'} onClick={() => setChoice('tails')} disabled={flipping} className='flex-1'>Tails</Button>
                     </div>
 
-                    <Button onClick={handleFlip} disabled={!choice || flipping} size="lg" className="w-full">
-                        {flipping ? 'Flipping...' : 'Flip Coin'}
+                    <Button onClick={handleFlip} disabled={!choice || flipping || betAmount <= 0 || balance < betAmount} size="lg" className="w-full">
+                        {flipping ? 'Flipping...' : `Flip for ${betAmount.toLocaleString()}`}
                     </Button>
                 </div>
                  <p className='text-muted-foreground text-sm h-5'>
-                    {result ? `It was ${result}! You ${result === choice ? 'won!' : 'lost.'}` : 'Choose Heads or Tails to get a bonus'}
+                    {result ? `It was ${result}! You ${result === choice ? 'won!' : 'lost.'}` : 'Choose Heads or Tails and place your bet.'}
                 </p>
             </CardContent>
         </Card>
