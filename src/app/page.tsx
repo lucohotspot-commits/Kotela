@@ -7,7 +7,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,12 +18,15 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
+import { useUserLocation } from '@/hooks/use-user-location';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
   const [scores, setScores] = useState<Score[]>([]);
   const [currency, setCurrency] = useState(0);
   const [inventory, setInventory] = useState<{ [key: string]: number }>({});
   const [isStoreOpen, setIsStoreOpen] = useState(false);
+  const userLocation = useUserLocation();
 
   const refreshData = useCallback(() => {
     setScores(getScores());
@@ -84,6 +87,18 @@ export default function Home() {
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
           <div className="w-full max-w-md flex flex-col gap-6">
             <Leaderboard scores={scores} />
+             <div className="p-4 border rounded-lg">
+                <h3 className="text-base font-semibold mb-2 flex items-center gap-2"><MapPin/> Location</h3>
+                {userLocation.loading ? (
+                  <Skeleton className="h-4 w-48" />
+                ) : userLocation.error ? (
+                  <p className="text-xs text-destructive">{userLocation.error}</p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Lat: {userLocation.latitude?.toFixed(4)}, Lon: {userLocation.longitude?.toFixed(4)}
+                  </p>
+                )}
+            </div>
             <div className="p-4 border rounded-lg">
                 <h3 className="text-base font-semibold mb-1 flex items-center gap-2"><Rocket/> My Boosts</h3>
                 <p className="text-xs text-muted-foreground mb-3">Activate these power-ups during a game by clicking the buttons below the mining coin.</p>
