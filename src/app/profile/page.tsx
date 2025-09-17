@@ -20,6 +20,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+const KTC_TO_USD_RATE = 1.25;
+
 export default function ProfilePage() {
   const [currency, setCurrency] = useState(0);
   const [depositAmount, setDepositAmount] = useState('');
@@ -45,7 +47,7 @@ export default function ProfilePage() {
   };
 
   const handleDeposit = () => {
-    const amount = parseInt(depositAmount, 10);
+    const amount = parseFloat(depositAmount);
     if (!isNaN(amount) && amount > 0) {
       addCurrency(amount);
       refreshCurrency();
@@ -63,6 +65,8 @@ export default function ProfilePage() {
       });
     }
   }
+  
+  const currencyAsUSD = (currency * KTC_TO_USD_RATE).toFixed(2);
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
@@ -140,14 +144,27 @@ export default function ProfilePage() {
 
       <Card>
         <CardHeader>
-          <CardDescription>Estimated Balance</CardDescription>
-          <div className="flex items-end justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-bold">{currency.toLocaleString()} KTC</span>
-              </div>
-              <Eye className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-primary" />
-          </div>
+            <div className='flex items-center justify-between'>
+                <CardDescription>Estimated Balance</CardDescription>
+                <Eye className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-primary" />
+            </div>
+            <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold">{currency.toFixed(8)} KTC</span>
+                <span className="text-muted-foreground">≈ ${currencyAsUSD}</span>
+            </div>
         </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-4 border-t pt-4">
+            <div>
+                <p className='text-sm text-muted-foreground'>Spot balance</p>
+                <p className="font-semibold">{currency.toFixed(8)} KTC</p>
+                <p className="text-sm text-muted-foreground">≈ ${currencyAsUSD}</p>
+            </div>
+             <div>
+                <p className='text-sm text-muted-foreground'>Fiat balance</p>
+                <p className="font-semibold">0.00000000 KTC</p>
+                <p className="text-sm text-muted-foreground">≈ $0.00</p>
+            </div>
+        </CardContent>
       </Card>
 
       <Card>

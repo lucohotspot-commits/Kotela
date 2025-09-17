@@ -53,8 +53,9 @@ export function getCurrency(): number {
   if (typeof window === "undefined") return 0;
   try {
     const currency = localStorage.getItem(CURRENCY_KEY);
-    return currency ? parseInt(currency, 10) : 0;
-  } catch (error) {
+    return currency ? parseFloat(currency) : 0;
+  } catch (error)
+    {
     console.error("Failed to get currency:", error);
     return 0;
   }
