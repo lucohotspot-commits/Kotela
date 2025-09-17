@@ -38,24 +38,8 @@ export default function Home() {
       <header className="sticky top-0 z-20 w-full bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-4 w-4"
-              >
-                <path d="M13.5 4.5 21 12l-7.5 7.5" />
-                <path d="M3 12h18" />
-                <path d="m10.5 19.5-7.5-7.5 7.5-7.5" />
-              </svg>
-            </div>
             <h1 className="text-xl font-bold tracking-tight text-primary font-headline">
-              Kotela
+              Play
             </h1>
           </div>
           <div className="flex items-center gap-4">
