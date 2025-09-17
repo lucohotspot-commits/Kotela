@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-const advertisers = [
+const advertisersData = [
   {
     name: 'NobleDigital',
     avatar: 'https://picsum.photos/seed/p2p1/40/40',
@@ -26,10 +26,10 @@ const advertisers = [
     orders: 2388,
     completion: 100,
     rating: 97.9,
-    price: 1.01,
+    price: 1.01, // Base price in USDT
     available: 15000.50,
-    limitMin: 200,
-    limitMax: 13919,
+    limitMin: 200, // Base limit in USDT
+    limitMax: 13919, // Base limit in USDT
     payments: ['SEPA (EU) bank transfer', 'Bank Transfer', 'SEPA Instant'],
   },
   {
@@ -76,8 +76,17 @@ const advertisers = [
 const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'SHIB', 'USDC'];
 const allPaymentMethods = ['All Payments', 'SEPA (EU) bank transfer', 'Bank Transfer', 'SEPA Instant', 'ZEN', 'Pesapal', 'Jpesa', 'TransID'];
 const fiatCurrencies = ['USDT', 'EUR', 'USD', 'UGX', 'KES', 'NGN'];
+const conversionRates: { [key: string]: number } = {
+    USDT: 1,
+    USD: 1,
+    EUR: 0.92,
+    UGX: 3800,
+    KES: 130,
+    NGN: 1500,
+};
 
-const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: typeof advertisers[0], tradeMode: 'buy' | 'sell', fiatCurrency: string }) => {
+
+const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: typeof advertisersData[0], tradeMode: 'buy' | 'sell', fiatCurrency: string }) => {
     
     const getPaymentColor = (payment: string) => {
         if (payment.toLowerCase().includes('bank transfer')) {
@@ -87,6 +96,16 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
             return 'bg-blue-500';
         }
         return 'bg-gray-400';
+    }
+
+    const priceDisplay = (price: number) => {
+        if (price < 10) return price.toFixed(3);
+        if (price < 1000) return price.toFixed(2);
+        return Math.round(price).toLocaleString();
+    }
+    const limitDisplay = (limit: number) => {
+         if (limit < 1000) return limit.toFixed(2);
+         return Math.round(limit).toLocaleString();
     }
 
     return (
@@ -121,7 +140,7 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
                 <div className="text-sm">
                     <p className="text-xs text-muted-foreground md:hidden">Price</p>
                     <p className="flex items-baseline gap-1">
-                        <span className="text-lg font-semibold">{advertiser.price.toFixed(3)}</span>
+                        <span className="text-lg font-semibold">{priceDisplay(advertiser.price)}</span>
                         <span className="text-base text-muted-foreground font-serif">{fiatCurrency}</span>
                     </p>
                 </div>
@@ -130,7 +149,7 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
                 <div className="text-sm">
                     <p className="text-xs text-muted-foreground md:hidden">Available / Limit</p>
                     <p className="font-semibold">{advertiser.available.toLocaleString()} KTC</p>
-                    <p className="text-muted-foreground">{advertiser.limitMin.toLocaleString()} ~ {advertiser.limitMax.toLocaleString()} {fiatCurrency}</p>
+                    <p className="text-muted-foreground">{limitDisplay(advertiser.limitMin)} ~ {limitDisplay(advertiser.limitMax)} {fiatCurrency}</p>
                 </div>
 
                 {/* Payment */}
@@ -146,7 +165,7 @@ const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: t
 
 
                 {/* Trade */}
-                <div className="flex flex-col items-start md:items-end">
+                <div className="md:col-span-1 flex flex-col items-start md:items-end">
                     <Button 
                         className={cn("w-full md:w-auto", tradeMode === 'buy' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700')}
                     >
@@ -167,6 +186,16 @@ export default function P2PTransferPage() {
     const [fiatCurrency, setFiatCurrency] = useState('USDT');
     const { toast } = useToast();
 
+    const advertisers = useMemo(() => {
+        const rate = conversionRates[fiatCurrency] || 1;
+        return advertisersData.map(ad => ({
+            ...ad,
+            price: ad.price * rate,
+            limitMin: ad.limitMin * rate,
+            limitMax: ad.limitMax * rate
+        }));
+    }, [fiatCurrency]);
+
     const filteredAdvertisers = useMemo(() => {
         let result = advertisers;
         
@@ -182,7 +211,7 @@ export default function P2PTransferPage() {
         // Region filter logic would go here if data was available
 
         return result;
-    }, [amount, paymentMethod]);
+    }, [amount, paymentMethod, advertisers]);
 
 
     return (
@@ -305,5 +334,3 @@ export default function P2PTransferPage() {
         </div>
     );
 }
-
-    
