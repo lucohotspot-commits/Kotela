@@ -13,50 +13,70 @@ const blogPosts = [
         excerpt: "Kotela Coin has shattered previous records, reaching an unprecedented value as market enthusiasm grows...",
         content: "The price of Kotela Coin (KTC) surged by over 40% in the last 24 hours, reaching an all-time high of $1.75. This rally is attributed to a combination of positive market sentiment, recent technological upgrades to the Kotela network, and increased adoption by institutional investors. Analysts are optimistic about its short-term performance, with some predicting it could break the $2.00 barrier by the end of the week.",
         date: "2 hours ago",
+        updatedDate: "Dec 13th, 2024",
+        readTime: "14 minutes read",
         category: "Market Update",
         href: "#",
         image: "https://picsum.photos/seed/ktc-high/800/600",
-        imageHint: "market chart"
+        imageHint: "market chart",
+        author: "Kevin Groves",
+        authorImage: "https://picsum.photos/seed/author1/40/40"
     },
     {
         title: "New, More Efficient Mining Algorithm Deployed on the Kotela Network",
         excerpt: "Today, we've rolled out a significant update to our mining protocol that enhances efficiency and security...",
         content: "The Kotela development team has successfully deployed the 'Phoenix' update, which introduces a new proof-of-stake mining algorithm. This change is expected to reduce energy consumption by up to 95% and significantly increase transaction throughput. The update aims to make the network more sustainable and scalable, paving the way for wider adoption of KTC-based applications.",
         date: "1 day ago",
+        updatedDate: "Dec 12th, 2024",
+        readTime: "8 minutes read",
         category: "Technology",
         href: "#",
         image: "https://picsum.photos/seed/mining-algo/800/600",
-        imageHint: "network code"
+        imageHint: "network code",
+        author: "Kevin Groves",
+        authorImage: "https://picsum.photos/seed/author1/40/40"
     },
     {
         title: "Kotela Announces Strategic Partnership with Firebase for Web3 Integration",
         excerpt: "In a landmark move, Kotela is partnering with Google's Firebase to build the next generation of decentralized apps...",
         content: "This strategic partnership will combine Kotela's robust blockchain infrastructure with Firebase's powerful suite of development tools. The collaboration aims to simplify the process for developers to build, deploy, and manage decentralized applications (dApps) on the Kotela network, leveraging Firebase for authentication, data storage, and more.",
         date: "3 days ago",
+        updatedDate: "Dec 10th, 2024",
+        readTime: "5 minutes read",
         category: "Partnerships",
         href: "#",
         image: "https://picsum.photos/seed/partnership/800/600",
-        imageHint: "handshake business"
+        imageHint: "handshake business",
+        author: "Kevin Groves",
+        authorImage: "https://picsum.photos/seed/author1/40/40"
     },
     {
         title: "Community Spotlight: Top Miners of the Month",
         excerpt: "We're celebrating the achievements of our most dedicated miners. See who topped the leaderboards this month...",
         content: "This month, we recognize the top three miners who have contributed significantly to the network's security and stability. 'MinerX_24', 'CryptoQueen', and 'KTC_Hodler' have shown exceptional performance and dedication. We'll be sending them an exclusive Kotela merchandise package as a token of our appreciation. Join us in congratulating them!",
         date: "4 days ago",
+        updatedDate: "Dec 9th, 2024",
+        readTime: "3 minutes read",
         category: "Community",
         href: "#",
         image: "https://picsum.photos/seed/community-miners/800/600",
-        imageHint: "community people"
+        imageHint: "community people",
+        author: "Kevin Groves",
+        authorImage: "https://picsum.photos/seed/author1/40/40"
     },
     {
         title: "A Guide to Understanding Kotela's Tokenomics",
         excerpt: "Dive deep into the economic model of KTC, from total supply to distribution and utility within the ecosystem.",
         content: "Kotela Coin's tokenomics are designed for long-term stability and growth. With a fixed total supply of 1 billion KTC, the model includes mechanisms for deflationary pressure and rewards for network participants. This guide breaks down the allocation, vesting schedules, and the various utilities of KTC within our expanding ecosystem, from transaction fees to governance.",
         date: "5 days ago",
+        updatedDate: "Dec 8th, 2024",
+        readTime: "10 minutes read",
         category: "Education",
         href: "#",
         image: "https://picsum.photos/seed/tokenomics/800/600",
-        imageHint: "coins crypto"
+        imageHint: "coins crypto",
+        author: "Kevin Groves",
+        authorImage: "https://picsum.photos/seed/author1/40/40"
     }
 ];
 

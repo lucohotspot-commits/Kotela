@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronRight, Newspaper } from 'lucide-react';
 import { blogPosts } from '@/components/blog-widget';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
 
 export default function NewsPage() {
     const [selectedPost, setSelectedPost] = useState(blogPosts[0]);
@@ -82,8 +84,30 @@ export default function NewsPage() {
                                     <span>{selectedPost.date}</span>
                                     <Badge variant="secondary">{selectedPost.category}</Badge>
                                 </div>
+                                
+                                <div className="flex items-center gap-3 my-6">
+                                    <Avatar>
+                                        <AvatarImage src={selectedPost.authorImage} alt={selectedPost.author} />
+                                        <AvatarFallback>{selectedPost.author.substring(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-semibold">Posted by: {selectedPost.author}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Updated {selectedPost.updatedDate} · {selectedPost.readTime}
+                                        </p>
+                                    </div>
+                                </div>
+
                                 <div className="prose prose-sm dark:prose-invert max-w-none text-foreground/90">
                                     <p>{selectedPost.content}</p>
+                                </div>
+
+                                <Separator className="my-8" />
+                                
+                                <div className="text-xs text-muted-foreground">
+                                    <p>
+                                        Kotela aims to publish information that is factual and accurate as of the date of publication. For specific information about a cryptocurrency exchange or trading platform please visit that provider's website. This information is general in nature and is for education purposes only. Kotela does not provide financial advice nor does it take into account your personal financial situation. We encourage you to seek financial advice from an independent financial advisor where appropriate and make your own inquiries.
+                                    </p>
                                 </div>
                             </div>
                         </ScrollArea>
