@@ -47,7 +47,11 @@ export default function Home() {
                     Tap the coin to start mining. Use boosts to get a high score!
                 </p>
             </div>
-          <div className="flex items-center gap-4">
+        </div>
+      </header>
+
+      <main className="relative flex-grow flex flex-col items-center justify-center">
+        <div className="absolute top-0 right-0 flex items-center gap-4 p-4">
             <div className="text-right">
               <p className="text-xs text-muted-foreground">My Coins</p>
               <div className="flex items-center justify-end gap-1">
@@ -76,10 +80,7 @@ export default function Home() {
               </DialogContent>
             </Dialog>
           </div>
-        </div>
-      </header>
 
-      <main className="flex-grow flex flex-col items-center justify-center">
         <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-16">
           <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
