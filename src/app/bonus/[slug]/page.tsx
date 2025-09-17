@@ -1,17 +1,21 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plane, Coins, Disc, CircleDollarSign, Dice5, PlayCircle, Video, Award, Clock } from 'lucide-react';
+import { Plane, Coins, Disc, CircleDollarSign, Dice5, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
+import { addCurrency } from '@/lib/storage';
 
 
 const gameDetails: { [key: string]: { name: string; description: string } } = {
@@ -38,10 +42,10 @@ const gameDetails: { [key: string]: { name: string; description: string } } = {
 };
 
 const videos = [
-    { id: 1, title: 'Introduction to Kotela', duration: '1:35', reward: 50, image: PlaceHolderImages[0] },
-    { id: 2, title: 'How to use the Store', duration: '2:10', reward: 75, image: PlaceHolderImages[1] },
-    { id: 3, title: 'Advanced Mining Techniques', duration: '3:00', reward: 100, image: PlaceHolderImages[2] },
-    { id: 4, title: 'Community Highlights', duration: '5:20', reward: 150, image: PlaceHolderImages[3] },
+    { id: 1, title: 'Introduction to Kotela', duration: '1:35', reward: 50, image: PlaceHolderImages[0], watchTime: 60 },
+    { id: 2, title: 'How to use the Store', duration: '2:10', reward: 75, image: PlaceHolderImages[1], watchTime: 60 },
+    { id: 3, title: 'Advanced Mining Techniques', duration: '3:00', reward: 100, image: PlaceHolderImages[2], watchTime: 60 },
+    { id: 4, title: 'Community Highlights', duration: '5:20', reward: 150, image: PlaceHolderImages[3], watchTime: 60 },
 ]
 
 const AviatorGame = () => {
@@ -165,35 +169,122 @@ const AviatorGame = () => {
 }
 
 const VideoPlayGame = () => {
+    const { toast } = useToast();
+    const [selectedVideo, setSelectedVideo] = useState(videos[0]);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [claimedRewards, setClaimedRewards] = useState<number[]>([]);
+
+    const handleSelectVideo = (video: typeof videos[0]) => {
+        setSelectedVideo(video);
+        setIsPlaying(false);
+        setProgress(0);
+    }
+    
+    const handlePlay = () => {
+        if (claimedRewards.includes(selectedVideo.id)) return;
+        setIsPlaying(true);
+        setProgress(0);
+    }
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (isPlaying && progress < 100) {
+            timer = setInterval(() => {
+                setProgress(p => p + 100 / selectedVideo.watchTime);
+            }, 1000);
+        }
+        if (progress >= 100) {
+            setIsPlaying(false);
+        }
+        return () => clearInterval(timer);
+    }, [isPlaying, progress, selectedVideo.watchTime]);
+
+    const handleClaimReward = () => {
+        addCurrency(selectedVideo.reward);
+        setClaimedRewards(prev => [...prev, selectedVideo.id]);
+        toast({
+            title: "Reward Claimed!",
+            description: `You've received ${selectedVideo.reward} coins.`,
+        });
+        setProgress(0);
+        setIsPlaying(false);
+    }
+    
+    const isClaimed = useCallback((videoId: number) => {
+        return claimedRewards.includes(videoId);
+    }, [claimedRewards]);
+
+    const canClaim = progress >= 100 && !isClaimed(selectedVideo.id);
+
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {videos.map(video => (
-                <Card key={video.id}>
-                    <CardContent className='p-0'>
-                        <div className="relative aspect-video">
-                            <Image src={video.image.imageUrl} alt={video.title} fill className="rounded-t-lg object-cover" data-ai-hint={video.image.imageHint} />
-                             <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
-                                {video.duration}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+                <Card>
+                    <CardContent className="p-0">
+                        <div className="relative aspect-video bg-black rounded-t-lg flex items-center justify-center">
+                            <Image src={selectedVideo.image.imageUrl} alt={selectedVideo.title} fill className={cn("object-cover rounded-t-lg transition-opacity", isPlaying && "opacity-80")} data-ai-hint={selectedVideo.image.imageHint} />
+                             {!isPlaying && progress === 0 && (
+                                <button onClick={handlePlay} className='z-10 bg-black/50 p-4 rounded-full text-white hover:bg-black/70 transition-colors disabled:opacity-50 disabled:cursor-not-allowed' disabled={isClaimed(selectedVideo.id)}>
+                                    {isClaimed(selectedVideo.id) ? <CheckCircle className='w-16 h-16 text-green-500' /> : <PlayCircle className='w-16 h-16' />}
+                                </button>
+                             )}
+                             {isPlaying && (
+                                <div className='z-10 text-white flex items-center gap-2 bg-black/50 p-2 rounded'>
+                                    <Hourglass className='w-4 h-4 animate-spin' />
+                                    <span>Playing...</span>
+                                </div>
+                             )}
+                        </div>
+                        <div className='p-4 space-y-4'>
+                            <h2 className="text-xl font-bold">{selectedVideo.title}</h2>
+                            <div className='flex items-center gap-4 text-sm text-muted-foreground'>
+                                <div className="flex items-center gap-1">
+                                    <Award className="w-4 h-4 text-yellow-500" />
+                                    <span>Reward: {selectedVideo.reward} Coins</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4" />
+                                    <span>Duration: {selectedVideo.duration}</span>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Progress value={progress} />
+                                <Button onClick={handleClaimReward} disabled={!canClaim} className="w-full">
+                                    {isClaimed(selectedVideo.id) ? 'Reward Claimed' : 'Claim Reward'}
+                                </Button>
                             </div>
                         </div>
                     </CardContent>
-                    <CardHeader>
-                        <CardTitle className='text-base'>{video.title}</CardTitle>
-                        <div className='flex items-center justify-between text-sm pt-2'>
-                           <div className="flex items-center gap-1 text-muted-foreground">
-                                <Award className="w-4 h-4 text-yellow-500" />
-                                <span>Reward: {video.reward}</span>
-                            </div>
-                            <Button size="sm" variant="secondary">
-                                <PlayCircle className='mr-2' />
-                                Watch
-                            </Button>
-                        </div>
-                    </CardHeader>
                 </Card>
-            ))}
+            </div>
+            <div className="lg:col-span-1">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Playlist</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <ScrollArea className="h-[400px]">
+                            <div className="space-y-2">
+                            {videos.map(video => (
+                                <button key={video.id} onClick={() => handleSelectVideo(video)} className={cn("flex items-center gap-3 p-2 rounded-lg w-full text-left hover:bg-muted", selectedVideo.id === video.id && "bg-muted")}>
+                                    <Image src={video.image.imageUrl} alt={video.title} width={120} height={68} className="rounded-md object-cover" data-ai-hint={video.image.imageHint}/>
+                                    <div className='flex-1'>
+                                        <p className="font-semibold text-sm">{video.title}</p>
+                                        <p className="text-xs text-muted-foreground">{video.duration}</p>
+                                         {isClaimed(video.id) && (
+                                            <Badge variant="secondary" className='mt-1 text-green-600'>Claimed</Badge>
+                                        )}
+                                    </div>
+                                </button>
+                            ))}
+                            </div>
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-    )
+    );
 }
 
 const SpinWheelGame = () => {
@@ -316,3 +407,5 @@ export default function BonusGamePage() {
   );
 }
 
+
+    
