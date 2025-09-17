@@ -282,11 +282,17 @@ const AviatorGame = () => {
                             <CardTitle className="text-base">Bet Controls</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex items-center space-x-2">
-                                <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={gameState !== 'waiting'}>-</Button>
-                                <Input value={betAmount.toLocaleString()} className="text-center" readOnly />
-                                <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={gameState !== 'waiting'}>+</Button>
-                                <Coins className="text-yellow-500" />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div className="flex items-center space-x-2">
+                                    <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={gameState !== 'waiting'}>-</Button>
+                                    <Input value={betAmount.toLocaleString()} className="text-center" readOnly />
+                                    <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={gameState !== 'waiting'}>+</Button>
+                                    <Coins className="text-yellow-500" />
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Button variant="outline" size="sm" onClick={() => handleBetChange(100)} disabled={gameState !== 'waiting'}>+100</Button>
+                                    <Button variant="outline" size="sm" onClick={() => handleBetChange(1000)} disabled={gameState !== 'waiting'}>+1k</Button>
+                                </div>
                             </div>
                             {gameState === 'waiting' && (
                                 <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleBet} disabled={betAmount <= 0 || balance < betAmount}>
@@ -629,7 +635,7 @@ const SpinWheelGame = () => {
         <>
             <Card className='overflow-hidden'>
                 <CardContent className='p-6 flex flex-col items-center justify-center gap-6'>
-                    <div className="relative w-96 h-96 flex items-center justify-center">
+                    <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center">
                         <div className="absolute -top-3 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-primary z-20"></div>
                         <div
                             className={cn(
@@ -649,7 +655,7 @@ const SpinWheelGame = () => {
                                         style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 100%)' }}
                                     >
                                          <span
-                                            className={cn("transform font-bold text-lg", segment.textColor)}
+                                            className={cn("transform font-bold text-sm sm:text-lg", segment.textColor)}
                                             style={{ transform: `rotate(${segmentAngle/2}deg) translate(-50px, -50px)`}}
                                         >
                                             {segment.value}x
@@ -658,8 +664,8 @@ const SpinWheelGame = () => {
                                 </div>
                             ))}
                         </div>
-                        <div className="absolute w-20 h-20 bg-background rounded-full border-4 border-primary/20 flex items-center justify-center z-10">
-                            <Circle className="w-12 h-12 text-primary" />
+                        <div className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-background rounded-full border-4 border-primary/20 flex items-center justify-center z-10">
+                            <Circle className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
                         </div>
                     </div>
                     <div className="w-full max-w-xs space-y-4">
@@ -905,7 +911,7 @@ const LuckyDiceGame = () => {
     const DiceIcon = ({ value }: { value: number }) => {
         const icons = [Dice1, Dice2, Dice3, Dice4, Dice5, Dice6];
         const Icon = icons[value - 1];
-        return <Icon className={cn("w-24 h-24 text-primary", rolling && "animate-spin")} />;
+        return <Icon className={cn("w-20 h-20 sm:w-24 sm:h-24 text-primary", rolling && "animate-spin")} />;
     };
 
     return (
@@ -990,7 +996,7 @@ export default function BonusGamePage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
         <div>
             <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
                 {details.icon}
@@ -998,7 +1004,7 @@ export default function BonusGamePage() {
             </h1>
             <p className="text-muted-foreground mt-1">{details.description}</p>
         </div>
-        <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary px-2 py-1 rounded-md bg-muted">
+        <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary px-2 py-1 rounded-md bg-muted flex-shrink-0">
             <Coins className="w-5 h-5 text-yellow-500"/>
             <span className='text-lg'>{currency.toLocaleString()}</span>
         </div>
@@ -1010,4 +1016,5 @@ export default function BonusGamePage() {
   );
 }
 
+    
     
