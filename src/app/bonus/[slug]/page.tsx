@@ -308,24 +308,88 @@ const VideoPlayGame = () => {
 }
 
 const SpinWheelGame = () => {
+    const { toast } = useToast();
+    const [rotation, setRotation] = useState(0);
+    const [spinning, setSpinning] = useState(false);
+
+    const segments = [
+        { value: 100, style: 'bg-green-500/50', textColor: 'text-green-50' },
+        { value: 250, style: 'bg-blue-500/50', textColor: 'text-blue-50' },
+        { value: 50, style: 'bg-yellow-500/50', textColor: 'text-yellow-50' },
+        { value: 0, style: 'bg-red-500/50', textColor: 'text-red-50' },
+        { value: 500, style: 'bg-purple-500/50', textColor: 'text-purple-50' },
+        { value: 75, style: 'bg-indigo-500/50', textColor: 'text-indigo-50' },
+        { value: 1000, style: 'bg-pink-500/50', textColor: 'text-pink-50' },
+        { value: 25, style: 'bg-gray-500/50', textColor: 'text-gray-50' },
+    ];
+    const segmentAngle = 360 / segments.length;
+
+    const handleSpin = () => {
+        if (spinning) return;
+        setSpinning(true);
+        const randomSpins = Math.floor(Math.random() * 5) + 5; // 5 to 10 full spins
+        const randomStop = Math.random() * 360;
+        const targetRotation = rotation + (randomSpins * 360) + randomStop;
+
+        const prizeIndex = Math.floor(((targetRotation + segmentAngle / 2) % 360) / segmentAngle);
+        const prize = segments[segments.length - 1 - prizeIndex];
+
+        setRotation(targetRotation);
+
+        setTimeout(() => {
+            setSpinning(false);
+            if (prize.value > 0) {
+                addCurrency(prize.value);
+                toast({
+                    title: `You won ${prize.value.toLocaleString()} coins!`,
+                    description: "The amount has been added to your balance.",
+                });
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: "Better luck next time!",
+                    description: "You didn't win a prize this time.",
+                });
+            }
+        }, 5000); // Corresponds to the animation duration
+    };
+
     return (
         <Card className='overflow-hidden'>
             <CardContent className='p-6 flex flex-col items-center justify-center gap-8'>
-                <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-full border-8 border-primary/20 flex items-center justify-center">
-                    {/* Placeholder for the wheel segments */}
-                    <div className="absolute w-full h-full">
-                        {[...Array(8)].map((_, i) => (
-                             <div key={i} className="absolute w-1/2 h-1/2 top-1/2 left-1/2 origin-top-left" style={{ transform: `rotate(${i * 45}deg)` }}>
-                                <div className={cn("w-full h-full", i % 2 === 0 ? 'bg-muted/30' : 'bg-muted/60')} style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}></div>
+                <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center">
+                    <div className="absolute -top-4 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-primary z-10"></div>
+                    <div
+                        className="relative w-full h-full rounded-full border-8 border-primary/20 transition-transform duration-[5000ms] ease-out"
+                        style={{ transform: `rotate(${rotation}deg)` }}
+                    >
+                        {segments.map((segment, i) => (
+                            <div
+                                key={i}
+                                className="absolute w-1/2 h-1/2 top-1/2 left-1/2 origin-top-left flex items-center justify-center"
+                                style={{ transform: `rotate(${i * segmentAngle}deg)` }}
+                            >
+                                <div
+                                    className={cn("w-full h-full text-center flex items-center justify-end pr-4", segment.style)}
+                                    style={{ clipPath: 'polygon(0 0, 100% 0, 0 100%)' }}
+                                >
+                                     <span
+                                        className={cn("transform -rotate-45 font-bold text-lg", segment.textColor)}
+                                        style={{ transform: `rotate(-${segmentAngle/2}deg) translate(-10px, -60px)`}}
+                                    >
+                                        {segment.value}
+                                    </span>
+                                </div>
                             </div>
                         ))}
                     </div>
-                     <div className="absolute -top-4 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-primary z-10"></div>
-                    <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center">
+                    <div className="absolute w-16 h-16 bg-background rounded-full flex items-center justify-center">
                         <Disc className="w-10 h-10 text-primary" />
                     </div>
                 </div>
-                <Button size="lg" className='bg-yellow-500 hover:bg-yellow-600 text-black'>Spin the Wheel</Button>
+                <Button size="lg" className='bg-yellow-500 hover:bg-yellow-600 text-black' onClick={handleSpin} disabled={spinning}>
+                    {spinning ? 'Spinning...' : 'Spin the Wheel'}
+                </Button>
             </CardContent>
         </Card>
     )
