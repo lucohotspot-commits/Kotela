@@ -75,8 +75,9 @@ const advertisers = [
 
 const cryptoCurrencies = ['USDT', 'BTC', 'FDUSD', 'BNB', 'ETH', 'DAI', 'SHIB', 'USDC'];
 const allPaymentMethods = ['All Payments', 'SEPA (EU) bank transfer', 'Bank Transfer', 'SEPA Instant', 'ZEN', 'Pesapal', 'Jpesa', 'TransID'];
+const fiatCurrencies = ['USDT', 'EUR', 'USD', 'UGX', 'KES', 'NGN'];
 
-const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) => {
+const AdvertiserCard = ({ advertiser, tradeMode, fiatCurrency }: { advertiser: typeof advertisers[0], tradeMode: 'buy' | 'sell', fiatCurrency: string }) => {
     
     const getPaymentColor = (payment: string) => {
         if (payment.toLowerCase().includes('bank transfer')) {
@@ -121,7 +122,7 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
                     <p className="text-xs text-muted-foreground md:hidden">Price</p>
                     <p className="flex items-baseline gap-1">
                         <span className="text-lg font-semibold">{advertiser.price.toFixed(3)}</span>
-                        <span className="text-base text-muted-foreground font-serif">USDT</span>
+                        <span className="text-base text-muted-foreground font-serif">{fiatCurrency}</span>
                     </p>
                 </div>
                 
@@ -129,7 +130,7 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
                 <div className="text-sm">
                     <p className="text-xs text-muted-foreground md:hidden">Available / Limit</p>
                     <p className="font-semibold">{advertiser.available.toLocaleString()} KTC</p>
-                    <p className="text-muted-foreground">{advertiser.limitMin.toLocaleString()} ~ {advertiser.limitMax.toLocaleString()} USDT</p>
+                    <p className="text-muted-foreground">{advertiser.limitMin.toLocaleString()} ~ {advertiser.limitMax.toLocaleString()} {fiatCurrency}</p>
                 </div>
 
                 {/* Payment */}
@@ -146,7 +147,11 @@ const AdvertiserCard = ({ advertiser }: { advertiser: typeof advertisers[0] }) =
 
                 {/* Trade */}
                 <div className="flex flex-col items-start md:items-end">
-                    <Button className="w-full md:w-auto bg-green-600 hover:bg-green-700">Buy KTC</Button>
+                    <Button 
+                        className={cn("w-full md:w-auto", tradeMode === 'buy' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700')}
+                    >
+                       {tradeMode === 'buy' ? 'Buy KTC' : 'Sell KTC'}
+                    </Button>
                 </div>
             </div>
         </div>
@@ -158,6 +163,8 @@ export default function P2PTransferPage() {
     const [amount, setAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('All Payments');
     const [region, setRegion] = useState('All Regions');
+    const [tradeMode, setTradeMode] = useState<'buy' | 'sell'>('buy');
+    const [fiatCurrency, setFiatCurrency] = useState('USDT');
     const { toast } = useToast();
 
     const filteredAdvertisers = useMemo(() => {
@@ -199,7 +206,7 @@ export default function P2PTransferPage() {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                       <Tabs defaultValue="buy" className="w-auto">
+                       <Tabs defaultValue="buy" onValueChange={(value) => setTradeMode(value as 'buy' | 'sell')} className="w-auto">
                             <TabsList className="p-1 border bg-muted rounded-lg h-auto">
                                 <TabsTrigger value="buy" className="px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Buy</TabsTrigger>
                                 <TabsTrigger value="sell" className="px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">Sell</TabsTrigger>
@@ -236,14 +243,14 @@ export default function P2PTransferPage() {
                             />
                             <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                                 <span className='h-full w-[1px] bg-border mx-2'></span>
-                                <Select defaultValue="EUR">
+                                <Select value={fiatCurrency} onValueChange={setFiatCurrency}>
                                     <SelectTrigger className="h-auto bg-transparent border-0 text-sm font-bold w-20">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="USDT">USDT</SelectItem>
-                                        <SelectItem value="EUR">EUR</SelectItem>
-                                        <SelectItem value="USD">USD</SelectItem>
+                                        {fiatCurrencies.map(currency => (
+                                            <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -285,7 +292,7 @@ export default function P2PTransferPage() {
                     <div>
                         {filteredAdvertisers.length > 0 ? (
                             filteredAdvertisers.map(ad => (
-                                <AdvertiserCard key={ad.name} advertiser={ad} />
+                                <AdvertiserCard key={ad.name} advertiser={ad} tradeMode={tradeMode} fiatCurrency={fiatCurrency} />
                             ))
                         ) : (
                             <div className="text-center text-muted-foreground p-10">
@@ -298,3 +305,5 @@ export default function P2PTransferPage() {
         </div>
     );
 }
+
+    
