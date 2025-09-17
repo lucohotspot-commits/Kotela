@@ -1,11 +1,9 @@
-
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { Pickaxe, Repeat, AlertTriangle, TimerIcon, Rocket, Bomb, Clock, Zap, Gift, Snowflake } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { addScore, useBoost } from "@/lib/storage";
-import { checkForPrivacyIssues } from "@/app/actions";
+import { useGame } from "@/context/GameContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,163 +14,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const BASE_GAME_DURATION = 30; // 30 seconds
-
-type GameState = "idle" | "playing" | "ended";
-type Boost = "rocket" | "missile" | null;
-type ActiveBoostEffect = 'scoreMultiplier' | 'frenzy' | 'timeFreeze' | null;
-
-interface GameEngineProps {
-  onGameEnd: () => void;
-  inventory: { [key: string]: number };
-  refreshInventory: () => void;
-}
-
-export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngineProps) {
-  const [score, setScore] = useState(0);
-  const [gameDuration, setGameDuration] = useState(BASE_GAME_DURATION);
-  const [timeLeft, setTimeLeft] = useState(gameDuration);
-  const [gameState, setGameState] = useState<GameState>("idle");
-  const [privacyWarning, setPrivacyWarning] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeBoost, setActiveBoost] = useState<Boost>(null);
-  const [boostTimeLeft, setBoostTimeLeft] = useState(0);
-  const [timeBoostUsed, setTimeBoostUsed] = useState(false);
-  const [activeEffect, setActiveEffect] = useState<ActiveBoostEffect>(null);
-
-  const scoreIncrement = useMemo(() => {
-    if (activeBoost === 'rocket') return 2;
-    if (activeBoost === 'missile') return 3;
-    return 1;
-  }, [activeBoost]);
-
-  useEffect(() => {
-    if (gameState !== 'playing' || activeEffect === 'timeFreeze') return;
-
-    let scoreInterval: NodeJS.Timeout;
-
-    if (activeEffect === 'frenzy') {
-      scoreInterval = setInterval(() => {
-        setScore(s => s + 5 * scoreIncrement);
-      }, 100);
-    } else {
-      scoreInterval = setInterval(() => {
-        setScore(s => s + scoreIncrement);
-      }, 200);
-    }
-
-    return () => clearInterval(scoreInterval);
-  }, [gameState, scoreIncrement, activeEffect]);
-
-
-  const handleTap = useCallback(() => {
-    if (gameState === "idle") {
-      setGameState("playing");
-      if (timeBoostUsed) {
-        setTimeLeft(gameDuration);
-      }
-    }
-  }, [gameState, timeBoostUsed, gameDuration]);
-
-  useEffect(() => {
-    if (gameState !== "playing" || activeEffect === 'timeFreeze') return;
-
-    if (timeLeft <= 0) {
-      setGameState("ended");
-      return;
-    }
-
-    const timerId = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timerId);
-  }, [gameState, timeLeft, activeEffect]);
-  
-  useEffect(() => {
-    if (activeEffect && boostTimeLeft > 0 && gameState === 'playing') {
-      const boostTimerId = setInterval(() => {
-        setBoostTimeLeft(prev => prev - 1);
-      }, 1000);
-      return () => clearInterval(boostTimerId);
-    } else if (activeEffect && boostTimeLeft <= 0) {
-      setActiveBoost(null);
-      setActiveEffect(null);
-    }
-  }, [activeEffect, boostTimeLeft, gameState]);
-
-  useEffect(() => {
-    if (gameState === "ended") {
-      addScore(score);
-      onGameEnd();
-      setActiveBoost(null);
-      setBoostTimeLeft(0);
-      setActiveEffect(null);
-
-      const gameData = JSON.stringify({
-        finalScore: score,
-        gameEndTime: new Date().toISOString(),
-      });
-
-      checkForPrivacyIssues(gameData).then((warning) => {
-        if (warning) {
-          setPrivacyWarning(warning);
-          setIsModalOpen(true);
-        }
-      });
-    }
-  }, [gameState, score, onGameEnd]);
-
-  const activateBoost = (boostType: 'rocket' | 'missile') => {
-    if ((inventory[boostType] || 0) > 0 && gameState === 'playing' && !activeEffect) {
-      useBoost(boostType);
-      setActiveBoost(boostType);
-      setActiveEffect('scoreMultiplier');
-      setBoostTimeLeft(boostType === 'rocket' ? 5 : 3);
-      refreshInventory();
-    }
-  }
-
-  const activateEffectBoost = (boostType: 'frenzy' | 'freezeTime') => {
-    if ((inventory[boostType] || 0) > 0 && gameState === 'playing' && !activeEffect) {
-      useBoost(boostType);
-      setActiveEffect(boostType);
-      setBoostTimeLeft(boostType === 'frenzy' ? 3 : 5);
-      refreshInventory();
-    }
-  };
-  
-  const activateInstantBoost = (boostType: 'scoreBomb') => {
-    if ((inventory[boostType] || 0) > 0 && gameState === 'playing') {
-      useBoost(boostType);
-      if (boostType === 'scoreBomb') {
-        setScore(s => s + 1000);
-      }
-      refreshInventory();
-    }
-  };
-
-  const activateTimeBoost = () => {
-    if ((inventory.extraTime || 0) > 0 && gameState === 'idle' && !timeBoostUsed) {
-      useBoost('extraTime');
-      setGameDuration(BASE_GAME_DURATION + 10);
-      setTimeLeft(BASE_GAME_DURATION + 10);
-      setTimeBoostUsed(true);
-      refreshInventory();
-    }
-  };
-
-  const resetGame = () => {
-    setScore(0);
-    setGameDuration(BASE_GAME_DURATION);
-    setTimeLeft(BASE_GAME_DURATION);
-    setGameState("idle");
-    setPrivacyWarning(null);
-    setActiveBoost(null);
-    setBoostTimeLeft(0);
-    setTimeBoostUsed(false);
-    setActiveEffect(null);
-  };
+export function GameEngine() {
+  const {
+    score,
+    timeLeft,
+    gameState,
+    privacyWarning,
+    activeBoost,
+    activeEffect,
+    boostTimeLeft,
+    inventory,
+    isModalOpen,
+    scoreIncrement,
+    gameDuration,
+    timeBoostUsed,
+    handleTap,
+    resetGame,
+    activateBoost,
+    activateEffectBoost,
+    activateInstantBoost,
+    activateTimeBoost,
+    setIsModalOpen,
+  } = useGame();
 
   const CIRCLE_RADIUS = 100;
   const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
@@ -319,5 +182,3 @@ export function GameEngine({ onGameEnd, inventory, refreshInventory }: GameEngin
     </div>
   );
 }
-
-    

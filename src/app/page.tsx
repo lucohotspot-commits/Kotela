@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { GameEngine } from '@/components/game-engine';
 import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
-import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
+import { type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
 import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,19 +21,11 @@ import Link from 'next/link';
 import { useUserLocation } from '@/hooks/use-user-location';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BlogWidget } from '@/components/blog-widget';
+import { useGame } from '@/context/GameContext';
 
 export default function Home() {
-  const [scores, setScores] = useState<Score[]>([]);
-  const [currency, setCurrency] = useState(0);
-  const [inventory, setInventory] = useState<{ [key: string]: number }>({});
-  const [isStoreOpen, setIsStoreOpen] = useState(false);
+  const { scores, currency, inventory, isStoreOpen, setIsStoreOpen, refreshData } = useGame();
   const userLocation = useUserLocation();
-
-  const refreshData = useCallback(() => {
-    setScores(getScores());
-    setCurrency(getCurrency());
-    setInventory(getInventory());
-  }, []);
 
   useEffect(() => {
     refreshData();
@@ -93,7 +85,7 @@ export default function Home() {
       <main className="relative flex-grow flex flex-col items-center justify-center">
         <div className="w-full flex flex-col lg:flex-row items-center lg:items-start justify-center gap-8 lg:gap-16">
           <div className="relative">
-            <GameEngine onGameEnd={refreshData} inventory={inventory} refreshInventory={refreshData} />
+            <GameEngine />
           </div>
           <Separator orientation="vertical" className="hidden lg:block h-auto self-stretch" />
           <div className="w-full max-w-md lg:max-w-4xl flex flex-col lg:flex-row gap-6">

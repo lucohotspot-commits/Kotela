@@ -7,6 +7,7 @@ import { MobileNav } from '@/components/mobile-nav';
 import { DesktopNav } from '@/components/desktop-nav';
 import { ThemeProvider } from '@/components/theme-provider';
 import { NotificationTicker } from '@/components/notification-ticker';
+import { GameProvider } from '@/context/GameContext';
 
 export const metadata: Metadata = {
   title: 'Kotela',
@@ -32,6 +33,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
+          <GameProvider>
             <div className="relative flex min-h-screen flex-col">
               <header className="sticky top-0 z-30 w-full border-b bg-background/80 backdrop-blur-sm">
                 <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -51,6 +53,7 @@ export default function RootLayout({
               <MobileNav />
               <Toaster />
             </div>
+          </GameProvider>
         </ThemeProvider>
       </body>
     </html>
