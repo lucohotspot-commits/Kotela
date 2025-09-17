@@ -16,6 +16,8 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const KTC_TO_USD_RATE = 1.25;
+const USD_TO_UGX_RATE = 3800;
+const KTC_TO_UGX_RATE = KTC_TO_USD_RATE * USD_TO_UGX_RATE;
 const WITHDRAWAL_FEE_KTC = 5.0;
 const WITHDRAWAL_TIMESTAMPS_KEY = 'kotela-withdrawal-timestamps';
 const WITHDRAWAL_LIMIT = 2;
@@ -110,9 +112,8 @@ export default function WithdrawPage() {
     };
     
     const amountAsUSD = (parseFloat(amount) || 0) * KTC_TO_USD_RATE;
-    const feeAsUSD = WITHDRAWAL_FEE_KTC * KTC_TO_USD_RATE;
     const totalToReceiveKTC = (parseFloat(amount) || 0);
-    const totalToReceiveUSD = amountAsUSD;
+    const totalToReceiveUGX = totalToReceiveKTC * KTC_TO_UGX_RATE;
 
     return (
         <div className="w-full max-w-2xl mx-auto space-y-6">
@@ -214,7 +215,7 @@ export default function WithdrawPage() {
                             </div>
                             <div className="flex justify-between text-xs text-muted-foreground">
                                 <span></span>
-                                <span>≈ ${totalToReceiveUSD.toFixed(2)}</span>
+                                <span>≈ {totalToReceiveUGX.toLocaleString('en-US', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -230,4 +231,3 @@ export default function WithdrawPage() {
         </div>
     );
 }
-
