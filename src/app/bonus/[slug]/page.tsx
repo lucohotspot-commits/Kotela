@@ -512,26 +512,50 @@ const CoinFlipGame = () => {
                 });
             }
             refreshBalance();
-
-        }, 1500);
+        }, 2500); // Increased duration for better animation feel
     }
     
     const handleBetChange = (amount: number) => {
         setBetAmount(prev => Math.max(0, prev + amount));
     };
 
+    const CoinFace = ({ children, isFront }: { children: React.ReactNode, isFront?: boolean }) => (
+        <div className={cn(
+            "absolute w-full h-full rounded-full flex items-center justify-center [backface-visibility:hidden] text-yellow-900/70",
+            "bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600", // Gold gradient
+            "shadow-inner shadow-black/30", // Inner shadow for depth
+            isFront ? "" : "[transform:rotateY(180deg)]"
+        )}>
+            <div className="w-[90%] h-[90%] rounded-full border-2 border-yellow-600/50 flex items-center justify-center">
+                 {children}
+            </div>
+        </div>
+    );
+    
+    const hasWon = result && result === choice;
+
     return (
         <Card>
             <CardContent className="p-6 flex flex-col items-center justify-center gap-6 text-center">
-                <div className="relative w-48 h-48 [perspective:1000px]">
-                    <div className={cn("relative w-full h-full rounded-full transition-transform duration-1000", flipping && "[transform:rotateY(1800deg)]")} style={{ transformStyle: 'preserve-3d' }}>
-                        <div className="absolute w-full h-full bg-muted rounded-full flex items-center justify-center [backface-visibility:hidden]">
-                            {!result && <CircleDollarSign className='w-24 h-24 text-muted-foreground' />}
-                            {result && <p className={cn('text-6xl font-bold', result === choice ? 'text-green-500' : 'text-red-500')}>{result === choice ? 'WIN' : 'LOSE'}</p>}
-                        </div>
-                        <div className="absolute w-full h-full bg-yellow-500 rounded-full flex items-center justify-center [transform:rotateY(180deg)] [backface-visibility:hidden]">
-                            <p className='text-3xl font-bold text-black'>{result?.toUpperCase()}</p>
-                        </div>
+                <div className="relative w-48 h-48 [perspective:1200px]">
+                    <div className={cn(
+                        "relative w-full h-full transition-transform duration-[2500ms] ease-in-out",
+                        flipping && "[transform:rotateY(1800deg)]",
+                        result && (hasWon ? "animate-bounce" : "animate-pulse-subtle")
+                     )} style={{ transformStyle: 'preserve-3d' }}>
+                        <CoinFace isFront>
+                           {!result && <CircleDollarSign className='w-24 h-24 text-yellow-800/80' />}
+                           {result && (
+                            <span className={cn('text-5xl font-extrabold', hasWon ? 'text-green-800' : 'text-red-800')}>
+                                {hasWon ? 'WIN' : 'LOSE'}
+                            </span>
+                           )}
+                        </CoinFace>
+                        <CoinFace>
+                            <span className='text-3xl font-bold tracking-widest text-shadow-lg'>
+                                {result ? result.toUpperCase() : choice ? choice.toUpperCase() : ''}
+                            </span>
+                        </CoinFace>
                     </div>
                 </div>
                 
@@ -552,7 +576,7 @@ const CoinFlipGame = () => {
                         {flipping ? 'Flipping...' : `Flip for ${betAmount.toLocaleString()}`}
                     </Button>
                 </div>
-                 <p className='text-muted-foreground text-sm'>
+                 <p className='text-muted-foreground text-sm h-5'>
                     {result ? `It was ${result}! You ${result === choice ? 'won!' : 'lost.'}` : 'Choose Heads or Tails & place your bet'}
                 </p>
             </CardContent>
