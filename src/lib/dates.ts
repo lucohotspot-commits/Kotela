@@ -1,9 +1,10 @@
 
-export function getYears(startYear?: number) {
+export function getYears(endYear?: number, startYear?: number) {
   const currentYear = new Date().getFullYear();
   const a = startYear || currentYear - 100;
+  const b = endYear || currentYear;
   let years = [];
-  for (let i = currentYear; i >= a; i--) {
+  for (let i = b; i >= a; i--) {
     years.push(i);
   }
   return years;
@@ -32,3 +33,5 @@ export function getDaysInMonth(year: number | null, month: number | null) {
   const days = date.getDate();
   return Array.from({ length: days }, (_, i) => (i + 1).toString().padStart(2, '0'));
 }
+
+    

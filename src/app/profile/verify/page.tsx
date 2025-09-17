@@ -40,6 +40,10 @@ const formSchema = z.object({
   dob_month: z.string({ required_error: "Please select a month." }),
   dob_day: z.string({ required_error: "Please select a day." }),
   documentType: z.string({ required_error: "Please select a document type." }),
+  documentId: z.string().min(1, { message: "Document ID is required." }),
+  expiry_year: z.string({ required_error: "Please select a year." }),
+  expiry_month: z.string({ required_error: "Please select a month." }),
+  expiry_day: z.string({ required_error: "Please select a day." }),
   document: z.any().refine((file) => file, "Document image is required."),
 });
 
@@ -51,6 +55,12 @@ const verificationSteps = [
     { step: 3, title: "Selfie" },
     { step: 4, title: "Review" },
 ];
+
+const documentIdLabels: { [key: string]: string } = {
+    passport: "Passport Number",
+    drivers_license: "Driver's License Number",
+    national_id: "National Identity Number (NIN)",
+};
 
 export default function VerifyPage() {
   const { toast } = useToast();
@@ -76,6 +86,10 @@ export default function VerifyPage() {
       dob_month: "",
       dob_day: "",
       documentType: "",
+      documentId: "",
+      expiry_year: "",
+      expiry_month: "",
+      expiry_day: "",
     },
     mode: 'onChange',
   });
@@ -116,7 +130,8 @@ export default function VerifyPage() {
 
   function onSubmit(values: VerificationFormValues) {
     const dob = `${values.dob_year}-${values.dob_month}-${values.dob_day}`;
-    console.log({...values, dob});
+    const expiryDate = `${values.expiry_year}-${values.expiry_month}-${values.expiry_day}`;
+    console.log({...values, dob, expiryDate});
     console.log("Selfie data URI:", selfie);
     toast({
       title: "Verification Submitted",
@@ -197,14 +212,19 @@ export default function VerifyPage() {
   
   const watchedYear = form.watch('dob_year');
   const watchedMonth = form.watch('dob_month');
+  const watchedExpiryYear = form.watch('expiry_year');
+  const watchedExpiryMonth = form.watch('expiry_month');
   const formValues = form.watch();
 
   const years = getYears();
+  const futureYears = getYears(new Date().getFullYear() + 20, new Date().getFullYear());
   const months = getMonths();
   const days = getDaysInMonth(watchedYear ? parseInt(watchedYear) : null, watchedMonth ? parseInt(watchedMonth) - 1 : null);
+  const expiryDays = getDaysInMonth(watchedExpiryYear ? parseInt(watchedExpiryYear) : null, watchedExpiryMonth ? parseInt(watchedExpiryMonth) - 1 : null);
+
 
   const isStep1Valid = form.watch('country') && form.watch('phoneNumber') && form.watch('surname') && form.watch('dob_day') && form.watch('dob_month') && form.watch('dob_year') && !form.getFieldState('country').invalid && !form.getFieldState('phoneNumber').invalid && !form.getFieldState('surname').invalid && !form.getFieldState('dob_day').invalid && !form.getFieldState('dob_month').invalid && !form.getFieldState('dob_year').invalid;
-  const isStep2Valid = form.watch('documentType') && documentPreview;
+  const isStep2Valid = form.watch('documentType') && form.watch('documentId') && form.watch('expiry_day') && form.watch('expiry_month') && form.watch('expiry_year') && documentPreview && !form.getFieldState('documentId').invalid;
   const isStep3Valid = !!selfie;
 
   return (
@@ -415,6 +435,58 @@ export default function VerifyPage() {
                             )}
                         />
 
+                        {formValues.documentType && (
+                            <>
+                                <FormField control={form.control} name="documentId" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{documentIdLabels[formValues.documentType] || 'Document ID'}</FormLabel>
+                                        <FormControl><Input placeholder="Enter document number" {...field} /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                                
+                                <div className="grid grid-cols-3 gap-3">
+                                    <FormField control={form.control} name="expiry_month" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Expiry Month</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger></FormControl>
+                                                <SelectContent>
+                                                    {months.map(month => <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="expiry_day" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Expiry Day</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value} disabled={!watchedExpiryMonth}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger></FormControl>
+                                                <SelectContent>
+                                                    {expiryDays.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="expiry_year" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Expiry Year</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger></FormControl>
+                                                <SelectContent>
+                                                    {futureYears.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                </div>
+                            </>
+                        )}
+
+
                         {form.watch('documentType') && uploadMode === 'select' && !documentPreview && (
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <Button variant="outline" className="h-24 flex-col gap-2" onClick={() => setUploadMode('upload')}>
@@ -588,9 +660,24 @@ export default function VerifyPage() {
                   <div className="space-y-4 rounded-lg border p-4">
                     <h4 className="font-semibold text-lg">Documents</h4>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                            <div>
+                                <Label className="text-muted-foreground">Document Type</Label>
+                                <p>{formValues.documentType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                            </div>
+                             <div>
+                                <Label className="text-muted-foreground">{documentIdLabels[formValues.documentType] || 'Document ID'}</Label>
+                                <p>{formValues.documentId}</p>
+                            </div>
+                            <div>
+                                <Label className="text-muted-foreground">Expiry Date</Label>
+                                <p>{formValues.expiry_day}/{formValues.expiry_month}/{formValues.expiry_year}</p>
+                            </div>
+                        </div>
+
                         {documentPreview && (
                             <div className="space-y-2">
-                                <Label>Document ({formValues.documentType})</Label>
+                                <Label>Document</Label>
                                 <div className="relative w-full aspect-video rounded-lg overflow-hidden border">
                                     <Image src={documentPreview} alt="Document preview" layout="fill" objectFit="contain" />
                                 </div>
@@ -624,6 +711,5 @@ export default function VerifyPage() {
     </div>
   );
 }
-
 
     
