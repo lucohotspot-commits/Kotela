@@ -34,8 +34,8 @@ const formSchema = z.object({
   givenName: z.string().optional(),
   middleName: z.string().optional(),
   dob_year: z.string({ required_error: "Please select a year." }),
-  dob_month: z_dot_string({ required_error: "Please select a month." }),
-  dob_day: z_dot_string({ required_error: "Please select a day." }),
+  dob_month: z.string({ required_error: "Please select a month." }),
+  dob_day: z.string({ required_error: "Please select a day." }),
   document: z.any().refine((files) => files?.length == 1, "Document is required."),
 });
 
@@ -406,5 +406,3 @@ export default function VerifyPage() {
   );
 }
 
-
-    
