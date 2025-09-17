@@ -40,7 +40,7 @@ export default function ProfilePage() {
   const [currency, setCurrency] = useState(0);
   const [depositAmount, setDepositAmount] = useState('');
   const [isDepositOpen, setIsDepositOpen] = useState(false);
-  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(false);
   const { toast } = useToast();
 
   const refreshCurrency = () => {
@@ -328,4 +328,3 @@ export default function ProfilePage() {
   );
 }
 
-    
