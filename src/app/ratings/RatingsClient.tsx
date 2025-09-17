@@ -28,7 +28,6 @@ type Coin = {
   price: number;
   change: number;
   high: number;
-
   low: number;
   volume: number;
   history: CoinData[];
@@ -124,10 +123,11 @@ export default function RatingsClient() {
 
 
   useEffect(() => {
-    if (coins.length === 0) return;
-    const interval = setInterval(updateCoinData, 2000);
-    return () => clearInterval(interval);
-  }, [updateCoinData, coins.length]);
+    if (coins.length > 0) {
+        const interval = setInterval(updateCoinData, 2000);
+        return () => clearInterval(interval);
+    }
+  }, [updateCoinData, coins]);
 
   const getChangeColor = (change: number) => {
     if (change > 0) return 'text-green-500';
@@ -155,7 +155,7 @@ export default function RatingsClient() {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="p-2 text-xs bg-background/90 border border-border rounded-none text-foreground">
+        <div className="p-2 text-xs bg-background/90 border-border rounded-none text-foreground">
           <p>{`Time: ${label}`}</p>
           <p className="text-green-500">{`Open: ${data.open.toFixed(4)}`}</p>
           <p className="text-green-500">{`High: ${data.high.toFixed(4)}`}</p>
@@ -316,7 +316,7 @@ export default function RatingsClient() {
                         </TableCell>
                         <TableCell className="text-right font-mono text-xs py-1 px-2">${coin.price.toFixed(4)}</TableCell>
                         <TableCell className={`text-right font-mono text-xs py-1 px-2 ${getChangeColor(coin.change)}`}>
-                            {coin.change > 0 ? '+' : ''}{((coin.change / (coin.price - coin.change)) * 100).toFixed(2)}%
+                            {coin.change > 0 ? '+' : ''}{((coin.change / (coin.price - selectedCoin.change)) * 100).toFixed(2)}%
                         </TableCell>
                         </TableRow>
                     ))}
