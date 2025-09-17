@@ -45,7 +45,7 @@ export default function RatingsPage() {
           const updatedCoin = {
             ...coin,
             price: newPrice,
-            change: newPrice - coin.price,
+            change: newPrice - coin.history.at(-1)!.price,
             history: newHistory,
           };
           
@@ -75,12 +75,14 @@ export default function RatingsPage() {
 
   const chartData = useMemo(() => selectedCoin.history, [selectedCoin]);
   const chartDomain: [number, number] = useMemo(() => {
+    if (!chartData || chartData.length === 0) return [0, 0];
     const prices = chartData.map(d => d.price);
     const min = Math.min(...prices);
     const max = Math.max(...prices);
-    const padding = (max - min) * 0.1;
+    const padding = (max - min) * 0.2 || max * 0.1; // Add padding, handle case where min equals max
     return [Math.max(0, min - padding), max + padding];
   }, [chartData]);
+
 
   return (
     <div className="space-y-6">
@@ -94,7 +96,7 @@ export default function RatingsPage() {
             <div className="mt-2 sm:mt-0 text-right">
               <div className="text-3xl font-bold">${selectedCoin.price.toFixed(2)}</div>
               <div className={`text-sm flex items-center justify-end gap-1 ${getChangeColor(selectedCoin.change)}`}>
-                 <ChangeIcon change={selectedCoin.change} /> {selectedCoin.change.toFixed(4)} ({((selectedCoin.change / selectedCoin.price) * 100).toFixed(2)}%)
+                 <ChangeIcon change={selectedCoin.change} /> {selectedCoin.change.toFixed(4)} ({((selectedCoin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%)
               </div>
             </div>
           </div>
@@ -124,10 +126,18 @@ export default function RatingsPage() {
                 axisLine={false}
                 tickMargin={8}
                 tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
+                width={80}
               />
               <Tooltip
                 cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
-                content={<ChartTooltipContent indicator="dot" />}
+                content={<ChartTooltipContent indicator="dot" labelKey='price'
+                  formatter={(value, name, props) => (
+                    <div className='flex flex-col gap-0.5'>
+                      <span className='font-bold'>${Number(value).toFixed(4)}</span>
+                      <span className='text-xs text-muted-foreground'>{props.payload.time}</span>
+                    </div>
+                  )}
+                />}
               />
               <Area 
                 dataKey="price" 
@@ -174,7 +184,7 @@ export default function RatingsPage() {
                    <TableCell className={`text-right font-mono hidden md:table-cell ${getChangeColor(coin.change)}`}>
                     <div className="flex items-center justify-end gap-1">
                       <ChangeIcon change={coin.change} />
-                      {((coin.change / coin.price) * 100).toFixed(2)}%
+                      {((coin.change / (coin.price - coin.change)) * 100).toFixed(2)}%
                     </div>
                   </TableCell>
                 </TableRow>
@@ -186,6 +196,3 @@ export default function RatingsPage() {
     </div>
   );
 }
-
-
-    
