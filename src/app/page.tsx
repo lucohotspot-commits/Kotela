@@ -35,15 +35,15 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="absolute top-0 right-0 p-4 sm:p-6 flex items-center gap-4 z-10">
+      <header className="absolute top-0 right-0 p-4 sm:p-6 flex items-center gap-2 sm:gap-4 z-10">
         <div className="text-right">
-          <p className="text-sm text-muted-foreground">My Points</p>
-          <p className="text-2xl font-bold text-primary">{currency.toLocaleString()}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">My Points</p>
+          <p className="text-xl sm:text-2xl font-bold text-primary">{currency.toLocaleString()}</p>
         </div>
         <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="lg">
-              <ShoppingCart className="mr-2" /> Store
+            <Button variant="outline" size="lg" className="text-sm sm:text-base px-4 sm:px-8">
+              <ShoppingCart className="mr-2 h-4 w-4 sm:h-auto sm:w-auto" /> Store
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md sm:max-w-4xl lg:max-w-6xl h-full sm:h-auto">

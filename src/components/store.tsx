@@ -78,7 +78,7 @@ export function Store({ onPurchase }: StoreProps) {
             <span className='text-xl'>{currency.toLocaleString()}</span>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {boosts.map((boost) => (
               <Card key={boost.id} className="flex flex-col shadow-sm hover:shadow-md transition-shadow duration-300">
                 <CardHeader className="flex-row items-center gap-4 space-y-0 pb-4">
@@ -90,7 +90,7 @@ export function Store({ onPurchase }: StoreProps) {
                         <CardDescription>{boost.description}</CardDescription>
                     </div>
                 </CardHeader>
-                <CardFooter className="flex-grow flex items-end justify-between mt-auto pt-4 border-t">
+                <CardFooter className="flex-grow flex items-center justify-between mt-auto pt-4 border-t">
                   {boost.free ? (
                      <AlertDialog>
                       <AlertDialogTrigger asChild>
