@@ -18,6 +18,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { cn } from '@/lib/utils';
@@ -289,6 +291,9 @@ export default function RatingsClient() {
                             <Expand className="h-4 w-4 cursor-pointer hover:text-primary" />
                         </DialogTrigger>
                         <DialogContent className="max-w-[90vw] h-[90vh] p-1">
+                            <DialogHeader className="sr-only">
+                                <DialogTitle>Expanded Chart View</DialogTitle>
+                            </DialogHeader>
                             <ChartComponent isExpanded={true} />
                         </DialogContent>
                     </Dialog>
@@ -387,3 +392,5 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
