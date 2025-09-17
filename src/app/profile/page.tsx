@@ -156,9 +156,11 @@ export default function ProfilePage() {
             </DialogContent>
           </Dialog>
 
-          <Button variant="outline">
-            <Download className="mr-2" />
-            Withdraw
+          <Button variant="outline" asChild>
+            <Link href="/profile/withdraw">
+              <Download className="mr-2" />
+              Withdraw
+            </Link>
           </Button>
           <Button variant="outline" asChild>
             <Link href="/profile/send">

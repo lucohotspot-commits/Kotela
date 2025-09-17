@@ -1,0 +1,233 @@
+
+"use client";
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { ChevronRight, Download, Coins, Banknote, Wallet, ArrowRight, Hourglass } from 'lucide-react';
+import { getCurrency, spendCurrency } from '@/lib/storage';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+
+const KTC_TO_USD_RATE = 1.25;
+const WITHDRAWAL_FEE_KTC = 5.0;
+const WITHDRAWAL_TIMESTAMPS_KEY = 'kotela-withdrawal-timestamps';
+const WITHDRAWAL_LIMIT = 2;
+const WITHDRAWAL_WINDOW_MS = 60 * 1000; // 1 minute
+
+const savedPaymentMethods = [
+    { id: 'bank-1', type: 'Bank Transfer', details: 'Wells Fargo - **** 1234', icon: Banknote },
+    { id: 'wallet-1', type: 'Crypto Wallet', details: '0x1a2b...c4d5', icon: Wallet },
+];
+
+export default function WithdrawPage() {
+    const [balance, setBalance] = useState(0);
+    const [amount, setAmount] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('');
+    const [isRateLimited, setIsRateLimited] = useState(false);
+    const [cooldown, setCooldown] = useState(0);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        setBalance(getCurrency());
+        checkRateLimit();
+    }, []);
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (cooldown > 0) {
+            timer = setInterval(() => {
+                setCooldown(prev => prev - 1);
+            }, 1000);
+        } else if (isRateLimited) {
+            setIsRateLimited(false);
+        }
+        return () => clearInterval(timer);
+    }, [cooldown, isRateLimited]);
+
+    const checkRateLimit = () => {
+        const timestamps: number[] = JSON.parse(localStorage.getItem(WITHDRAWAL_TIMESTAMPS_KEY) || '[]');
+        const now = Date.now();
+        const recentTimestamps = timestamps.filter(ts => now - ts < WITHDRAWAL_WINDOW_MS);
+        
+        if (recentTimestamps.length >= WITHDRAWAL_LIMIT) {
+            setIsRateLimited(true);
+            const lastAttempt = recentTimestamps[recentTimestamps.length - 1];
+            const timePassed = now - lastAttempt;
+            const timeLeft = Math.ceil((WITHDRAWAL_WINDOW_MS - timePassed) / 1000);
+            setCooldown(timeLeft > 0 ? timeLeft : 60);
+            return true;
+        }
+        localStorage.setItem(WITHDRAWAL_TIMESTAMPS_KEY, JSON.stringify(recentTimestamps));
+        return false;
+    };
+    
+    const handleMaxAmount = () => {
+        const max = Math.max(0, balance - WITHDRAWAL_FEE_KTC);
+        setAmount(max.toString());
+    }
+
+    const handleWithdraw = () => {
+        if (checkRateLimit()) {
+             toast({ variant: 'destructive', title: 'Rate limit exceeded', description: 'You have made too many withdrawal attempts. Please try again later.' });
+            return;
+        }
+
+        const withdrawAmount = parseFloat(amount);
+        if (!paymentMethod) {
+            toast({ variant: 'destructive', title: 'Payment method required', description: 'Please select a payment method.'});
+            return;
+        }
+        if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
+            toast({ variant: 'destructive', title: 'Invalid amount', description: 'Please enter a valid amount to withdraw.'});
+            return;
+        }
+        if (withdrawAmount + WITHDRAWAL_FEE_KTC > balance) {
+            toast({ variant: 'destructive', title: 'Insufficient funds', description: 'Your balance is not enough to cover the amount and network fee.'});
+            return;
+        }
+
+        const success = spendCurrency(withdrawAmount + WITHDRAWAL_FEE_KTC);
+        if (success) {
+            setBalance(getCurrency());
+            setAmount('');
+            
+            const timestamps: number[] = JSON.parse(localStorage.getItem(WITHDRAWAL_TIMESTAMPS_KEY) || '[]');
+            timestamps.push(Date.now());
+            localStorage.setItem(WITHDRAWAL_TIMESTAMPS_KEY, JSON.stringify(timestamps));
+
+            toast({
+                title: 'Withdrawal Initiated',
+                description: `${withdrawAmount.toLocaleString()} KTC is being sent to your selected account.`,
+            });
+        }
+    };
+    
+    const amountAsUSD = (parseFloat(amount) || 0) * KTC_TO_USD_RATE;
+    const feeAsUSD = WITHDRAWAL_FEE_KTC * KTC_TO_USD_RATE;
+    const totalToReceiveKTC = (parseFloat(amount) || 0);
+    const totalToReceiveUSD = amountAsUSD;
+
+    return (
+        <div className="w-full max-w-2xl mx-auto space-y-6">
+            <Breadcrumb>
+                <BreadcrumbList>
+                    <BreadcrumbItem>
+                        <BreadcrumbLink asChild><Link href="/profile">Profile</Link></BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator>
+                        <ChevronRight />
+                    </BreadcrumbSeparator>
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>Withdraw</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle className='flex items-center gap-2'>
+                        <Download />
+                        Withdraw KTC
+                    </CardTitle>
+                    <CardDescription>Transfer coins from your Kotela wallet to an external account.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {isRateLimited && (
+                        <Alert variant="destructive">
+                            <Hourglass className="h-4 w-4" />
+                            <AlertTitle>Too many requests</AlertTitle>
+                            <AlertDescription>
+                                You can attempt another withdrawal in {cooldown} seconds.
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
+                    <div className="space-y-2">
+                        <Label htmlFor="paymentMethod">To</Label>
+                        <Select onValueChange={setPaymentMethod} value={paymentMethod} disabled={isRateLimited}>
+                            <SelectTrigger id="paymentMethod">
+                                <SelectValue placeholder="Select a payment method" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {savedPaymentMethods.map(method => {
+                                    const Icon = method.icon;
+                                    return (
+                                        <SelectItem key={method.id} value={method.id}>
+                                            <div className="flex items-center gap-3">
+                                                <Icon className="h-5 w-5 text-muted-foreground" />
+                                                <div>
+                                                    <p>{method.type}</p>
+                                                    <p className="text-xs text-muted-foreground">{method.details}</p>
+                                                </div>
+                                            </div>
+                                        </SelectItem>
+                                    )
+                                })}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-baseline">
+                            <Label htmlFor="amount">Amount</Label>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Coins className="h-3 w-3 text-yellow-500" />
+                                Balance: {balance.toLocaleString()} KTC
+                            </span>
+                        </div>
+                        <div className="relative">
+                            <Input 
+                                id="amount" 
+                                type="number" 
+                                placeholder="0.00" 
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                className="text-2xl h-14 pr-24"
+                                disabled={isRateLimited}
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                <span className='text-muted-foreground'>KTC</span>
+                                <Button variant="ghost" size="sm" onClick={handleMaxAmount} disabled={isRateLimited}>Max</Button>
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground text-right">≈ ${amountAsUSD.toFixed(2)}</p>
+                    </div>
+
+                    <Card className="bg-muted/50">
+                        <CardContent className="p-4 space-y-3 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Withdrawal Fee</span>
+                                <span>{WITHDRAWAL_FEE_KTC} KTC</span>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between font-bold">
+                                <span>You will receive</span>
+                                <span>{totalToReceiveKTC.toLocaleString()} KTC</span>
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                                <span></span>
+                                <span>≈ ${totalToReceiveUSD.toFixed(2)}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                </CardContent>
+                <CardFooter>
+                    <Button className="w-full" size="lg" onClick={handleWithdraw} disabled={isRateLimited}>
+                        Withdraw
+                        <ArrowRight className="ml-2" />
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+    );
+}
+
