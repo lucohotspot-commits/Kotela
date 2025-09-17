@@ -23,6 +23,8 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbS
 import { ChevronRight, ShieldCheck, Camera, Check, AlertCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { PhoneInput, type Country } from '@/components/ui/phone-input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getYears, getMonths, getDaysInMonth } from '@/lib/dates';
 
 
 const formSchema = z.object({
@@ -31,7 +33,9 @@ const formSchema = z.object({
   surname: z.string().min(2, { message: "Surname must be at least 2 characters." }),
   givenName: z.string().optional(),
   middleName: z.string().optional(),
-  dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "Please enter a valid date in YYYY-MM-DD format." }),
+  dob_year: z.string({ required_error: "Please select a year." }),
+  dob_month: z.string({ required_error: "Please select a month." }),
+  dob_day: z.string({ required_error: "Please select a day." }),
   document: z.any().refine((files) => files?.length == 1, "Document is required."),
 });
 
@@ -54,7 +58,9 @@ export default function VerifyPage() {
       surname: "",
       givenName: "",
       middleName: "",
-      dob: "",
+      dob_year: "",
+      dob_month: "",
+      dob_day: "",
     },
     mode: 'onChange',
   });
@@ -89,7 +95,8 @@ export default function VerifyPage() {
   }, [step, getCameraPermission]);
 
   function onSubmit(values: VerificationFormValues) {
-    console.log(values);
+    const dob = `${values.dob_year}-${values.dob_month}-${values.dob_day}`;
+    console.log({...values, dob});
     console.log("Selfie data URI:", selfie);
     toast({
       title: "Verification Submitted",
@@ -119,8 +126,15 @@ export default function VerifyPage() {
   const prevStep = () => setStep(s => s - 1);
   
   const progress = (step / 3) * 100;
+  
+  const watchedYear = form.watch('dob_year');
+  const watchedMonth = form.watch('dob_month');
 
-  const isStep1Valid = form.watch('country') && form.watch('phoneNumber') && form.watch('surname') && form.watch('dob') && !form.getFieldState('country').invalid && !form.getFieldState('phoneNumber').invalid && !form.getFieldState('surname').invalid && !form.getFieldState('dob').invalid;
+  const years = getYears();
+  const months = getMonths();
+  const days = getDaysInMonth(watchedYear ? parseInt(watchedYear) : null, watchedMonth ? parseInt(watchedMonth) - 1 : null);
+
+  const isStep1Valid = form.watch('country') && form.watch('phoneNumber') && form.watch('surname') && form.watch('dob_day') && form.watch('dob_month') && form.watch('dob_year') && !form.getFieldState('country').invalid && !form.getFieldState('phoneNumber').invalid && !form.getFieldState('surname').invalid && !form.getFieldState('dob_day').invalid && !form.getFieldState('dob_month').invalid && !form.getFieldState('dob_year').invalid;
   const isStep2Valid = form.watch('document') && form.watch('document').length > 0;
 
   return (
@@ -193,19 +207,74 @@ export default function VerifyPage() {
                             </FormItem>
                         )} />
                          <FormField control={form.control} name="middleName" render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="sm:col-span-2">
                                 <FormLabel>Middle Name (Optional)</FormLabel>
                                 <FormControl><Input placeholder="James" {...field} /></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )} />
-                        <FormField control={form.control} name="dob" render={({ field }) => (
-                            <FormItem className="sm:col-span-2">
-                                <FormLabel>Date of Birth</FormLabel>
-                                <FormControl><Input type="date" {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
+                        <div className="sm:col-span-2 grid grid-cols-3 gap-3">
+                            <FormField
+                                control={form.control}
+                                name="dob_month"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Month</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Month" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {months.map(month => <SelectItem key={month.value} value={month.value}>{month.label}</SelectItem>)}
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="dob_day"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Day</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={!watchedMonth}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Day" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {days.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="dob_year"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Year</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                        <SelectValue placeholder="Year" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {years.map(year => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
                     </CardContent>
                     <CardFooter className='justify-end'>
                          <Button onClick={nextStep} disabled={!isStep1Valid}>
