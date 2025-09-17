@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plane, Coins, Disc, CircleDollarSign, Dice5, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User } from 'lucide-react';
+import { Plane, Coins, Disc, CircleDollarSign, Dice5, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,15 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { addCurrency, getCurrency } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 
 const gameDetails: { [key: string]: { name: string; description: string, icon: React.ReactNode } } = {
@@ -397,8 +406,10 @@ export default function BonusGamePage() {
     refreshCurrency();
     
     // Listen for currency updates from other components
-    const handleStorageChange = () => {
-      refreshCurrency();
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'kotela-currency') {
+          refreshCurrency();
+      }
     };
     window.addEventListener('storage', handleStorageChange);
 
@@ -427,6 +438,21 @@ export default function BonusGamePage() {
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+                <Link href="/leaderboard">Bonus Games</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator>
+            <ChevronRight />
+          </BreadcrumbSeparator>
+          <BreadcrumbItem>
+            <BreadcrumbPage>{details.name}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div className="flex items-start justify-between">
         <div>
             <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
@@ -446,3 +472,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
+
+    
