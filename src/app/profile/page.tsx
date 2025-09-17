@@ -3,9 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import { getCurrency, addCurrency } from '@/lib/storage';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon, Gift, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -40,12 +40,13 @@ export default function ProfilePage() {
   }, []);
   
   const walletAddress = "0x1a2b3c4d5e6f7g8h9i0j...";
+  const referralLink = "https://kotela.com/join/user123";
 
-  const handleCopyAddress = () => {
-    navigator.clipboard.writeText(walletAddress);
+  const handleCopy = (text: string, type: string) => {
+    navigator.clipboard.writeText(text);
     toast({
       title: "Copied!",
-      description: "Wallet address copied to clipboard.",
+      description: `${type} copied to clipboard.`,
     });
   };
 
@@ -111,7 +112,7 @@ export default function ProfilePage() {
                       <Label htmlFor="wallet-address">Wallet Address</Label>
                       <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                         <span id="wallet-address" className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
-                        <Button variant="ghost" size="icon" onClick={handleCopyAddress}>
+                        <Button variant="ghost" size="icon" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
                             <Copy className="h-4 w-4" />
                         </Button>
                       </div>
@@ -193,11 +194,48 @@ export default function ProfilePage() {
         <CardContent>
             <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <span className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
-                <Button variant="ghost" size="icon" onClick={handleCopyAddress}>
+                <Button variant="ghost" size="icon" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
                     <Copy className="h-4 w-4" />
                 </Button>
             </div>
         </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Gift className="h-5 w-5" />
+                Referrals
+            </CardTitle>
+            <CardDescription>Invite friends and earn rewards when they sign up and start mining.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="referral-link">Your Referral Link</Label>
+                <div className="flex items-center gap-2">
+                    <Input id="referral-link" value={referralLink} readOnly />
+                    <Button variant="outline" size="icon" onClick={() => handleCopy(referralLink, 'Referral link')}>
+                        <Copy className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-center border-t pt-4">
+                <div>
+                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Users className="h-4 w-4" /> Friends Invited</p>
+                    <p className="text-2xl font-bold">0</p>
+                </div>
+                <div>
+                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Coins className="h-4 w-4" /> Total Earnings</p>
+                    <p className="text-2xl font-bold flex items-center justify-center gap-1">0</p>
+                </div>
+            </div>
+        </CardContent>
+        <CardFooter>
+            <Button variant="outline" className="w-full">
+                View Referral Details
+                <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+        </CardFooter>
       </Card>
       
       <div className="space-y-2">
