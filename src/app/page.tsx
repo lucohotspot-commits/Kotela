@@ -7,7 +7,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { getInventory, getScores, getCurrency, type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake } from 'lucide-react';
+import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -46,6 +46,10 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground max-w-xs">
                     Tap the coin to start mining. Use boosts to get a high score!
                 </p>
+            </div>
+             <div className="flex items-center justify-end gap-2 text-lg font-bold text-primary px-2">
+                <Coins className="w-5 h-5 text-yellow-500"/>
+                <span className='text-lg'>{currency.toLocaleString()}</span>
             </div>
         </div>
       </header>
