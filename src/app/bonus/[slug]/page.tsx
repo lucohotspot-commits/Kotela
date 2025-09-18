@@ -201,7 +201,7 @@ const PuzzleGame = () => {
                     <CardHeader className="text-center items-center">
                         <Puzzle className="h-16 w-16 text-primary mb-4" />
                         <CardTitle>AI Puzzle Challenge</CardTitle>
-                        <CardDescription>Solve the puzzle to win a prize. Click below to start!</CardDescription>
+                        <CardDescription>Solve the riddle to win a prize. Click below to start!</CardDescription>
                     </CardHeader>
                     <CardFooter>
                         <Button onClick={handleStartGame} size="lg" className="w-full">
@@ -213,7 +213,7 @@ const PuzzleGame = () => {
                 <>
                     <CardHeader>
                         <div className="flex justify-between items-start">
-                            <CardTitle className="flex items-center gap-2">The Puzzle Master Asks...</CardTitle>
+                            <CardTitle className="flex items-center gap-2">The Riddle Master Asks...</CardTitle>
                             <div className="text-right">
                                 {puzzleData && (
                                     <>
@@ -223,16 +223,26 @@ const PuzzleGame = () => {
                                 )}
                             </div>
                         </div>
-                        <CardDescription className="text-lg pt-4 text-foreground">{puzzleData?.puzzle}</CardDescription>
+                        <CardDescription className="text-lg pt-4 text-foreground italic">"{puzzleData?.puzzle}"</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-6">
+                        {puzzleData?.answer && (
+                            <div className="flex justify-center items-center gap-2" aria-label="Answer length">
+                                {puzzleData.answer.split('').map((_, index) => (
+                                    <div key={index} className="h-10 w-8 bg-muted rounded-md border flex items-center justify-center font-bold text-xl">
+                                        {userAnswer[index] ? userAnswer[index].toUpperCase() : ''}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <div className="space-y-2">
                             <Label htmlFor="answer">Your Answer</Label>
                             <Input 
                                 id="answer" 
-                                placeholder="Type your answer here..." 
+                                placeholder="Type your guess here..." 
                                 value={userAnswer}
                                 onChange={(e) => setUserAnswer(e.target.value)}
+                                maxLength={puzzleData?.answer.length}
                             />
                         </div>
                     </CardContent>
