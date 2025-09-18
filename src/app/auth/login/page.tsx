@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { Github, Chrome } from "lucide-react";
+import { Chrome } from "lucide-react";
 
 export default function LoginPage() {
     return (
@@ -54,8 +54,7 @@ export default function LoginPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
                 <Button variant="outline">
-                    <Github className="mr-2 h-4 w-4" />
-                    GitHub
+                    Sui Wallet
                 </Button>
                 <Button variant="outline">
                     <Chrome className="mr-2 h-4 w-4" />
