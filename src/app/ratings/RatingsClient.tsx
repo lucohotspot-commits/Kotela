@@ -603,7 +603,7 @@ export default function RatingsClient() {
             </TabsList>
         </Tabs>
         
-        <div className="grid grid-cols-2 gap-4 p-4 mt-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 mt-2">
              {/* Buy Form */}
             <div className="space-y-2">
                 <p className='text-xs text-muted-foreground'>Avbl: {currency.toFixed(2)} USDT</p>
@@ -792,3 +792,5 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
