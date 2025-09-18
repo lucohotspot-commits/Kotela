@@ -7,7 +7,7 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Bot, Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin, TrendingUp } from 'lucide-react';
+import { Bot, Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin, TrendingUp, BarChart, ArrowDownUp, Repeat } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,6 +23,7 @@ import { useUserLocation } from '@/hooks/use-user-location';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BlogWidget } from '@/components/blog-widget';
 import { useGame } from '@/context/GameContext';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
   const { scores, currency, inventory, isStoreOpen, setIsStoreOpen, refreshData } = useGame();
@@ -32,6 +33,13 @@ export default function Home() {
   useEffect(() => {
     refreshData();
   }, [refreshData]);
+
+  const botOptions = [
+    { name: "Actual grid", icon: BarChart },
+    { name: "Futures Grid", icon: BarChart },
+    { name: "Spot Position Grid", icon: ArrowDownUp },
+    { name: "Futures Position Grid", icon: ArrowDownUp },
+  ];
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
@@ -68,11 +76,32 @@ export default function Home() {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Mining Bots</DialogTitle>
+                        <DialogTitle>Trading Bots</DialogTitle>
                         <DialogDescription>
-                          Bot management will be here.
+                          Choose a bot to automate your trading strategy.
                         </DialogDescription>
                       </DialogHeader>
+                      <div className="space-y-4 pt-4">
+                        <div>
+                          <h4 className="text-sm font-semibold text-muted-foreground mb-2">Standard bot</h4>
+                          <div className="space-y-2">
+                            {botOptions.map((bot) => (
+                              <button key={bot.name} className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted text-left transition-colors">
+                                <bot.icon className="h-5 w-5" />
+                                <span className="font-medium">{bot.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                         <Button variant="secondary" className="w-full justify-start h-auto py-3">
+                            <div className="flex items-center gap-3">
+                                <Repeat className="h-5 w-5 text-primary" />
+                                <div>
+                                    <p className="font-semibold text-base">Automatic Spot Investment+</p>
+                                </div>
+                            </div>
+                         </Button>
+                      </div>
                     </DialogContent>
                  </Dialog>
                  <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
@@ -156,3 +185,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
