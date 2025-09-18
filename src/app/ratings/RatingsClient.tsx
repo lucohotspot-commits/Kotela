@@ -431,7 +431,7 @@ export default function RatingsClient() {
             const { x, y, width, height, payload } = props;
             if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
             const isUp = payload.close >= payload.open;
-            const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-1))';
+            const color = isUp ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(356.3 83.1% 54.5%)';
             const candleWidth = 6;
             const candleX = x + width / 2 - candleWidth / 2;
             const yAxis = props.yAxis;
@@ -483,7 +483,7 @@ export default function RatingsClient() {
             />
             <Bar yAxisId="volume" dataKey="volume" barSize={10} isAnimationActive={false}>
                 {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'hsla(120, 60%, 50%, 0.2)' : 'hsla(0, 60%, 50%, 0.2)'} />
+                    <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'hsla(142.1, 76.2%, 36.3%, 0.4)' : 'hsla(356.3, 83.1%, 54.5%, 0.4)'} />
                 ))}
             </Bar>
             <Line yAxisId="volume" type="monotone" dataKey="volMa5" stroke="#facc15" strokeWidth={1} dot={false} isAnimationActive={false} />
@@ -713,19 +713,69 @@ export default function RatingsClient() {
       </div>
   );
 
+  const mobileMarketSection = (
+    <Tabs defaultValue="market" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 h-9 p-0 border-b">
+            <TabsTrigger value="market" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Market</TabsTrigger>
+            <TabsTrigger value="movers" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Top Movers</TabsTrigger>
+            <TabsTrigger value="calendar" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Calendar</TabsTrigger>
+        </TabsList>
+        <TabsContent value="market">
+            <div className='p-2 flex items-center justify-between'>
+                <h3 className="font-semibold text-sm">Market</h3>
+                <div className="relative w-32">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                    <Input placeholder="Search" className="pl-6 h-7 text-xs" />
+                </div>
+            </div>
+            <Table>
+                <TableHeader>
+                <TableRow className='h-8'>
+                    <TableHead className="text-xs h-auto p-2">Pair</TableHead>
+                    <TableHead className="text-xs h-auto p-2 text-right">Price</TableHead>
+                    <TableHead className="text-xs h-auto p-2 text-right">% Change</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {coins.map((coin) => (
+                    <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50 h-8">
+                    <TableCell className='py-1 px-2'>
+                        <div className="flex items-center gap-2">
+                            <Star className={`h-3 w-3 ${coin.symbol === selectedCoin.symbol ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/50'}`}/>
+                            <div className="font-bold text-xs">{coin.symbol}/USDT</div>
+                        </div>
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-xs py-1 px-2">${coin.price.toFixed(4)}</TableCell>
+                    <TableCell className={`text-right font-mono text-xs py-1 px-2 ${getChangeColor(coin.change)}`}>
+                        {coin.change > 0 ? '+' : ''}{((coin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%
+                    </TableCell>
+                    </TableRow>
+                ))}
+                </TableBody>
+            </Table>
+        </TabsContent>
+        <TabsContent value="movers">
+            <TopMovers />
+        </TabsContent>
+        <TabsContent value="calendar">
+            <EconomicCalendar />
+        </TabsContent>
+    </Tabs>
+);
+
   if (isMobile) {
       return (
-        <Tabs defaultValue="chart" className="w-full">
+        <Tabs defaultValue="market" className="w-full">
             <TabsList className="grid w-full grid-cols-4 h-12 p-0 border-b rounded-none">
-                <TabsTrigger value="chart">Chart</TabsTrigger>
-                <TabsTrigger value="book">Order Book</TabsTrigger>
                 <TabsTrigger value="market">Market</TabsTrigger>
+                <TabsTrigger value="chart">Chart</TabsTrigger>
                 <TabsTrigger value="trades">Trades</TabsTrigger>
+                <TabsTrigger value="book">Order Book</TabsTrigger>
             </TabsList>
+            <TabsContent value="market">{mobileMarketSection}</TabsContent>
             <TabsContent value="chart">{chartSection}</TabsContent>
-            <TabsContent value="book"><OrderBook selectedCoin={selectedCoin} /></TabsContent>
-            <TabsContent value="market">{marketListSection}</TabsContent>
             <TabsContent value="trades"><MarketTrades selectedCoin={selectedCoin} /></TabsContent>
+            <TabsContent value="book"><OrderBook selectedCoin={selectedCoin} /></TabsContent>
         </Tabs>
       )
   }
