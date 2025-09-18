@@ -29,7 +29,7 @@ const CURRENCY_KEY = "kotela-currency";
 const INVENTORY_KEY = "kotela-inventory";
 const WITHDRAWALS_KEY = "kotela-withdrawals";
 const WALLETS_KEY = "kotela-wallets";
-const MAX_WALLETS = 5;
+const MAX_WALLETS = 3;
 
 
 const generateRandomAddress = () => {
@@ -267,5 +267,3 @@ export function addWithdrawal(withdrawal: Omit<Withdrawal, 'id'>): void {
     console.error("Failed to save withdrawal:", error);
   }
 }
-
-    

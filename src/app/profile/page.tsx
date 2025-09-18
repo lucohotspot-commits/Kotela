@@ -69,6 +69,11 @@ export default function ProfilePage() {
           toast({ variant: 'destructive', title: 'Network required', description: 'Please select a network for your new wallet.' });
           return;
       }
+      if (wallets.length >= 3) {
+          toast({ variant: 'destructive', title: 'Wallet limit reached', description: 'You can only have a maximum of 3 wallets.' });
+          setIsCreateWalletOpen(false);
+          return;
+      }
       const networkName = networks.find(n => n.id === selectedNetwork)?.name || 'New';
       addWallet(networkName);
       refreshWallets();
@@ -213,7 +218,7 @@ export default function ProfilePage() {
           </Button>
           <Dialog open={isCreateWalletOpen} onOpenChange={setIsCreateWalletOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="h-auto flex-col gap-2 p-4" disabled={wallets.length >= 5}>
+                <Button variant="outline" className="h-auto flex-col gap-2 p-4" disabled={wallets.length >= 3}>
                     <PlusCircle className="h-6 w-6" />
                     <span>Create Wallet</span>
                 </Button>
@@ -278,6 +283,13 @@ export default function ProfilePage() {
                 <ArrowRight className="h-4 w-4" />
               </div>
             </Link>
+            <Link href="#" className="p-4 flex items-center justify-between hover:bg-muted/50">
+              <div className="flex items-center gap-3">
+                <Users className="h-5 w-5 text-muted-foreground" />
+                <span className="font-medium">Referral</span>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
             <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <User className="h-5 w-5 text-muted-foreground" />
@@ -299,5 +311,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
