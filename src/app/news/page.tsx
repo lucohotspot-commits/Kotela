@@ -91,49 +91,53 @@ const StandaloneCommentSection = ({ post }: { post: BlogPost }) => {
 
 
 const ArticleContent = ({ post }: { post: BlogPost }) => (
-    <ScrollArea className="h-full">
-        <div className="p-6">
-            <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-6">
-                <Image 
-                    src={post.image} 
-                    alt={post.title} 
-                    fill 
-                    className="object-cover"
-                    data-ai-hint={post.imageHint}
-                />
-            </div>
-            <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                <span>{post.date}</span>
-                <Badge variant="secondary">{post.category}</Badge>
-            </div>
-            
-            <div className="flex items-center gap-3 my-6">
-                <Avatar>
-                    <AvatarImage src={post.authorImage} alt={post.author} />
-                    <AvatarFallback>{post.author.substring(0, 2)}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <p className="font-semibold">Posted by: {post.author}</p>
-                    <p className="text-xs text-muted-foreground">
-                        Updated {post.updatedDate} · {post.readTime}
-                    </p>
-                </div>
-            </div>
-
-            <div className="prose prose-base dark:prose-invert max-w-none text-foreground/90 font-serif">
-                <p>{post.content}</p>
-            </div>
-
-            <Separator className="my-8" />
-            
-            <div className="text-xs text-muted-foreground">
-                <p className="italic">
-                    Kotela aims to publish information that is factual and accurate as of the date of publication. For specific information about a cryptocurrency exchange or trading platform please visit that provider's website. This information is general in nature and is for education purposes only. Kotela does not provide financial advice nor does it take into account your personal financial situation. We encourage you to seek financial advice from an independent financial advisor where appropriate and make your own inquiries.
+    <div className="p-6">
+        <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-6">
+            <Image 
+                src={post.image} 
+                alt={post.title} 
+                fill 
+                className="object-cover"
+                data-ai-hint={post.imageHint}
+            />
+        </div>
+        <h2 className="text-xl font-bold mb-2">{post.title}</h2>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+            <span>{post.date}</span>
+            <Badge variant="secondary">{post.category}</Badge>
+        </div>
+        
+        <div className="flex items-center gap-3 my-6">
+            <Avatar>
+                <AvatarImage src={post.authorImage} alt={post.author} />
+                <AvatarFallback>{post.author.substring(0, 2)}</AvatarFallback>
+            </Avatar>
+            <div>
+                <p className="font-semibold">Posted by: {post.author}</p>
+                <p className="text-xs text-muted-foreground">
+                    Updated {post.updatedDate} · {post.readTime}
                 </p>
             </div>
         </div>
-    </ScrollArea>
+
+        <div className="prose prose-base dark:prose-invert max-w-none text-foreground/90 font-serif">
+            <p>{post.content}</p>
+        </div>
+
+        <Separator className="my-8" />
+        
+        <div className="text-xs text-muted-foreground">
+            <p className="italic">
+                Kotela aims to publish information that is factual and accurate as of the date of publication. For specific information about a cryptocurrency exchange or trading platform please visit that provider's website. This information is general in nature and is for education purposes only. Kotela does not provide financial advice nor does it take into account your personal financial situation. We encourage you to seek financial advice from an independent financial advisor where appropriate and make your own inquiries.
+            </p>
+        </div>
+        
+        {/* Comments for tablet view */}
+        <div className="lg:hidden mt-8">
+            <Separator className="mb-8" />
+            <StandaloneCommentSection post={post} />
+        </div>
+    </div>
 );
 
 
@@ -305,9 +309,9 @@ export default function NewsPage() {
                 </div>
                 <div className="md:col-span-2 lg:col-span-3 border-r">
                      {selectedPost ? (
-                        <div className='h-[calc(100vh-15rem)]'>
+                        <ScrollArea className='h-[calc(100vh-15rem)]'>
                             <ArticleContent post={selectedPost} />
-                        </div>
+                        </ScrollArea>
                      ) : (
                         <div className="flex items-center justify-center h-full text-muted-foreground">
                             <p>Select an article to read</p>
