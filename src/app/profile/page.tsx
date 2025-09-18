@@ -41,6 +41,8 @@ const referralData = [
   { user: 'HodlHermit', avatar: 'https://picsum.photos/seed/ref5/40/40', dateJoined: '2024-10-15', profit: 300.00 },
 ];
 
+const referralLink = "https://kotela.com/join/user123";
+
 
 export default function ProfilePage() {
   const [wallets, setWallets] = useState<WalletType[]>([]);
@@ -307,16 +309,28 @@ export default function ProfilePage() {
                     <DialogHeader>
                         <DialogTitle>Referral Details</DialogTitle>
                         <DialogDescription>
-                            Here&apos;s a list of users you&apos;ve referred and the profit you&apos;ve earned.
+                            Invite friends and earn rewards when they sign up and start mining.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 px-2 text-sm font-semibold text-muted-foreground">
-                        <span>User</span>
-                        <span>Date Joined</span>
-                        <span className="text-right">Profit (KTC)</span>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="referralLink">Your Referral Link</Label>
+                            <div className="flex gap-2">
+                                <Input id="referralLink" value={referralLink} readOnly />
+                                <Button variant="outline" size="icon" onClick={() => handleCopy(referralLink, "Referral Link")}>
+                                    <Copy className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                        <Separator />
+                        <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 px-2 text-sm font-semibold text-muted-foreground">
+                            <span>User</span>
+                            <span>Date Joined</span>
+                            <span className="text-right">Profit (KTC)</span>
+                        </div>
                     </div>
-                    <ScrollArea className="h-72">
-                        <div className="space-y-4">
+                    <ScrollArea className="h-60">
+                        <div className="space-y-4 pr-4">
                         {referralData.map((ref, index) => (
                             <div key={index} className="grid grid-cols-[1fr_auto_auto] items-center gap-4 px-2">
                                 <div className="flex items-center gap-3">
