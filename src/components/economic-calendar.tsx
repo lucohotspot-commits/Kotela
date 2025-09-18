@@ -53,14 +53,10 @@ export function EconomicCalendar() {
                 const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
                 const data: CalendarEvent[] = await response.json();
                 
-                const today = new Date();
-                const todayString = today.toISOString().split('T')[0];
-
-                const todaysEvents = data
-                    .filter(event => event.date.startsWith(todayString))
+                const allEvents = data
                     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-                setEvents(todaysEvents);
+                setEvents(allEvents);
             } catch (error) {
                 console.error("Failed to fetch economic calendar data:", error);
             } finally {
@@ -100,7 +96,7 @@ export function EconomicCalendar() {
                         </div>
                     ))
                 ) : events.length > 0 ? (
-                    events.map((event, index) => (
+                    events.slice(0, 10).map((event, index) => (
                         <div key={index} className="p-2 space-y-1 hover:bg-muted/50 transition-colors">
                             <div className="grid grid-cols-[40px_35px_1fr] items-center gap-2">
                                <div className="text-xs text-muted-foreground">{formatTime(event.date)}</div>
@@ -122,7 +118,7 @@ export function EconomicCalendar() {
                     ))
                 ) : (
                     <div className="p-4 text-center text-xs text-muted-foreground">
-                        No events for today.
+                        No events found for this week.
                     </div>
                 )}
             </div>
