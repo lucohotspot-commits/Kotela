@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { Flame } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Kotela',
-  description: 'A simple and engaging tap game.',
+  title: 'Authentication - Kotela',
+  description: 'Login or create an account.',
 };
 
 export default function AuthLayout({
