@@ -64,6 +64,13 @@ export default function DepositPage() {
         });
     };
     
+    const handleDeposit = () => {
+        toast({
+            title: "Deposit Initiated",
+            description: `You have initiated a deposit of ${amount || 0} KTC to your ${networks.find(n=>n.id === selectedNetwork)?.name} wallet.`
+        })
+    }
+    
     const amountAsUSD = (parseFloat(amount) || 0) * KTC_TO_USD_RATE;
 
     return (
@@ -155,8 +162,12 @@ export default function DepositPage() {
                     </Alert>
 
                 </CardContent>
+                <CardFooter>
+                    <Button onClick={handleDeposit} className="w-full" size="lg">
+                        Deposit
+                    </Button>
+                </CardFooter>
             </Card>
         </div>
     );
 }
-
