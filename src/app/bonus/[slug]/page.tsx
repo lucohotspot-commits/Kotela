@@ -692,7 +692,7 @@ const WiseManGame = () => {
                 <>
                     <CardHeader className="text-center items-center">
                         <Image
-                            src={`https://api.dicebear.com/8.x/bottts/svg?seed=${avatarSeed}`}
+                            src={`https://api.dicebear.com/9.x/bottts/svg?seed=${avatarSeed}`}
                             alt="WiseMan Avatar"
                             width={80}
                             height={80}
@@ -726,7 +726,7 @@ const WiseManGame = () => {
                                 <Badge variant="outline" className="mt-2">{questionData?.category}</Badge>
                             </div>
                             <Image
-                                src={`https://api.dicebear.com/8.x/bottts/svg?seed=${avatarSeed}`}
+                                src={`https://api.dicebear.com/9.x/bottts/svg?seed=${avatarSeed}`}
                                 alt="WiseMan Avatar"
                                 width={60}
                                 height={60}
@@ -1068,3 +1068,5 @@ export default function BonusGamePage() {
     </div>
   );
 }
+
+    
