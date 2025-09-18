@@ -16,8 +16,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
-      <div className="flex items-center justify-center py-12">
+    <div className="w-full min-h-screen flex items-center justify-center py-12 px-4">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
             <Link href="/" className="flex items-center gap-2 justify-center">
@@ -31,17 +30,6 @@ export default function AuthLayout({
           </div>
           {children}
         </div>
-      </div>
-      <div className="hidden bg-muted lg:block">
-        <Image
-          src="https://picsum.photos/seed/auth-banner/1920/1080"
-          alt="Image"
-          width="1920"
-          height="1080"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-          data-ai-hint="login abstract"
-        />
-      </div>
     </div>
   );
 }
