@@ -91,10 +91,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
       scoreInterval = setInterval(() => {
         setScore(s => s + 5 * scoreIncrement);
       }, 100);
-    } else {
-        scoreInterval = setInterval(() => {
-            setScore(s => s + scoreIncrement);
-        }, 1000);
     }
 
     return () => clearInterval(scoreInterval);
@@ -106,8 +102,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (timeBoostUsed) {
         setTimeLeft(gameDuration);
       }
+    } else if (gameState === 'playing' && activeEffect !== 'frenzy') {
+        setScore(s => s + scoreIncrement);
     }
-  }, [gameState, timeBoostUsed, gameDuration]);
+  }, [gameState, timeBoostUsed, gameDuration, activeEffect, scoreIncrement]);
 
   useEffect(() => {
     if (gameState !== "playing" || activeEffect === 'timeFreeze') return;
