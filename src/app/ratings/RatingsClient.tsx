@@ -420,7 +420,7 @@ export default function RatingsClient() {
         {chartType === 'candlestick' ? (
           <Line yAxisId="price" type="linear" dataKey="close" stroke="transparent" dot={false} isAnimationActive={false} />
         ) : (
-          <Line yAxisId="price" type="monotone" dataKey="close" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} isAnimationActive={false} />
+          <Area yAxisId="price" type="monotone" dataKey="close" stroke="hsl(var(--primary))" fill="hsla(var(--primary), 0.1)" strokeWidth={2} dot={false} isAnimationActive={false} />
         )}
         
         <Line yAxisId="price" type="monotone" dataKey="ma5" stroke="#facc15" strokeWidth={1} dot={false} isAnimationActive={false} />
@@ -483,7 +483,7 @@ export default function RatingsClient() {
             />
             <Bar yAxisId="volume" dataKey="volume" barSize={10} isAnimationActive={false}>
                 {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'hsla(142.1, 76.2%, 36.3%, 0.4)' : 'hsla(356.3, 83.1%, 54.5%, 0.4)'} />
+                    <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'hsla(142.1, 76.2%, 36.3%, 0.2)' : 'hsla(356.3, 83.1%, 54.5%, 0.2)'} />
                 ))}
             </Bar>
             <Line yAxisId="volume" type="monotone" dataKey="volMa5" stroke="#facc15" strokeWidth={1} dot={false} isAnimationActive={false} />
@@ -565,7 +565,20 @@ export default function RatingsClient() {
             <div className="flex items-center gap-2 text-muted-foreground">
                 <LineChartIcon className={cn("h-4 w-4 cursor-pointer hover:text-foreground", chartType === 'line' && 'text-foreground')} onClick={() => setChartType('line')} />
                 <BarChart className={cn("h-4 w-4 cursor-pointer hover:text-foreground", chartType === 'candlestick' && 'text-foreground')} onClick={() => setChartType('candlestick')} />
-                <Settings className="h-4 w-4 cursor-pointer hover:text-foreground" />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Settings className="h-4 w-4 cursor-pointer hover:text-foreground" />
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[90vw] h-[90vh] p-1">
+                      <DialogHeader className="sr-only">
+                          <DialogTitle>Advanced Chart View</DialogTitle>
+                      </DialogHeader>
+                      <iframe 
+                        className="w-full h-full"
+                        src="https://www.tradingview-widget.com/embed-widget/advanced-chart/?locale=en#%7B%22width%22%3A%22100%25%22%2C%22height%22%3A%22100%25%22%2C%22symbol%22%3A%22NASDAQ%3AAAPL%22%2C%22interval%22%3A%22D%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22light%22%2C%22style%22%3A%221%22%2C%22allow_symbol_change%22%3Atrue%2C%22save_image%22%3Afalse%2C%22hide_volume%22%3Atrue%2C%22support_host%22%3A%22https%3A%2F%2Fwww.tradingview.com%22%7D"
+                      ></iframe>
+                  </DialogContent>
+                </Dialog>
                 <Dialog>
                     <DialogTrigger asChild>
                         <Expand className="h-4 w-4 cursor-pointer hover:text-foreground" />
