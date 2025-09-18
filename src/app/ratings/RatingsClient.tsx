@@ -25,6 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { EconomicCalendar } from '@/components/economic-calendar';
 import { useGame } from '@/context/GameContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type CoinData = {
   time: string;
@@ -86,6 +87,98 @@ function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high'
         volume: history.reduce((acc, h) => acc + h.volume, 0),
     };
 }
+
+
+const TradingInterfaceSkeleton = () => (
+  <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 animate-pulse">
+      <div className="lg:col-span-3 hidden lg:block border-r">
+          <div className='p-2 border-b'>
+              <Skeleton className="h-5 w-2/4" />
+          </div>
+          <div className="p-2 space-y-2">
+              {Array.from({ length: 15 }).map((_, i) => (
+                  <div key={i} className="flex justify-between gap-4">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-4 w-1/3" />
+                  </div>
+              ))}
+              <div className="flex justify-center py-2">
+                  <Skeleton className="h-6 w-1/2" />
+              </div>
+              {Array.from({ length: 15 }).map((_, i) => (
+                  <div key={i+15} className="flex justify-between gap-4">
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-4 w-1/3" />
+                  </div>
+              ))}
+          </div>
+      </div>
+      <div className="lg:col-span-6 space-y-0">
+          <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 p-2 border-b">
+              <Skeleton className="h-7 w-24" />
+              <Skeleton className="h-7 w-20" />
+              <div className='text-xs space-y-1'>
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-28" />
+              </div>
+               <div className='text-xs space-y-1'>
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-40" />
+              </div>
+          </header>
+          <div className="p-2 border-b">
+              <Skeleton className="h-6 w-3/4" />
+          </div>
+
+          <div className="w-full bg-transparent h-[250px] py-4 px-2">
+              <Skeleton className="h-full w-full" />
+          </div>
+          
+          <Separator />
+          
+          <div className="grid grid-cols-2 gap-4 p-4 mt-4">
+              <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-5 w-full" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-10 w-full" />
+              </div>
+          </div>
+      </div>
+      <div className="lg:col-span-3 space-y-0 border-l">
+          <div className="border-b p-2">
+              <Skeleton className="h-5 w-1/3" />
+          </div>
+          <div className="p-2 space-y-2">
+              {Array.from({ length: 10 }).map((_, i) => (
+                   <div key={i} className="flex justify-between items-center gap-2">
+                      <Skeleton className="h-4 w-1/4" />
+                      <Skeleton className="h-4 w-1/3" />
+                      <Skeleton className="h-4 w-1/4" />
+                  </div>
+              ))}
+          </div>
+          <div className="border-b p-2">
+              <Skeleton className="h-8 w-full" />
+          </div>
+          <div className="p-4 text-center text-sm text-muted-foreground">
+              <Skeleton className="h-24 w-full" />
+          </div>
+      </div>
+  </div>
+);
 
 
 export default function RatingsClient() {
@@ -316,11 +409,7 @@ export default function RatingsClient() {
 
 
   if (!selectedCoin) {
-      return (
-        <div className="flex items-center justify-center h-96">
-            <p>Loading market data...</p>
-        </div>
-      );
+      return <TradingInterfaceSkeleton />;
   }
 
 
