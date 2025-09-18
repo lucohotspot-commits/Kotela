@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 export function GameEngine() {
   const {
@@ -51,6 +52,14 @@ export function GameEngine() {
     if (activeEffect === 'frenzy') return 'text-purple-500';
     return 'text-foreground';
   }, [activeBoost, activeEffect]);
+
+  const getScoreFontSize = (score: number) => {
+    const scoreString = score.toFixed(4);
+    const scoreLength = scoreString.length;
+    if (scoreLength > 12) return 'text-3xl';
+    if (scoreLength > 9) return 'text-4xl';
+    return 'text-5xl';
+  };
   
   const BoostStatus = () => {
     if (!activeEffect || gameState !== 'playing') return null;
@@ -117,7 +126,7 @@ export function GameEngine() {
           {gameState === 'playing' && (
             <div className="text-center">
               <div className="text-xs uppercase text-muted-foreground">Coins</div>
-              <div className={`text-5xl font-bold ${boostTextColor}`}>{score.toFixed(4)}</div>
+              <div className={cn("font-bold", getScoreFontSize(score), boostTextColor)}>{score.toFixed(4)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
                 <TimerIcon className="h-3 w-3" />
                 <span>{timeLeft}s remaining</span>
@@ -128,7 +137,7 @@ export function GameEngine() {
           {gameState === 'ended' && (
             <div className='text-center'>
               <div className="text-xs uppercase text-muted-foreground">Game Over</div>
-              <div className={`text-5xl font-bold ${boostTextColor}`}>{score.toFixed(4)}</div>
+              <div className={cn("font-bold", getScoreFontSize(score), boostTextColor)}>{score.toFixed(4)}</div>
               <div className="text-xs text-muted-foreground mt-1">Final Coins</div>
             </div>
           )}
