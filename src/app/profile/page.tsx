@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getWallets, addWallet, deleteWallet as removeWallet, type Wallet as WalletType } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Upload, Download, Send, PlusCircle, Globe, Trash2, EyeOff, Users, ArrowRightLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Upload, Download, Send, PlusCircle, Globe, Trash2, EyeOff, Users, ArrowRightLeft, ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -423,9 +423,21 @@ export default function ProfilePage() {
                     </div>
                     <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </div>
+                <Link href="/auth/login" className="p-4 flex items-center justify-between hover:bg-muted/50">
+                    <div className="flex items-center gap-3">
+                        <LogOut className="h-5 w-5 text-destructive" />
+                        <div>
+                            <p className="font-medium text-destructive">Logout</p>
+                            <p className="text-xs text-muted-foreground">Sign out of your account.</p>
+                        </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
             </div>
         </Card>
       </div>
     </div>
   );
 }
+
+    
