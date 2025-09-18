@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, PlayCircle, Plane, Disc, CircleDollarSign, Dice5, BookOpenCheck } from 'lucide-react';
+import { Search, PlayCircle, Puzzle, Disc, CircleDollarSign, Dice5, BookOpenCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -24,10 +24,10 @@ const bonusGames = [
     action: 'Play',
   },
   {
-    name: 'Aviator',
-    slug: 'aviator',
-    icon: <Plane className="h-8 w-8 text-blue-500" />,
-    apr: 'Up to 25x',
+    name: 'Puzzle Game',
+    slug: 'puzzle-game',
+    icon: <Puzzle className="h-8 w-8 text-blue-500" />,
+    apr: 'Up to 1000',
     isHot: true,
     duration: ['Real-time'],
     action: 'Play',

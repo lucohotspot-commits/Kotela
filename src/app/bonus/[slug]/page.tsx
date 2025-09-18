@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plane, Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, ChevronLeft, BookOpenCheck, Loader2 } from 'lucide-react';
+import { Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, ChevronLeft, BookOpenCheck, Loader2, Puzzle } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,7 @@ import { addCurrency, getCurrency, spendCurrency } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { getWisemanQuestion, verifyWisemanAnswer, WisemanQuestion } from '@/ai/flows/wiseman-game-flow';
+import { getPuzzle, verifyPuzzleAnswer, type Puzzle as PuzzleType } from '@/ai/flows/puzzle-game-flow';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -38,10 +39,10 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 const gameDetails: { [key: string]: { name: string; description: string, icon: React.ReactNode } } = {
-  'aviator': {
-    name: 'Aviator',
-    description: 'Watch the multiplier grow and cash out before the plane flies away!',
-    icon: <Plane className="h-6 w-6" />
+  'puzzle-game': {
+    name: 'Puzzle Game',
+    description: 'Solve an AI-generated puzzle to win a prize!',
+    icon: <Puzzle className="h-6 w-6" />
   },
   'video-play': {
     name: 'VideAds',
@@ -76,273 +77,173 @@ const videos = [
     { id: 8, title: 'The future of AI', duration: '0:55', reward: 250, youtubeId: 'LXb3EKWsInQ', watchTime: 55 },
 ]
 
-const AviatorGame = () => {
+const PuzzleGame = () => {
     const { toast } = useToast();
-    const [multiplier, setMultiplier] = useState(1.00);
-    const [gameState, setGameState] = useState<'waiting' | 'playing' | 'cashed_out' | 'crashed'>('waiting');
-    const [flightTime, setFlightTime] = useState(0);
-    const [betAmount, setBetAmount] = useState(10);
-    const [balance, setBalance] = useState(0);
-    const [cashOutMultiplier, setCashOutMultiplier] = useState(0);
-    const [pathData, setPathData] = useState({ path: 'M 0 100', point: { x: 0, y: 100 } });
-    
-    const [autoBetEnabled, setAutoBetEnabled] = useState(false);
-    const [autoCashoutEnabled, setAutoCashoutEnabled] = useState(false);
-    const [autoCashoutMultiplier, setAutoCashoutMultiplier] = useState(1.5);
+    const [gameState, setGameState] = useState<'idle' | 'playing' | 'verifying' | 'result'>('idle');
+    const [puzzleData, setPuzzleData] = useState<PuzzleType | null>(null);
+    const [userAnswer, setUserAnswer] = useState('');
+    const [result, setResult] = useState<{ isCorrect: boolean; explanation: string } | null>(null);
 
-
-    const refreshBalance = useCallback(() => {
-        setBalance(getCurrency());
-    }, []);
-
-    useEffect(() => {
-        refreshBalance();
-        window.addEventListener('storage', refreshBalance);
-        return () => window.removeEventListener('storage', refreshBalance);
-    }, [refreshBalance]);
-
-    useEffect(() => {
-        let gameLoop: NodeJS.Timeout;
-        if (gameState === 'playing') {
-            const startTime = Date.now();
-            const crashPoint = (Math.random() * 10 + 5) * 1000; // Crashes between 5 and 15 seconds
-
-            gameLoop = setInterval(() => {
-                const elapsedTime = Date.now() - startTime;
-                setFlightTime(elapsedTime);
-
-                const newMultiplier = 1 + (elapsedTime / 2500) * 0.2 + (elapsedTime / 10000) ** 2;
-                setMultiplier(newMultiplier);
-                
-                if (autoCashoutEnabled && newMultiplier >= autoCashoutMultiplier && gameState === 'playing') {
-                    handleCashOut();
-                }
-
-                if (elapsedTime >= crashPoint) {
-                    setGameState('crashed');
-                    clearInterval(gameLoop);
-                }
-            }, 50);
-        } else if (gameState === 'waiting') {
-            setMultiplier(1.00);
-            setFlightTime(0);
-            setCashOutMultiplier(0);
-            if (autoBetEnabled) {
-                setTimeout(handleBet, 3000); // Wait 3 seconds before auto-betting
-            }
-        }
-        return () => clearInterval(gameLoop);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gameState, autoBetEnabled, autoCashoutEnabled, autoCashoutMultiplier]);
-
-    const handleBet = () => {
-        if (balance < betAmount) {
-            toast({ variant: 'destructive', title: "Not enough coins", description: `You need ${betAmount.toLocaleString()} coins to play.` });
-            return;
-        }
-        spendCurrency(betAmount);
-        refreshBalance();
+    const handleStartGame = async () => {
         setGameState('playing');
+        setPuzzleData(null);
+        try {
+            const puzzle = await getPuzzle();
+            setPuzzleData(puzzle);
+        } catch (error) {
+            console.error("Failed to get puzzle:", error);
+            toast({ variant: 'destructive', title: "Failed to load puzzle", description: "Please try again." });
+            setGameState('idle');
+        }
     };
 
-    const handleCashOut = () => {
-        if (gameState !== 'playing') return;
-        
-        const winnings = betAmount * multiplier;
-        addCurrency(winnings);
-        refreshBalance();
-        setCashOutMultiplier(multiplier);
-        setGameState('cashed_out');
-        toast({
-            title: `Cashed out at ${multiplier.toFixed(2)}x!`,
-            description: `You won ${winnings.toLocaleString()} coins.`,
-        });
-    }
+    const handleAnswerSubmit = async () => {
+        if (!userAnswer || !puzzleData) return;
 
-    const handleReset = () => {
-        setGameState('waiting');
-    };
+        setGameState('verifying');
 
-    const handleBetChange = (amount: number) => {
-        setBetAmount(prev => Math.max(1, prev + amount));
-    }
-    
-    const maxFlightTime = 15000;
-    const planeX = Math.min(100, (flightTime / maxFlightTime) * 100);
-
-    useEffect(() => {
-        const getPathData = (progress: number) => {
-            if (typeof document === 'undefined') {
-                return { path: 'M 0 100', point: { x: 0, y: 100 } };
+        try {
+            const verificationResult = await verifyPuzzleAnswer({
+                puzzle: puzzleData.puzzle,
+                correctAnswer: puzzleData.answer,
+                userAnswer: userAnswer,
+            });
+            
+            if (verificationResult.isCorrect) {
+                addCurrency(puzzleData.prize);
+                 toast({
+                    title: `Correct! You won ${puzzleData.prize.toLocaleString()} coins!`,
+                    description: verificationResult.explanation,
+                });
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: "Incorrect!",
+                    description: verificationResult.explanation,
+                });
             }
-            
-            const width = 100;
-            const height = 100;
-            const controlX1 = width * 0.3;
-            const controlY1 = height;
-            const controlX2 = width * 0.7;
-            const controlY2 = height * 0.6;
-            const endX = width;
-            const endY = height * 0.2;
-            
-            const path = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`;
 
-            const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            tempPath.setAttribute('d', path);
-            const pathLength = tempPath.getTotalLength();
-            
-            const point = tempPath.getPointAtLength(progress * pathLength / 100);
+            setResult(verificationResult);
+            setGameState('result');
 
-            const subPath = `M 0 ${height} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${point.x} ${point.y}`;
-            
-            return { path: subPath, point };
-        };
-        
-        setPathData(getPathData(planeX));
+        } catch (error) {
+            console.error("Failed to verify answer:", error);
+            toast({ variant: 'destructive', title: "Failed to verify answer", description: "Please try again." });
+            setGameState('playing');
+        }
+    };
 
-    }, [planeX]);
-
+    const handlePlayAgain = () => {
+        setGameState('idle');
+        setPuzzleData(null);
+        setUserAnswer('');
+        setResult(null);
+    };
     
-    const { path: flightPath, point: planePosition } = pathData;
-    const planeRotation = Math.atan2(planePosition.y - 100, planePosition.x) * (180/Math.PI) + 45;
-    const multiplierFontSize = Math.min(10, 2 + multiplier / 5);
+    const getDifficultyColor = (difficulty: 'easy' | 'medium' | 'hard') => {
+        switch (difficulty) {
+            case 'easy': return 'text-green-500 border-green-500';
+            case 'medium': return 'text-yellow-500 border-yellow-500';
+            case 'hard': return 'text-red-500 border-red-500';
+            default: return 'text-muted-foreground';
+        }
+    }
+
+
+    if (gameState === 'playing' && !puzzleData) {
+        return (
+            <Card className="flex flex-col items-center justify-center p-6 min-h-[300px]">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">The AI is crafting a puzzle...</p>
+            </Card>
+        );
+    }
+    
+    if (gameState === 'verifying') {
+        return (
+            <Card className="flex flex-col items-center justify-center p-6 min-h-[300px]">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">Checking your answer...</p>
+            </Card>
+        );
+    }
+
+    if (gameState === 'result' && result) {
+        return (
+             <Card className="text-center p-6">
+                <CardHeader>
+                    <CardTitle className={cn("text-3xl", result.isCorrect ? "text-green-500" : "text-destructive")}>
+                        {result.isCorrect ? "You Solved It!" : "Not Quite!"}
+                    </CardTitle>
+                     <CardDescription>
+                        {result.isCorrect 
+                            ? `You won ${puzzleData?.prize.toLocaleString()} coins!`
+                            : `Better luck next time.`
+                        }
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-lg">"{puzzleData?.puzzle}"</p>
+                    <p className="font-bold">Correct Answer: {puzzleData?.answer}</p>
+                    <p className="text-muted-foreground text-sm">{result.explanation}</p>
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handlePlayAgain} className="w-full">Play Again</Button>
+                </CardFooter>
+            </Card>
+        );
+    }
 
     return (
-        <div className='flex flex-col items-center gap-4'>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-6xl">
-                <Card className="w-full md:col-span-2 overflow-hidden">
-                    <CardContent className="p-0">
-                        <div className="relative w-full aspect-video bg-[#0f1923] flex items-center justify-center overflow-hidden">
-                            <div className="absolute inset-0 z-20 pointer-events-none">
-                                {gameState === 'waiting' && (
-                                    <p className="text-xl font-semibold text-muted-foreground animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">Waiting for next round...</p>
-                                )}
-                                {gameState === 'cashed_out' && (
-                                    <div className="text-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                        <p className="text-2xl text-green-400 font-bold">You Cashed Out!</p>
-                                        <p className="text-5xl text-white font-bold">{cashOutMultiplier.toFixed(2)}x</p>
-                                    </div>
-                                )}
-                                {gameState === 'crashed' && (
-                                    <div className="text-center flex flex-col items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                        <p className="text-2xl text-destructive font-bold">Flew Away!</p>
-                                        <p className="text-4xl text-white font-bold">{multiplier.toFixed(2)}x</p>
-                                    </div>
-                                )}
-                                {(gameState === 'playing') && (
-                                    <p
-                                        className="text-white font-bold transition-all duration-100 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                                        style={{ fontSize: `${multiplierFontSize}rem` }}
-                                    >
-                                        {multiplier.toFixed(2)}x
-                                    </p>
+        <Card className="w-full max-w-2xl mx-auto">
+            {gameState === 'idle' ? (
+                <>
+                    <CardHeader className="text-center items-center">
+                        <Puzzle className="h-16 w-16 text-primary mb-4" />
+                        <CardTitle>AI Puzzle Challenge</CardTitle>
+                        <CardDescription>Solve the puzzle to win a prize. Click below to start!</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                        <Button onClick={handleStartGame} size="lg" className="w-full">
+                           Get Puzzle
+                        </Button>
+                    </CardFooter>
+                </>
+            ) : (
+                <>
+                    <CardHeader>
+                        <div className="flex justify-between items-start">
+                            <CardTitle className="flex items-center gap-2">The Puzzle Master Asks...</CardTitle>
+                            <div className="text-right">
+                                {puzzleData && (
+                                    <>
+                                        <Badge variant="outline" className={getDifficultyColor(puzzleData.difficulty)}>{puzzleData.difficulty}</Badge>
+                                        <p className="text-xs text-muted-foreground mt-1">Prize: {puzzleData.prize} coins</p>
+                                    </>
                                 )}
                             </div>
-
-                            {(gameState === 'playing' || gameState === 'cashed_out') && (
-                                <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute bottom-0 left-0">
-                                    <defs>
-                                        <linearGradient id="glow" x1="0" x2="0" y1="0" y2="1">
-                                            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
-                                            <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
-                                        </linearGradient>
-                                        <filter id="glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-                                            <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
-                                        </filter>
-                                    </defs>
-                                    <path
-                                        d={flightPath + ` L ${planePosition.x} 100 L 0 100 Z`}
-                                        fill="rgba(239, 68, 68, 0.2)"
-                                    />
-                                    <path
-                                        d={flightPath}
-                                        stroke={"#ef4444"}
-                                        strokeWidth="0.5"
-                                        fill="none"
-                                    />
-                                    <path
-                                        d={flightPath}
-                                        stroke="url(#glow)"
-                                        strokeWidth="1.5"
-                                        fill="none"
-                                        filter="url(#glow-filter)"
-                                    />
-                                    <g transform={`translate(${planePosition.x}, ${planePosition.y}) rotate(${planeRotation})`}>
-                                        <Plane
-                                            className={cn("h-4 w-4 text-red-500 transition-all ease-linear duration-plane-move", gameState === 'cashed_out' && 'opacity-50')}
-                                        />
-                                    </g>
-                                </svg>
-                            )}
+                        </div>
+                        <CardDescription className="text-lg pt-4 text-foreground">{puzzleData?.puzzle}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            <Label htmlFor="answer">Your Answer</Label>
+                            <Input 
+                                id="answer" 
+                                placeholder="Type your answer here..." 
+                                value={userAnswer}
+                                onChange={(e) => setUserAnswer(e.target.value)}
+                            />
                         </div>
                     </CardContent>
-                </Card>
-                <div className="w-full md:col-span-1 space-y-4">
-                    <Card className="flex-1">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-base">Bet Controls</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <div className="flex items-center space-x-2">
-                                    <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={gameState !== 'waiting'}>-</Button>
-                                    <Input value={betAmount.toLocaleString()} className="text-center" readOnly />
-                                    <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={gameState !== 'waiting'}>+</Button>
-                                    <Coins className="text-yellow-500" />
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Button variant="outline" size="sm" onClick={() => handleBetChange(100)} disabled={gameState !== 'waiting'}>+100</Button>
-                                    <Button variant="outline" size="sm" onClick={() => handleBetChange(1000)} disabled={gameState !== 'waiting'}>+1k</Button>
-                                </div>
-                            </div>
-                            {gameState === 'waiting' && (
-                                <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={handleBet} disabled={betAmount <= 0 || balance < betAmount}>
-                                    Bet
-                                </Button>
-                            )}
-                            {gameState === 'playing' && (
-                                <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-black" onClick={handleCashOut}>
-                                    Cash Out
-                                </Button>
-                            )}
-                            {(gameState === 'crashed' || gameState === 'cashed_out') && (
-                                <Button className="w-full" onClick={handleReset} variant="secondary">
-                                    Play Again
-                                </Button>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card className="flex-1">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-base">Auto Play</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="auto-bet">Auto Bet</Label>
-                                <Switch id="auto-bet" checked={autoBetEnabled} onCheckedChange={setAutoBetEnabled} />
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="auto-cashout">Auto Cashout</Label>
-                                <Switch id="auto-cashout" checked={autoCashoutEnabled} onCheckedChange={setAutoCashoutEnabled} />
-                            </div>
-                            <div className='relative'>
-                                <Input 
-                                    type="number" 
-                                    placeholder='Multiplier' 
-                                    value={autoCashoutMultiplier}
-                                    onChange={(e) => setAutoCashoutMultiplier(parseFloat(e.target.value))}
-                                    disabled={!autoCashoutEnabled}
-                                />
-                                <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>x</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        </div>
+                    <CardFooter>
+                        <Button onClick={handleAnswerSubmit} disabled={!userAnswer} className="w-full">Submit Answer</Button>
+                    </CardFooter>
+                </>
+            )}
+        </Card>
     );
-}
+};
 
 const VideoPlayGame = () => {
     const { toast } = useToast();
@@ -687,7 +588,7 @@ const WiseManGame = () => {
                     <CardHeader className="text-center items-center">
                         <img
                             src="https://api.dicebear.com/9.x/bottts/svg"
-                            alt="WiseMan Avatar"
+                            alt="avatar"
                             width={80}
                             height={80}
                             className="rounded-full bg-muted mb-4"
@@ -721,7 +622,7 @@ const WiseManGame = () => {
                             </div>
                             <img
                                 src="https://api.dicebear.com/9.x/bottts/svg"
-                                alt="WiseMan Avatar"
+                                alt="avatar"
                                 width={60}
                                 height={60}
                                 className="rounded-full bg-muted"
@@ -1011,8 +912,8 @@ export default function BonusGamePage() {
 
   const renderGame = () => {
     switch (slug) {
-        case 'aviator':
-            return <AviatorGame />;
+        case 'puzzle-game':
+            return <PuzzleGame />;
         case 'video-play':
             return <VideoPlayGame />;
         case 'wiseman':
