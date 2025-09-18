@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, ChevronLeft, BookOpenCheck, Loader2, Puzzle } from 'lucide-react';
+import { Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, ChevronLeft, BookOpenCheck, Loader2, Puzzle, Lightbulb } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -18,7 +18,7 @@ import { addCurrency, getCurrency, spendCurrency } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { getWisemanQuestion, verifyWisemanAnswer, WisemanQuestion } from '@/ai/flows/wiseman-game-flow';
-import { getPuzzle, verifyPuzzleAnswer, type Puzzle as PuzzleType } from '@/ai/flows/puzzle-game-flow';
+import { getPuzzle, verifyPuzzleAnswer, getHint, type Puzzle as PuzzleType } from '@/ai/flows/puzzle-game-flow';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -83,23 +83,66 @@ const PuzzleGame = () => {
     const [puzzleData, setPuzzleData] = useState<PuzzleType | null>(null);
     const [userAnswer, setUserAnswer] = useState('');
     const [result, setResult] = useState<{ isCorrect: boolean; explanation: string } | null>(null);
+    const [betAmount, setBetAmount] = useState(10);
+    const [balance, setBalance] = useState(0);
+    const [hints, setHints] = useState<string[]>([]);
+    const [isFetchingHint, setIsFetchingHint] = useState(false);
+    const HINT_COST = 0.0004;
+    
+    const refreshBalance = useCallback(() => {
+        setBalance(getCurrency());
+    }, []);
+
+    useEffect(() => {
+        refreshBalance();
+        window.addEventListener('storage', refreshBalance);
+        return () => window.removeEventListener('storage', refreshBalance);
+    }, [refreshBalance]);
 
     const handleStartGame = async () => {
+        if (balance < betAmount) {
+            toast({ variant: 'destructive', title: "Not enough coins", description: "You don't have enough coins to place this bet." });
+            return;
+        }
+
         setGameState('playing');
-        setPuzzleData(null);
+        spendCurrency(betAmount);
+        refreshBalance();
+        
         try {
             const puzzle = await getPuzzle();
             setPuzzleData(puzzle);
         } catch (error) {
             console.error("Failed to get puzzle:", error);
             toast({ variant: 'destructive', title: "Failed to load puzzle", description: "Please try again." });
+            addCurrency(betAmount); // Refund stake
             setGameState('idle');
         }
     };
+    
+    const handleGetHint = async () => {
+        if (!puzzleData || balance < HINT_COST) {
+            toast({ variant: 'destructive', title: "Not enough coins", description: `You need ${HINT_COST} coins to get a hint.` });
+            return;
+        }
+
+        setIsFetchingHint(true);
+        try {
+            const hintResult = await getHint({ puzzle: puzzleData.puzzle, answer: puzzleData.answer });
+            spendCurrency(HINT_COST);
+            setHints(prev => [...prev, hintResult.hint]);
+            refreshBalance();
+        } catch (error) {
+            console.error("Failed to get hint:", error);
+            toast({ variant: 'destructive', title: "Could not get hint", description: "Please try again." });
+        } finally {
+            setIsFetchingHint(false);
+        }
+    };
+
 
     const handleAnswerSubmit = async () => {
         if (!userAnswer || !puzzleData) return;
-
         setGameState('verifying');
 
         try {
@@ -109,10 +152,12 @@ const PuzzleGame = () => {
                 userAnswer: userAnswer,
             });
             
+            let winnings = 0;
             if (verificationResult.isCorrect) {
-                addCurrency(puzzleData.prize);
+                winnings = betAmount + puzzleData.prize;
+                addCurrency(winnings);
                  toast({
-                    title: `Correct! You won ${puzzleData.prize.toLocaleString()} coins!`,
+                    title: `Correct! You won ${winnings.toLocaleString()} coins!`,
                     description: verificationResult.explanation,
                 });
             } else {
@@ -125,7 +170,7 @@ const PuzzleGame = () => {
 
             setResult(verificationResult);
             setGameState('result');
-
+            refreshBalance();
         } catch (error) {
             console.error("Failed to verify answer:", error);
             toast({ variant: 'destructive', title: "Failed to verify answer", description: "Please try again." });
@@ -138,6 +183,11 @@ const PuzzleGame = () => {
         setPuzzleData(null);
         setUserAnswer('');
         setResult(null);
+        setHints([]);
+    };
+
+    const handleBetChange = (amount: number) => {
+        setBetAmount(prev => Math.max(10, prev + amount));
     };
     
     const getDifficultyColor = (difficulty: 'easy' | 'medium' | 'hard') => {
@@ -169,6 +219,7 @@ const PuzzleGame = () => {
     }
 
     if (gameState === 'result' && result) {
+        const winnings = result.isCorrect ? betAmount + (puzzleData?.prize || 0) : 0;
         return (
              <Card className="text-center p-6">
                 <CardHeader>
@@ -177,8 +228,8 @@ const PuzzleGame = () => {
                     </CardTitle>
                      <CardDescription>
                         {result.isCorrect 
-                            ? `You won ${puzzleData?.prize.toLocaleString()} coins!`
-                            : `Better luck next time.`
+                            ? `You won ${winnings.toLocaleString()} coins!`
+                            : `You lost your stake of ${betAmount.toLocaleString()} coins.`
                         }
                     </CardDescription>
                 </CardHeader>
@@ -201,11 +252,22 @@ const PuzzleGame = () => {
                     <CardHeader className="text-center items-center">
                         <Puzzle className="h-16 w-16 text-primary mb-4" />
                         <CardTitle>AI Puzzle Challenge</CardTitle>
-                        <CardDescription>Solve the riddle to win a prize. Click below to start!</CardDescription>
+                        <CardDescription>Stake coins and solve the riddle to win a prize!</CardDescription>
                     </CardHeader>
+                    <CardContent>
+                        <div className="w-full max-w-xs space-y-4 mx-auto">
+                            <Label>Stake Amount</Label>
+                            <div className="flex items-center space-x-2">
+                                <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)}>-</Button>
+                                <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center w-24" />
+                                <Button variant="outline" size="sm" onClick={() => handleBetChange(10)}>+</Button>
+                                <Input value={`${betAmount.toLocaleString()} coins`} className="text-center flex-1" disabled />
+                            </div>
+                        </div>
+                    </CardContent>
                     <CardFooter>
-                        <Button onClick={handleStartGame} size="lg" className="w-full">
-                           Get Puzzle
+                        <Button onClick={handleStartGame} size="lg" className="w-full" disabled={betAmount <= 0}>
+                           Stake {betAmount.toLocaleString()} & Get Puzzle
                         </Button>
                     </CardFooter>
                 </>
@@ -244,6 +306,22 @@ const PuzzleGame = () => {
                                 onChange={(e) => setUserAnswer(e.target.value)}
                                 maxLength={puzzleData?.answer.length}
                             />
+                        </div>
+
+                         {hints.length > 0 && (
+                            <div className="space-y-2">
+                                <h4 className="font-semibold text-sm">Hints:</h4>
+                                <ul className="list-disc list-inside text-muted-foreground text-sm space-y-1">
+                                    {hints.map((hint, i) => <li key={i}>{hint}</li>)}
+                                </ul>
+                            </div>
+                        )}
+
+                        <div className='flex gap-2'>
+                             <Button onClick={handleGetHint} variant="outline" className="flex-1" disabled={isFetchingHint}>
+                                {isFetchingHint ? <Loader2 className="animate-spin mr-2"/> : <Lightbulb className="mr-2" />}
+                                Get Hint ({HINT_COST} coins)
+                            </Button>
                         </div>
                     </CardContent>
                     <CardFooter>

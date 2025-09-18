@@ -5,9 +5,12 @@
  * 
  * - getPuzzle - A function that generates a puzzle and a prize for solving it.
  * - verifyPuzzleAnswer - A function that verifies a user's answer.
+ * - getHint - A function that provides a hint for a given puzzle.
  * - Puzzle - The output type for the getPuzzle function.
  * - VerifyPuzzleAnswerInput - The input type for the verifyPuzzleAnswer function.
  * - VerifyPuzzleAnswerOutput - The return type for the verifyPuzzleAnswer function.
+ * - GetHintInput - The input type for the getHint function.
+ * - GetHintOutput - The return type for the getHint function.
  */
 
 import { ai } from '@/ai/genkit';
@@ -34,6 +37,17 @@ const VerifyPuzzleAnswerOutputSchema = z.object({
 });
 export type VerifyPuzzleAnswerOutput = z.infer<typeof VerifyPuzzleAnswerOutputSchema>;
 
+const GetHintInputSchema = z.object({
+    puzzle: z.string().describe('The puzzle the user is trying to solve.'),
+    answer: z.string().describe('The correct answer to the puzzle.'),
+});
+export type GetHintInput = z.infer<typeof GetHintInputSchema>;
+
+const GetHintOutputSchema = z.object({
+    hint: z.string().describe('A helpful, one-sentence hint that does not give away the answer directly.'),
+});
+export type GetHintOutput = z.infer<typeof GetHintOutputSchema>;
+
 
 export async function getPuzzle(): Promise<Puzzle> {
     return getPuzzleFlow();
@@ -41,6 +55,10 @@ export async function getPuzzle(): Promise<Puzzle> {
 
 export async function verifyPuzzleAnswer(input: VerifyPuzzleAnswerInput): Promise<VerifyPuzzleAnswerOutput> {
     return verifyPuzzleAnswerFlow(input);
+}
+
+export async function getHint(input: GetHintInput): Promise<GetHintOutput> {
+    return getHintFlow(input);
 }
 
 
@@ -90,12 +108,36 @@ const verificationPrompt = ai.definePrompt({
   
 const verifyPuzzleAnswerFlow = ai.defineFlow(
     {
-        name: 'verifyPuzzleAnswerFlow',
-        inputSchema: VerifyPuzzleAnswerInputSchema,
-        outputSchema: VerifyPuzzleAnswerOutputSchema,
+      name: 'verifyPuzzleAnswerFlow',
+      inputSchema: VerifyPuzzleAnswerInputSchema,
+      outputSchema: VerifyPuzzleAnswerOutputSchema,
     },
     async (input) => {
         const { output } = await verificationPrompt(input);
         return output!;
+    }
+);
+
+const hintPrompt = ai.definePrompt({
+    name: 'getHintPrompt',
+    input: { schema: GetHintInputSchema },
+    output: { schema: GetHintOutputSchema },
+    prompt: `You are a helpful assistant. A user is stuck on a riddle and needs a hint.
+
+    The riddle is: "{{{puzzle}}}"
+    The answer is: "{{{answer}}}"
+    
+    Provide a single, clever, one-sentence hint. The hint should guide the user toward the answer without giving it away directly.`,
+});
+
+const getHintFlow = ai.defineFlow(
+    {
+      name: 'getHintFlow',
+      inputSchema: GetHintInputSchema,
+      outputSchema: GetHintOutputSchema,
+    },
+    async (input) => {
+      const { output } = await hintPrompt(input);
+      return output!;
     }
 );
