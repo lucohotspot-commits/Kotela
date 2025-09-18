@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TrendingUp, TrendingDown, Minus, Coins, Star, Settings, BarChart, Expand, LineChart as LineChartIcon, Search, GripVertical, PenLine, Sigma, Milestone } from 'lucide-react';
-import { AreaChart, Area, ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, Cell } from 'recharts';
+import { AreaChart, Area, ComposedChart, Bar, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Line, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { EconomicCalendar } from '@/components/economic-calendar';
 import { useGame } from '@/context/GameContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type CoinData = {
   time: string;
@@ -114,8 +114,8 @@ function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high'
 
 
 const TradingInterfaceSkeleton = () => (
-  <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 animate-pulse border rounded-lg">
-      <div className="lg:col-span-3 hidden lg:block border-r">
+  <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 animate-pulse">
+      <div className="lg:col-span-3 hidden lg:block border-r border-b border-l">
           <div className='p-2 border-b'>
               <Skeleton className="h-5 w-2/4" />
           </div>
@@ -139,7 +139,7 @@ const TradingInterfaceSkeleton = () => (
               ))}
           </div>
       </div>
-      <div className="lg:col-span-6 space-y-0">
+      <div className="lg:col-span-6 space-y-0 border-b border-l lg:border-l-0 border-r">
           <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 p-2 border-b">
               <Skeleton className="h-7 w-24" />
               <Skeleton className="h-7 w-20" />
@@ -181,7 +181,7 @@ const TradingInterfaceSkeleton = () => (
               </div>
           </div>
       </div>
-      <div className="lg:col-span-3 space-y-0 border-l">
+      <div className="lg:col-span-3 space-y-0 border-b border-r lg:border-r-0">
           <div className="border-b p-2">
               <Skeleton className="h-5 w-1/3" />
           </div>
@@ -561,18 +561,18 @@ export default function RatingsClient() {
                 <LineChartIcon className={cn("h-4 w-4 cursor-pointer hover:text-foreground", chartType === 'line' && 'text-foreground')} onClick={() => setChartType('line')} />
                 <BarChart className={cn("h-4 w-4 cursor-pointer hover:text-foreground", chartType === 'candlestick' && 'text-foreground')} onClick={() => setChartType('candlestick')} />
                 <Dialog>
-                  <DialogTrigger asChild>
-                    <Settings className="h-4 w-4 cursor-pointer hover:text-foreground" />
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[90vw] h-[90vh] p-1">
-                      <DialogHeader className="sr-only">
-                          <DialogTitle>Advanced Chart View</DialogTitle>
-                      </DialogHeader>
-                      <iframe 
+                    <DialogTrigger asChild>
+                       <Settings className="h-4 w-4 cursor-pointer hover:text-foreground" />
+                    </DialogTrigger>
+                    <DialogContent className="max-w-[95vw] sm:max-w-4xl lg:max-w-6xl h-[90vh] p-0">
+                        <DialogHeader className='sr-only'>
+                            <DialogTitle>Advanced Chart View</DialogTitle>
+                        </DialogHeader>
+                        <iframe 
                         className="w-full h-full"
                         src="https://www.tradingview-widget.com/embed-widget/advanced-chart/?locale=en#%7B%22width%22%3A%22100%25%22%2C%22height%22%3A%22100%25%22%2C%22symbol%22%3A%22NASDAQ%3AAAPL%22%2C%22interval%22%3A%22D%22%2C%22timezone%22%3A%22Etc%2FUTC%22%2C%22theme%22%3A%22light%22%2C%22style%22%3A%221%22%2C%22allow_symbol_change%22%3Atrue%2C%22save_image%22%3Afalse%2C%22hide_volume%22%3Atrue%2C%22support_host%22%3A%22https%3A%2F%2Fwww.tradingview.com%22%7D"
-                      ></iframe>
-                  </DialogContent>
+                        ></iframe>
+                    </DialogContent>
                 </Dialog>
                 <Dialog>
                     <DialogTrigger asChild>
@@ -804,5 +804,3 @@ export default function RatingsClient() {
     </div>
   );
 }
-
-    
