@@ -50,19 +50,24 @@ export function EconomicCalendar() {
 
     useEffect(() => {
         const fetchEvents = async () => {
+            setLoading(true);
             try {
                 const response = await fetch('/api/calendar');
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch: ${response.statusText}`);
+                    // Log the detailed error from the API response if possible
+                    const errorData = await response.json().catch(() => null);
+                    console.error("Failed to fetch calendar data:", response.status, response.statusText, errorData);
+                    // Don't throw an error, just set events to empty
+                    setEvents([]);
+                } else {
+                    const data: CalendarEvent[] = await response.json();
+                    const allEvents = data
+                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                    setEvents(allEvents);
                 }
-                const data: CalendarEvent[] = await response.json();
-                
-                const allEvents = data
-                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-                setEvents(allEvents);
             } catch (error) {
                 console.error("Failed to fetch economic calendar data:", error);
+                setEvents([]); // Set events to empty on any fetch error
             } finally {
                 setLoading(false);
             }
