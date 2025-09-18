@@ -24,7 +24,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
-const CommentSection = ({ post }: { post: BlogPost }) => {
+const StandaloneCommentSection = ({ post }: { post: BlogPost }) => {
     const [comments, setComments] = useState(post.comments || []);
     const [newComment, setNewComment] = useState('');
 
@@ -41,52 +41,54 @@ const CommentSection = ({ post }: { post: BlogPost }) => {
     };
 
     return (
-        <div className="mt-8">
-            <div className="flex items-center gap-2 mb-6">
-                <MessageSquare className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">Comments ({comments.length})</h3>
-            </div>
-
-            <div className="space-y-4">
-                 <div className="space-y-2">
-                    <div className="flex gap-3">
-                        <Avatar>
-                            <AvatarImage src="https://api.dicebear.com/9.x/bottts/svg?seed=kotela-user-123" />
-                            <AvatarFallback>You</AvatarFallback>
-                        </Avatar>
-                        <Textarea 
-                            placeholder="Add your comment..." 
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            className="flex-1"
-                        />
-                    </div>
-                    <div className="flex justify-end">
-                        <Button onClick={handlePostComment} disabled={!newComment.trim()}>Post Comment</Button>
-                    </div>
-                </div>
-
-                <Separator />
-                
-                {comments.map((comment, index) => (
-                    <div key={index} className="flex gap-3">
-                        <Avatar>
-                            <AvatarImage src={comment.authorImage} alt={comment.author} />
-                            <AvatarFallback>{comment.author.substring(0, 2)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                            <div className="flex items-baseline gap-2">
-                                <p className="font-semibold text-sm">{comment.author}</p>
-                                <p className="text-xs text-muted-foreground">{comment.date}</p>
+        <>
+            <CardHeader className="p-4 border-b">
+                <CardTitle className="text-base flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5" />
+                    Comments ({comments.length})
+                </CardTitle>
+            </CardHeader>
+            <ScrollArea className="h-[calc(100vh-25rem)]">
+                <div className="p-4 space-y-4">
+                    {comments.map((comment, index) => (
+                        <div key={index} className="flex gap-3">
+                            <Avatar>
+                                <AvatarImage src={comment.authorImage} alt={comment.author} />
+                                <AvatarFallback>{comment.author.substring(0, 2)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                                <div className="flex items-baseline gap-2">
+                                    <p className="font-semibold text-sm">{comment.author}</p>
+                                    <p className="text-xs text-muted-foreground">{comment.date}</p>
+                                </div>
+                                <p className="text-sm text-foreground/90 mt-1">{comment.content}</p>
                             </div>
-                            <p className="text-sm text-foreground/90 mt-1">{comment.content}</p>
                         </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+                    ))}
+                </div>
+            </ScrollArea>
+             <CardFooter className="p-4 border-t flex-col items-stretch gap-2">
+                 <div className="flex gap-3">
+                    <Avatar>
+                        <AvatarImage src="https://api.dicebear.com/9.x/bottts/svg?seed=kotela-user-123" />
+                        <AvatarFallback>You</AvatarFallback>
+                    </Avatar>
+                    <Textarea 
+                        placeholder="Add your comment..." 
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="flex-1"
+                        rows={2}
+                    />
+                </div>
+                <div className="flex justify-end">
+                    <Button onClick={handlePostComment} disabled={!newComment.trim()} size="sm">Post Comment</Button>
+                </div>
+            </CardFooter>
+        </>
     );
-}
+};
+
 
 const ArticleContent = ({ post }: { post: BlogPost }) => (
     <ScrollArea className="h-full">
@@ -130,10 +132,57 @@ const ArticleContent = ({ post }: { post: BlogPost }) => (
                     Kotela aims to publish information that is factual and accurate as of the date of publication. For specific information about a cryptocurrency exchange or trading platform please visit that provider's website. This information is general in nature and is for education purposes only. Kotela does not provide financial advice nor does it take into account your personal financial situation. We encourage you to seek financial advice from an independent financial advisor where appropriate and make your own inquiries.
                 </p>
             </div>
-            
-             <Separator className="my-8" />
+        </div>
+    </ScrollArea>
+);
 
-            <CommentSection post={post} />
+
+const MobileArticleContent = ({ post }: { post: BlogPost }) => (
+    <ScrollArea className="h-full">
+        <div className="p-6">
+            <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-6">
+                <Image
+                    src={post.image}
+                    alt={post.title}
+                    fill
+                    className="object-cover"
+                    data-ai-hint={post.imageHint}
+                />
+            </div>
+            <h2 className="text-xl font-bold mb-2">{post.title}</h2>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                <span>{post.date}</span>
+                <Badge variant="secondary">{post.category}</Badge>
+            </div>
+
+            <div className="flex items-center gap-3 my-6">
+                <Avatar>
+                    <AvatarImage src={post.authorImage} alt={post.author} />
+                    <AvatarFallback>{post.author.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-semibold">Posted by: {post.author}</p>
+                    <p className="text-xs text-muted-foreground">
+                        Updated {post.updatedDate} · {post.readTime}
+                    </p>
+                </div>
+            </div>
+
+            <div className="prose prose-base dark:prose-invert max-w-none text-foreground/90 font-serif">
+                <p>{post.content}</p>
+            </div>
+
+            <Separator className="my-8" />
+
+            <div className="text-xs text-muted-foreground">
+                <p className="italic">
+                    Kotela aims to publish information that is factual and accurate as of the date of publication. For specific information about a cryptocurrency exchange or trading platform please visit that provider's website. This information is general in nature and is for education purposes only. Kotela does not provide financial advice nor does it take into account your personal financial situation. We encourage you to seek financial advice from an independent financial advisor where appropriate and make your own inquiries.
+                </p>
+            </div>
+
+            <Separator className="my-8" />
+
+             <StandaloneCommentSection post={post} />
         </div>
     </ScrollArea>
 );
@@ -196,7 +245,7 @@ export default function NewsPage() {
                                <DialogHeader className="sr-only">
                                     <DialogTitle>{post.title}</DialogTitle>
                                 </DialogHeader>
-                               <ArticleContent post={post} />
+                               <MobileArticleContent post={post} />
                             </DialogContent>
                         </Dialog>
                     ))}
@@ -227,8 +276,8 @@ export default function NewsPage() {
                 <h1 className="text-2xl font-bold">News & Trends</h1>
             </div>
 
-            <Card className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-0 overflow-hidden h-[calc(100vh-15rem)]">
-                <div className="md:col-span-1 lg:col-span-1 border-r">
+            <Card className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-0 overflow-hidden h-[calc(100vh-15rem)]">
+                <div className="lg:col-span-1 border-r">
                     <CardHeader className="p-4 border-b">
                         <CardTitle className="text-base">All Articles</CardTitle>
                     </CardHeader>
@@ -254,7 +303,7 @@ export default function NewsPage() {
                         </div>
                     </ScrollArea>
                 </div>
-                <div className="md:col-span-2 lg:col-span-3">
+                <div className="md:col-span-2 lg:col-span-3 border-r">
                      {selectedPost ? (
                         <div className='h-[calc(100vh-15rem)]'>
                             <ArticleContent post={selectedPost} />
@@ -265,7 +314,20 @@ export default function NewsPage() {
                         </div>
                      )}
                 </div>
+                 <div className="hidden lg:block lg:col-span-1">
+                     {selectedPost ? (
+                        <div className='h-[calc(100vh-15rem)] flex flex-col'>
+                            <StandaloneCommentSection post={selectedPost} />
+                        </div>
+                     ) : (
+                        <div className="flex items-center justify-center h-full text-muted-foreground p-4 text-center">
+                            <p>Select an article to view comments</p>
+                        </div>
+                     )}
+                </div>
             </Card>
         </div>
     );
 }
+
+    
