@@ -7,6 +7,13 @@ import { Newspaper, ChevronRight } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 
+export type BlogComment = {
+    author: string;
+    authorImage: string;
+    date: string;
+    content: string;
+}
+
 export type BlogPost = {
     title: string;
     excerpt: string;
@@ -20,6 +27,7 @@ export type BlogPost = {
     imageHint: string;
     author: string;
     authorImage: string;
+    comments: BlogComment[];
 };
 
 const blogPosts: BlogPost[] = [
@@ -35,7 +43,11 @@ const blogPosts: BlogPost[] = [
         image: "https://picsum.photos/seed/ktc-high/800/600",
         imageHint: "market chart",
         author: "Kevin Groves",
-        authorImage: "https://picsum.photos/seed/author1/40/40"
+        authorImage: "https://picsum.photos/seed/author1/40/40",
+        comments: [
+            { author: "CryptoKing", authorImage: "https://picsum.photos/seed/ref1/40/40", date: "1 hour ago", content: "To the moon! I knew KTC was a winner." },
+            { author: "SatoshiJr", authorImage: "https://picsum.photos/seed/ref2/40/40", date: "45 minutes ago", content: "Great analysis. The tech upgrades are what's driving this." }
+        ]
     },
     {
         title: "New, More Efficient Mining Algorithm Deployed on the Kotela Network",
@@ -49,7 +61,11 @@ const blogPosts: BlogPost[] = [
         image: "https://picsum.photos/seed/mining-algo/800/600",
         imageHint: "network code",
         author: "Kevin Groves",
-        authorImage: "https://picsum.photos/seed/author1/40/40"
+        authorImage: "https://picsum.photos/seed/author1/40/40",
+        comments: [
+            { author: "Devotee", authorImage: "https://picsum.photos/seed/commenter1/40/40", date: "1 day ago", content: "This is huge for sustainability! Great work, team." },
+            { author: "MinerMike", authorImage: "https://picsum.photos/seed/ref4/40/40", date: "22 hours ago", content: "How will this affect existing mining setups?" }
+        ]
     },
     {
         title: "Kotela Announces Strategic Partnership with Firebase for Web3 Integration",
@@ -63,7 +79,8 @@ const blogPosts: BlogPost[] = [
         image: "https://picsum.photos/seed/partnership/800/600",
         imageHint: "handshake business",
         author: "Kevin Groves",
-        authorImage: "https://picsum.photos/seed/author1/40/40"
+        authorImage: "https://picsum.photos/seed/author1/40/40",
+        comments: []
     },
     {
         title: "Community Spotlight: Top Miners of the Month",
@@ -77,7 +94,10 @@ const blogPosts: BlogPost[] = [
         image: "https://picsum.photos/seed/community-miners/800/600",
         imageHint: "community people",
         author: "Kevin Groves",
-        authorImage: "https://picsum.photos/seed/author1/40/40"
+        authorImage: "https://picsum.photos/seed/author1/40/40",
+        comments: [
+             { author: "CryptoQueen", authorImage: "https://picsum.photos/seed/commenter2/40/40", date: "2 days ago", content: "Wow, thank you for the recognition!" }
+        ]
     },
     {
         title: "A Guide to Understanding Kotela's Tokenomics",
@@ -91,7 +111,8 @@ const blogPosts: BlogPost[] = [
         image: "https://picsum.photos/seed/tokenomics/800/600",
         imageHint: "coins crypto",
         author: "Kevin Groves",
-        authorImage: "https://picsum.photos/seed/author1/40/40"
+        authorImage: "https://picsum.photos/seed/author1/40/40",
+        comments: []
     }
 ];
 

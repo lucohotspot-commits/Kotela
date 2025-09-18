@@ -8,13 +8,14 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { ChevronRight, Newspaper, ArrowRight } from 'lucide-react';
+import { ChevronRight, Newspaper, ArrowRight, MessageSquare } from 'lucide-react';
 import { blogPosts, type BlogPost } from '@/components/blog-widget';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,66 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 
+const CommentSection = ({ post }: { post: BlogPost }) => {
+    const [comments, setComments] = useState(post.comments || []);
+    const [newComment, setNewComment] = useState('');
+
+    const handlePostComment = () => {
+        if (newComment.trim() === '') return;
+        const commentToAdd = {
+            author: "You",
+            authorImage: "https://api.dicebear.com/9.x/bottts/svg?seed=kotela-user-123",
+            date: "Just now",
+            content: newComment,
+        };
+        setComments([commentToAdd, ...comments]);
+        setNewComment('');
+    };
+
+    return (
+        <div className="mt-8">
+            <div className="flex items-center gap-2 mb-6">
+                <MessageSquare className="h-5 w-5" />
+                <h3 className="text-lg font-semibold">Comments ({comments.length})</h3>
+            </div>
+
+            <div className="space-y-4">
+                <div className="flex gap-3">
+                    <Avatar>
+                        <AvatarImage src="https://api.dicebear.com/9.x/bottts/svg?seed=kotela-user-123" />
+                        <AvatarFallback>You</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-2">
+                        <Textarea 
+                            placeholder="Add your comment..." 
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                        />
+                        <Button onClick={handlePostComment} disabled={!newComment.trim()}>Post Comment</Button>
+                    </div>
+                </div>
+
+                <Separator />
+                
+                {comments.map((comment, index) => (
+                    <div key={index} className="flex gap-3">
+                        <Avatar>
+                            <AvatarImage src={comment.authorImage} alt={comment.author} />
+                            <AvatarFallback>{comment.author.substring(0, 2)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                            <div className="flex items-baseline gap-2">
+                                <p className="font-semibold text-sm">{comment.author}</p>
+                                <p className="text-xs text-muted-foreground">{comment.date}</p>
+                            </div>
+                            <p className="text-sm text-foreground/90 mt-1">{comment.content}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 const ArticleContent = ({ post }: { post: BlogPost }) => (
     <ScrollArea className="h-full">
@@ -66,6 +127,10 @@ const ArticleContent = ({ post }: { post: BlogPost }) => (
                     Kotela aims to publish information that is factual and accurate as of the date of publication. For specific information about a cryptocurrency exchange or trading platform please visit that provider's website. This information is general in nature and is for education purposes only. Kotela does not provide financial advice nor does it take into account your personal financial situation. We encourage you to seek financial advice from an independent financial advisor where appropriate and make your own inquiries.
                 </p>
             </div>
+            
+             <Separator className="my-8" />
+
+            <CommentSection post={post} />
         </div>
     </ScrollArea>
 );
