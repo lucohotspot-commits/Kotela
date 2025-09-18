@@ -10,7 +10,7 @@ export default function RegisterPage() {
     return (
         <div className="grid gap-6">
             <div className="grid gap-2 text-center">
-                <h1 className="text-3xl font-bold">Sign Up</h1>
+                <h1 className="text-2xl font-bold">Sign Up</h1>
                 <p className="text-balance text-muted-foreground">
                     Enter your information to create an account
                 </p>
