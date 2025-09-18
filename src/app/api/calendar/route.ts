@@ -10,6 +10,9 @@ export async function GET() {
     });
     
     if (!response.ok) {
+      // Log the error response from the external API for debugging
+      const errorBody = await response.text();
+      console.error(`External API Error: ${response.status} ${response.statusText}`, errorBody);
       throw new Error(`Failed to fetch from external API: ${response.statusText}`);
     }
     
