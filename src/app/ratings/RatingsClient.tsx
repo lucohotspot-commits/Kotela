@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog"
 import { cn } from '@/lib/utils';
 import { EconomicCalendar } from '@/components/economic-calendar';
+import { useGame } from '@/context/GameContext';
 
 type CoinData = {
   time: string;
@@ -91,12 +92,84 @@ export default function RatingsClient() {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null);
   const [chartType, setChartType] = useState<ChartType>('candlestick');
-
+  const { currency } = useGame();
+  
+  const [tradeState, setTradeState] = useState({
+    buy: { price: '', amount: '', total: '' },
+    sell: { price: '', amount: '', total: '' },
+  });
+  
   useEffect(() => {
     const initialCoins = initialCoinsData.map(generateInitialCoinState);
     setCoins(initialCoins);
-    setSelectedCoin(initialCoins.find(c => c.symbol === 'KTC') || initialCoins[0]);
+    const ktcCoin = initialCoins.find(c => c.symbol === 'KTC') || initialCoins[0];
+    setSelectedCoin(ktcCoin);
+     setTradeState(prevState => ({
+      ...prevState,
+      buy: { ...prevState.buy, price: ktcCoin.price.toFixed(4) },
+      sell: { ...prevState.sell, price: ktcCoin.price.toFixed(4) }
+    }));
   }, []);
+  
+  useEffect(() => {
+    if (selectedCoin) {
+        setTradeState(prevState => ({
+            buy: { ...prevState.buy, price: selectedCoin.price.toFixed(4), amount: '', total: '' },
+            sell: { ...prevState.sell, price: selectedCoin.price.toFixed(4), amount: '', total: '' },
+        }));
+    }
+  }, [selectedCoin?.symbol]);
+
+  const handleTradeInputChange = (side: 'buy' | 'sell', field: 'price' | 'amount' | 'total', value: string) => {
+    const numericValue = parseFloat(value);
+    
+    setTradeState(prevState => {
+        const newState = { ...prevState };
+        let { price, amount, total } = newState[side];
+        
+        if (field === 'price') price = value;
+        if (field === 'amount') amount = value;
+        if (field === 'total') total = value;
+
+        const numPrice = parseFloat(price);
+        const numAmount = parseFloat(amount);
+        const numTotal = parseFloat(total);
+
+        if (field === 'amount') {
+            if (!isNaN(numPrice) && !isNaN(numAmount)) {
+                total = (numPrice * numAmount).toFixed(4);
+            }
+        } else if (field === 'price') {
+             if (!isNaN(numPrice) && !isNaN(numAmount)) {
+                total = (numPrice * numAmount).toFixed(4);
+            }
+        } else if (field === 'total') {
+            if (!isNaN(numPrice) && numPrice > 0 && !isNaN(numTotal)) {
+                amount = (numTotal / numPrice).toFixed(8);
+            }
+        }
+        
+        return { ...prevState, [side]: { price, amount, total } };
+    });
+  };
+  
+  const handleSliderChange = (side: 'buy' | 'sell', value: number[]) => {
+      const percentage = value[0] / 100;
+      const numPrice = parseFloat(tradeState[side].price);
+
+      if(side === 'buy') {
+          if (!isNaN(numPrice) && numPrice > 0) {
+              const total = (currency * percentage).toFixed(4);
+              const amount = (parseFloat(total) / numPrice).toFixed(8);
+              setTradeState(prev => ({...prev, buy: { ...prev.buy, amount, total }}));
+          }
+      } else { // sell
+          const coinBalance = selectedCoin?.symbol === 'KTC' ? currency : 0; // Assume KTC balance for now
+          const amount = (coinBalance * percentage).toFixed(8);
+          setTradeState(prev => ({...prev, sell: { ...prev.sell, amount, total: (!isNaN(numPrice) ? (parseFloat(amount) * numPrice).toFixed(4) : '') }}));
+      }
+  };
+
 
   const updateCoinData = useCallback(() => {
     setCoins(prevCoins =>
@@ -307,21 +380,26 @@ export default function RatingsClient() {
             
             <Separator />
             
-            <div className="grid grid-cols-2 gap-4 p-2">
-                {/* Buy Form */}
+            <div className="grid grid-cols-2 gap-4 p-4 mt-4">
+                 {/* Buy Form */}
                 <div className="space-y-2">
-                    <p className='text-xs text-muted-foreground'>Avbl: 0.00000000 USDT</p>
+                    <p className='text-xs text-muted-foreground'>Avbl: {currency.toFixed(2)} USDT</p>
                     <div className='relative'>
-                        <Input type="text" placeholder='Price' defaultValue={selectedCoin.price.toFixed(4)} className='pr-16' />
+                        <Input type="number" placeholder='Price' value={tradeState.buy.price} onChange={e => handleTradeInputChange('buy', 'price', e.target.value)} className='pr-16' />
                         <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
                     <div className='relative'>
-                        <Input type="number" placeholder='Amount' className='pr-16' />
+                        <Input type="number" placeholder='Amount' value={tradeState.buy.amount} onChange={e => handleTradeInputChange('buy', 'amount', e.target.value)} className='pr-16' />
                         <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>{selectedCoin.symbol}</span>
                     </div>
-                    <Slider defaultValue={[50]} max={100} step={1} />
+                     <Slider 
+                        defaultValue={[0]} 
+                        max={100} 
+                        step={1} 
+                        onValueChange={(value) => handleSliderChange('buy', value)} 
+                     />
                     <div className='relative'>
-                        <Input type="number" placeholder='Total' className='pr-16' />
+                        <Input type="number" placeholder='Total' value={tradeState.buy.total} onChange={e => handleTradeInputChange('buy', 'total', e.target.value)} className='pr-16' />
                          <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
                     <Button className="w-full bg-green-600 hover:bg-green-700 text-white">Buy {selectedCoin.symbol}</Button>
@@ -329,18 +407,23 @@ export default function RatingsClient() {
 
                 {/* Sell Form */}
                 <div className="space-y-2">
-                    <p className='text-xs text-muted-foreground'>Avbl: 0.00000000 {selectedCoin.symbol}</p>
+                    <p className='text-xs text-muted-foreground'>Avbl: {(selectedCoin.symbol === 'KTC' ? currency : 0).toFixed(4)} {selectedCoin.symbol}</p>
                     <div className='relative'>
-                        <Input type="text" placeholder='Price' defaultValue={selectedCoin.price.toFixed(4)} className='pr-16' />
+                        <Input type="number" placeholder='Price' value={tradeState.sell.price} onChange={e => handleTradeInputChange('sell', 'price', e.target.value)} className='pr-16' />
                         <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
                     <div className='relative'>
-                        <Input type="number" placeholder='Amount' className='pr-16' />
+                        <Input type="number" placeholder='Amount' value={tradeState.sell.amount} onChange={e => handleTradeInputChange('sell', 'amount', e.target.value)} className='pr-16' />
                         <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>{selectedCoin.symbol}</span>
                     </div>
-                    <Slider defaultValue={[50]} max={100} step={1} />
+                    <Slider 
+                        defaultValue={[0]} 
+                        max={100} 
+                        step={1} 
+                        onValueChange={(value) => handleSliderChange('sell', value)}
+                    />
                      <div className='relative'>
-                        <Input type="number" placeholder='Total' className='pr-16' />
+                        <Input type="number" placeholder='Total' value={tradeState.sell.total} onChange={e => handleTradeInputChange('sell', 'total', e.target.value)} className='pr-16' />
                         <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
                     <Button className="w-full" variant="destructive">Sell {selectedCoin.symbol}</Button>
@@ -407,3 +490,5 @@ export default function RatingsClient() {
     </div>
   );
 }
+
+    
