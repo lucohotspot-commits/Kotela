@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json', {
+        cache: 'no-store', // Added to prevent server-side caching issues
         headers: {
             'Content-Type': 'application/json',
         },
