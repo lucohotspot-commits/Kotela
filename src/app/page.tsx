@@ -7,15 +7,17 @@ import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Bot, Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin, TrendingUp, BarChart, ArrowDownUp, Repeat } from 'lucide-react';
+import { Bot, Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin, TrendingUp, BarChart, ArrowDownUp, Repeat, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription,
+  DialogFooter,
+  DialogClose,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
@@ -28,6 +30,7 @@ import { cn } from '@/lib/utils';
 export default function Home() {
   const { scores, currency, inventory, isStoreOpen, setIsStoreOpen, refreshData } = useGame();
   const [isBotDialogOpen, setIsBotDialogOpen] = useState(false);
+  const [isKycDialogOpen, setIsKycDialogOpen] = useState(false);
   const userLocation = useUserLocation();
 
   useEffect(() => {
@@ -40,6 +43,11 @@ export default function Home() {
     { name: "Spot Position Grid", icon: ArrowDownUp },
     { name: "Futures Position Grid", icon: ArrowDownUp },
   ];
+  
+  const handleBotClick = () => {
+    setIsBotDialogOpen(false);
+    setIsKycDialogOpen(true);
+  }
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-4rem)] bg-background">
@@ -86,24 +94,47 @@ export default function Home() {
                           <h4 className="text-sm font-semibold text-muted-foreground mb-2">Standard bot</h4>
                           <div className="space-y-2">
                             {botOptions.map((bot) => (
-                              <button key={bot.name} className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted text-left transition-colors">
+                              <button key={bot.name} onClick={handleBotClick} className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted text-left transition-colors">
                                 <bot.icon className="h-5 w-5" />
                                 <span className="font-medium">{bot.name}</span>
                               </button>
                             ))}
                           </div>
                         </div>
-                         <Button variant="secondary" className="w-full justify-start h-auto py-3">
-                            <div className="flex items-center gap-3">
+                         <button onClick={handleBotClick} className="w-full text-left">
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary hover:bg-muted transition-colors">
                                 <Repeat className="h-5 w-5 text-primary" />
                                 <div>
                                     <p className="font-semibold text-base">Automatic Spot Investment+</p>
                                 </div>
                             </div>
-                         </Button>
+                         </button>
                       </div>
                     </DialogContent>
                  </Dialog>
+                 
+                 <Dialog open={isKycDialogOpen} onOpenChange={setIsKycDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <ShieldCheck className="h-6 w-6 text-primary" />
+                                Verification Required
+                            </DialogTitle>
+                            <DialogDescription>
+                                You must complete KYC (Know Your Customer) verification before you can use trading bots.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="ghost">Cancel</Button>
+                            </DialogClose>
+                            <Button asChild>
+                                <Link href="/profile/verify">Verify Now</Link>
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
                  <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
@@ -185,5 +216,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
