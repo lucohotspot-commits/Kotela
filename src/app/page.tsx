@@ -132,6 +132,10 @@ export default function Home() {
                             <Gift className="w-4 h-4 text-green-500"/>
                             <span className="font-bold text-xs">Score Bomb x {inventory.scoreBomb || 0}</span>
                         </div>
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            <Zap className="w-4 h-4 text-purple-500"/>
+                            <span className="font-bold text-xs">Frenzy x {inventory.frenzy || 0}</span>
+                        </div>
                     </div>
                 </div>
             </div>

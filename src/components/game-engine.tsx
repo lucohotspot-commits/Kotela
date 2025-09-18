@@ -26,6 +26,7 @@ export function GameEngine() {
     boostTimeLeft,
     inventory,
     isModalOpen,
+    setIsModalOpen,
     scoreIncrement,
     gameDuration,
     timeBoostUsed,
@@ -35,7 +36,6 @@ export function GameEngine() {
     activateEffectBoost,
     activateInstantBoost,
     activateTimeBoost,
-    setIsModalOpen,
   } = useGame();
 
   const CIRCLE_RADIUS = 100;
@@ -48,6 +48,7 @@ export function GameEngine() {
     if (activeBoost === 'rocket') return 'text-yellow-500';
     if (activeBoost === 'missile') return 'text-red-500';
     if (activeEffect === 'timeFreeze') return 'text-cyan-400';
+    if (activeEffect === 'frenzy') return 'text-purple-500';
     return 'text-foreground';
   }, [activeBoost, activeEffect]);
   
@@ -63,6 +64,9 @@ export function GameEngine() {
     } else if (activeEffect === 'timeFreeze') {
       icon = <Snowflake className="h-4 w-4" />;
       text = `Time Frozen! (${boostTimeLeft}s)`;
+    } else if (activeEffect === 'frenzy') {
+      icon = <Zap className="h-4 w-4" />;
+      text = `Frenzy Mode! (${boostTimeLeft}s)`;
     }
   
     return (
@@ -148,6 +152,7 @@ export function GameEngine() {
             <Button onClick={() => activateBoost('rocket')} disabled={(inventory.rocket || 0) <= 0 || !!activeEffect} variant="outline" size="sm"><Rocket />({inventory.rocket || 0})</Button>
             <Button onClick={() => activateBoost('missile')} disabled={(inventory.missile || 0) <= 0 || !!activeEffect} variant="destructive" size="sm"><Bomb />({inventory.missile || 0})</Button>
             <Button onClick={() => activateEffectBoost('freezeTime')} disabled={(inventory.freezeTime || 0) <= 0 || !!activeEffect} variant="outline" size="sm" className="text-cyan-400 border-cyan-400 hover:bg-cyan-400 hover:text-white"><Snowflake />({inventory.freezeTime || 0})</Button>
+            <Button onClick={() => activateEffectBoost('frenzy')} disabled={(inventory.frenzy || 0) <= 0 || !!activeEffect} variant="outline" size="sm" className="text-purple-500 border-purple-500 hover:bg-purple-500 hover:text-white"><Zap />({inventory.frenzy || 0})</Button>
             <Button onClick={() => activateInstantBoost('scoreBomb')} disabled={(inventory.scoreBomb || 0) <= 0} variant="outline" size="sm" className="text-green-500 border-green-500 hover:bg-green-500 hover:text-white"><Gift />({inventory.scoreBomb || 0})</Button>
           </>
         )}

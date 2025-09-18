@@ -29,6 +29,7 @@ const boosts = [
   { id: 'extraTime', name: 'Extra Time', description: 'Adds 10 seconds to the game.', cost: 0, icon: Clock, color: "text-blue-500", free: true, adUrl: 'https://www.youtube.com/embed/R3GfuzLMPkA?autoplay=1' },
   { id: 'freezeTime', name: 'Freeze Time', description: 'Pause the timer for 5s.', cost: 2000, icon: Snowflake, color: "text-cyan-400" },
   { id: 'scoreBomb', name: 'Coin Bomb', description: 'Instantly get 1,000 coins.', cost: 3000, icon: Gift, color: "text-green-500" },
+  { id: 'frenzy', name: 'Frenzy', description: 'Auto-mine for 3 seconds.', cost: 2500, icon: Zap, color: "text-purple-500" },
 ];
 
 

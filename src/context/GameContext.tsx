@@ -9,7 +9,7 @@ const BASE_GAME_DURATION = 30; // 30 seconds
 
 type GameState = "idle" | "playing" | "ended";
 type Boost = "rocket" | "missile" | null;
-type ActiveBoostEffect = 'scoreMultiplier' | 'timeFreeze' | null;
+type ActiveBoostEffect = 'scoreMultiplier' | 'timeFreeze' | 'frenzy' | null;
 
 interface GameContextType {
   // State
@@ -35,7 +35,7 @@ interface GameContextType {
   handleTap: () => void;
   resetGame: () => void;
   activateBoost: (boostType: 'rocket' | 'missile') => void;
-  activateEffectBoost: (boostType: 'freezeTime') => void;
+  activateEffectBoost: (boostType: 'freezeTime' | 'frenzy') => void;
   activateInstantBoost: (boostType: 'scoreBomb') => void;
   activateTimeBoost: () => void;
   setIsModalOpen: (isOpen: boolean) => void;
@@ -141,6 +141,20 @@ export function GameProvider({ children }: { children: ReactNode }) {
       });
     }
   }, [gameState, score, refreshData]);
+  
+  useEffect(() => {
+    let frenzyInterval: NodeJS.Timeout | null = null;
+    if (activeEffect === 'frenzy' && gameState === 'playing') {
+        frenzyInterval = setInterval(() => {
+            setScore(s => s + 1);
+        }, 100); // Auto-tap every 100ms
+    }
+    return () => {
+        if (frenzyInterval) {
+            clearInterval(frenzyInterval);
+        }
+    };
+  }, [activeEffect, gameState]);
 
   const useBoost = (boostType: string) => {
     if ((inventory[boostType] || 0) > 0) {
@@ -159,10 +173,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const activateEffectBoost = (boostType: 'freezeTime') => {
+  const activateEffectBoost = (boostType: 'freezeTime' | 'frenzy') => {
     if (gameState === 'playing' && !activeEffect && useBoost(boostType)) {
       setActiveEffect(boostType);
-      setBoostTimeLeft(5);
+      setBoostTimeLeft(boostType === 'freezeTime' ? 5 : 3);
     }
   };
   
