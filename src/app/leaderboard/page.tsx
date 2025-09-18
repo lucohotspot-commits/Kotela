@@ -15,7 +15,7 @@ import Link from 'next/link';
 
 const bonusGames = [
   {
-    name: 'Video Play',
+    name: 'VideAds',
     slug: 'video-play',
     icon: <PlayCircle className="h-8 w-8 text-red-500" />,
     apr: '5.42%',

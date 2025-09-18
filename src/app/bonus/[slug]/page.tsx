@@ -43,7 +43,7 @@ const gameDetails: { [key: string]: { name: string; description: string, icon: R
     icon: <Plane className="h-6 w-6" />
   },
   'video-play': {
-    name: 'Video Play',
+    name: 'VideAds',
     description: 'Watch videos to earn rewards.',
     icon: <Video className="h-6 w-6" />
   },
