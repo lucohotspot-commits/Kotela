@@ -5,9 +5,6 @@ export async function GET() {
   try {
     const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json', {
         cache: 'no-store', // Added to prevent server-side caching issues
-        headers: {
-            'Content-Type': 'application/json',
-        },
     });
     
     if (!response.ok) {
@@ -25,3 +22,4 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to fetch calendar data', details: message }, { status: 500 });
   }
 }
+
