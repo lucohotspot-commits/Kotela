@@ -7,7 +7,22 @@ import { Newspaper, ChevronRight } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 
-const blogPosts = [
+export type BlogPost = {
+    title: string;
+    excerpt: string;
+    content: string;
+    date: string;
+    updatedDate: string;
+    readTime: string;
+    category: string;
+    href: string;
+    image: string;
+    imageHint: string;
+    author: string;
+    authorImage: string;
+};
+
+const blogPosts: BlogPost[] = [
     {
         title: "Kotela Coin (KTC) Hits All-Time High Amidst Market Surge",
         excerpt: "Kotela Coin has shattered previous records, reaching an unprecedented value as market enthusiasm grows...",
