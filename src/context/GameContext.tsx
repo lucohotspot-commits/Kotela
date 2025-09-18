@@ -146,7 +146,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     let frenzyInterval: NodeJS.Timeout | null = null;
     if (activeEffect === 'frenzy' && gameState === 'playing') {
         frenzyInterval = setInterval(() => {
-            setScore(s => s + 1);
+            setScore(s => s + 100);
         }, 100); // Auto-tap every 100ms
     }
     return () => {
