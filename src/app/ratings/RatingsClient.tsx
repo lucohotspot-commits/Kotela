@@ -416,7 +416,7 @@ export default function RatingsClient() {
           tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
           className="text-xs fill-muted-foreground"
         />
-        <Tooltip content={<div />} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
+        <Tooltip content={<div/>} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
 
         {chartType === 'candlestick' ? (
           <Line yAxisId="price" type="linear" dataKey="close" stroke="transparent" dot={false} isAnimationActive={false} />
@@ -593,7 +593,7 @@ export default function RatingsClient() {
         </div>
 
          <Tabs defaultValue="vol" className="w-full border-t">
-            <TabsList className="h-8 p-0 bg-transparent gap-4 px-2">
+            <TabsList className="h-8 p-0 bg-transparent gap-2 px-2">
                 <TabsTrigger value="main" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none" disabled>Main</TabsTrigger>
                 <TabsTrigger value="ma" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none">MA</TabsTrigger>
                 <TabsTrigger value="ema" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none">EMA</TabsTrigger>
