@@ -48,17 +48,20 @@ const CommentSection = ({ post }: { post: BlogPost }) => {
             </div>
 
             <div className="space-y-4">
-                <div className="flex gap-3">
-                    <Avatar>
-                        <AvatarImage src="https://api.dicebear.com/9.x/bottts/svg?seed=kotela-user-123" />
-                        <AvatarFallback>You</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 space-y-2">
+                 <div className="space-y-2">
+                    <div className="flex gap-3">
+                        <Avatar>
+                            <AvatarImage src="https://api.dicebear.com/9.x/bottts/svg?seed=kotela-user-123" />
+                            <AvatarFallback>You</AvatarFallback>
+                        </Avatar>
                         <Textarea 
                             placeholder="Add your comment..." 
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
+                            className="flex-1"
                         />
+                    </div>
+                    <div className="flex justify-end">
                         <Button onClick={handlePostComment} disabled={!newComment.trim()}>Post Comment</Button>
                     </div>
                 </div>
