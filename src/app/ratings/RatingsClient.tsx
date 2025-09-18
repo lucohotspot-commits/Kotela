@@ -4,8 +4,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { TrendingUp, TrendingDown, Minus, Coins, Star, Settings, BarChart, Expand, LineChart as LineChartIcon } from 'lucide-react';
-import { ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, Cell } from 'recharts';
+import { TrendingUp, TrendingDown, Minus, Coins, Star, Settings, BarChart, Expand, LineChart as LineChartIcon, Search, GripVertical, PenLine, Sigma, Milestone } from 'lucide-react';
+import { AreaChart, Area, ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -34,6 +34,11 @@ type CoinData = {
   low: number;
   close: number;
   volume: number;
+  ma5?: number;
+  ma10?: number;
+  ma20?: number;
+  volMa5?: number;
+  volMa10?: number;
 };
 
 type Coin = {
@@ -59,33 +64,51 @@ const initialCoinsData: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volu
   { name: 'Ripple', symbol: 'XRP', price: 0.52 },
 ];
 
-function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>): Coin {
-    const history: CoinData[] = [];
-    let lastClose = coin.price;
+const calculateMovingAverage = (data: number[], period: number) => {
+    if (data.length < period) return undefined;
+    const sum = data.slice(-period).reduce((acc, val) => acc + val, 0);
+    return sum / period;
+};
 
-    for (let i = 0; i < 30; i++) {
-        const open = lastClose;
-        const change = (Math.random() - 0.5) * 0.05 * open;
-        const close = open + change;
-        const high = Math.max(open, close) * (1 + Math.random() * 0.02);
-        const low = Math.min(open, close) * (1 - Math.random() * 0.02);
-        const volume = Math.random() * 1000;
-        const time = new Date(Date.now() - (30 - i) * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        history.push({ time, open, high, low, close, volume });
-        lastClose = close;
-    }
+function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high' | 'low' | 'volume'>[]): Coin[] {
+    return coin.map(c => {
+        const history: CoinData[] = [];
+        let lastClose = c.price;
 
-    const prices = history.map(h => h.close);
-    return {
-        ...coin,
-        history,
-        price: prices[prices.length - 1],
-        change: prices.length > 1 ? prices[prices.length - 1] - history[0].open : 0,
-        high: Math.max(...history.map(h => h.high)),
-        low: Math.min(...history.map(h => h.low)),
-        volume: history.reduce((acc, h) => acc + h.volume, 0),
-    };
+        for (let i = 0; i < 100; i++) {
+            const open = lastClose;
+            const change = (Math.random() - 0.5) * 0.05 * open;
+            const close = open + change;
+            const high = Math.max(open, close) * (1 + Math.random() * 0.02);
+            const low = Math.min(open, close) * (1 - Math.random() * 0.02);
+            const volume = Math.random() * 1000 + 100;
+            const time = new Date(Date.now() - (100 - i) * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const closes = history.map(h => h.close).concat(close);
+            const volumes = history.map(h => h.volume).concat(volume);
+            
+            history.push({
+                time, open, high, low, close, volume,
+                ma5: calculateMovingAverage(closes, 5),
+                ma10: calculateMovingAverage(closes, 10),
+                ma20: calculateMovingAverage(closes, 20),
+                volMa5: calculateMovingAverage(volumes, 5),
+                volMa10: calculateMovingAverage(volumes, 10),
+            });
+            lastClose = close;
+        }
+
+        const prices = history.map(h => h.close);
+        return {
+            ...c,
+            history,
+            price: prices[prices.length - 1],
+            change: prices.length > 1 ? prices[prices.length - 1] - history[0].open : 0,
+            high: Math.max(...history.map(h => h.high)),
+            low: Math.min(...history.map(h => h.low)),
+            volume: history.reduce((acc, h) => acc + h.volume, 0),
+        };
+    });
 }
 
 
@@ -185,6 +208,7 @@ export default function RatingsClient() {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [selectedCoin, setSelectedCoin] = useState<Coin | null>(null);
   const [chartType, setChartType] = useState<ChartType>('candlestick');
+  const [hoverData, setHoverData] = useState<CoinData | null>(null);
   const { currency } = useGame();
   
   const [tradeState, setTradeState] = useState({
@@ -193,7 +217,7 @@ export default function RatingsClient() {
   });
   
   useEffect(() => {
-    const initialCoins = initialCoinsData.map(generateInitialCoinState);
+    const initialCoins = generateInitialCoinState(initialCoinsData);
     setCoins(initialCoins);
     const ktcCoin = initialCoins.find(c => c.symbol === 'KTC') || initialCoins[0];
     setSelectedCoin(ktcCoin);
@@ -214,8 +238,6 @@ export default function RatingsClient() {
   }, [selectedCoin?.symbol]);
 
   const handleTradeInputChange = (side: 'buy' | 'sell', field: 'price' | 'amount' | 'total', value: string) => {
-    const numericValue = parseFloat(value);
-    
     setTradeState(prevState => {
         const newState = { ...prevState };
         let { price, amount, total } = newState[side];
@@ -275,11 +297,24 @@ export default function RatingsClient() {
         const close = open + change;
         const high = Math.max(open, close) * (1 + Math.random() * 0.02);
         const low = Math.min(open, close) * (1 - Math.random() * 0.02);
-        const volume = Math.random() * 1000;
+        const volume = Math.random() * 1000 + 100;
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
-        const newHistory: CoinData[] = [...coin.history, { time, open, high, low, close, volume }].slice(-30);
+        const newHistoryRaw = [...coin.history, { time, open, high, low, close, volume }].slice(-100);
         
+        const newHistory = newHistoryRaw.map((h, i, arr) => {
+            const closes = arr.slice(0, i + 1).map(d => d.close);
+            const volumes = arr.slice(0, i + 1).map(d => d.volume);
+            return {
+                ...h,
+                ma5: calculateMovingAverage(closes, 5),
+                ma10: calculateMovingAverage(closes, 10),
+                ma20: calculateMovingAverage(closes, 20),
+                volMa5: calculateMovingAverage(volumes, 5),
+                volMa10: calculateMovingAverage(volumes, 10),
+            }
+        });
+
         const prices = newHistory.map(h => h.close);
         const firstOpen = newHistory[0].open;
 
@@ -323,66 +358,78 @@ export default function RatingsClient() {
   };
 
   const chartData = useMemo(() => selectedCoin?.history || [], [selectedCoin]);
-  const chartDomain: [number, number] = useMemo(() => {
+  const mainChartDomain: [number, number] = useMemo(() => {
     if (!chartData || chartData.length === 0) return [0, 0];
-    const prices = chartData.map(d => d.high).concat(chartData.map(d => d.low));
+    const prices = chartData.flatMap(d => [d.high, d.low, d.ma5, d.ma10, d.ma20]).filter(v => v !== undefined) as number[];
+    if (prices.length === 0) return [0, 1];
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const padding = (max - min) * 0.2 || max * 0.1;
     return [Math.max(0, min - padding), max + padding];
   }, [chartData]);
   
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const volumeChartDomain: [number, number] = useMemo(() => {
+    if (!chartData || chartData.length === 0) return [0, 1];
+    const volumes = chartData.flatMap(d => [d.volume, d.volMa5, d.volMa10]).filter(v => v !== undefined) as number[];
+    if (volumes.length === 0) return [0, 1];
+    const max = Math.max(...volumes);
+    return [0, max * 1.5];
+  }, [chartData]);
+  
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      return (
-        <div className="p-2 text-xs bg-background/90 border-none text-foreground">
-          <p>{`Time: ${label}`}</p>
-          <p className="text-green-500">{`Open: ${data.open.toFixed(4)}`}</p>
-          <p className="text-green-500">{`High: ${data.high.toFixed(4)}`}</p>
-          <p className="text-red-500">{`Low: ${data.low.toFixed(4)}`}</p>
-          <p className={data.close > data.open ? 'text-green-500' : 'text-red-500'}>{`Close: ${data.close.toFixed(4)}`}</p>
-          <p>{`Volume: ${data.volume.toFixed(2)}`}</p>
-        </div>
-      );
+      if (data) {
+        setHoverData(data);
+      }
+    } else {
+        setHoverData(null);
     }
     return null;
   };
   
   const chartElement = (
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={chartData}>
+      <ComposedChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis
           dataKey="time"
           tickLine={false}
           axisLine={false}
           tickMargin={8}
-          tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
+          tickFormatter={(value, index) => index % 15 === 0 ? value : ''}
           className="text-xs fill-muted-foreground"
+          hide
         />
         <YAxis
           yAxisId="price"
           orientation="right"
-          domain={chartDomain}
+          domain={mainChartDomain}
           tickLine={false}
           axisLine={false}
           tickMargin={8}
           tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
           className="text-xs fill-muted-foreground"
         />
-        <YAxis yAxisId="volume" orientation="right" domain={[0, 'dataMax * 4']} tickLine={false} axisLine={false} tick={false} />
-        <Tooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted))' }} />
+        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
 
         {chartType === 'candlestick' ? (
-          <Bar yAxisId="price" dataKey="close" barSize={1} shape={(props) => {
+          <Line yAxisId="price" type="linear" dataKey="close" stroke="transparent" dot={false} isAnimationActive={false} />
+        ) : (
+          <Line yAxisId="price" type="monotone" dataKey="close" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} isAnimationActive={false} />
+        )}
+        
+        <Line yAxisId="price" type="monotone" dataKey="ma5" stroke="#facc15" strokeWidth={1} dot={false} isAnimationActive={false} />
+        <Line yAxisId="price" type="monotone" dataKey="ma10" stroke="#8b5cf6" strokeWidth={1} dot={false} isAnimationActive={false} />
+        <Line yAxisId="price" type="monotone" dataKey="ma20" stroke="#3b82f6" strokeWidth={1} dot={false} isAnimationActive={false} />
+        
+        {chartType === 'candlestick' && <Bar yAxisId="price" dataKey="close" barSize={1} isAnimationActive={false} shape={(props: any) => {
             const { x, y, width, height, payload } = props;
             if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
-            const isUp = payload.close > payload.open;
-            const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-5))';
-            const candleWidth = 4;
+            const isUp = payload.close >= payload.open;
+            const color = isUp ? '#16a34a' : '#dc2626';
+            const candleWidth = 6;
             const candleX = x + width / 2 - candleWidth / 2;
-
             const yAxis = props.yAxis;
             if (!yAxis) return null;
 
@@ -398,18 +445,80 @@ export default function RatingsClient() {
               <line x1={candleX + candleWidth / 2} y1={highY} x2={candleX + candleWidth / 2} y2={lowY} stroke={color} strokeWidth={1} />
               <rect x={candleX} y={bodyY} width={candleWidth} height={bodyHeight} fill={color} />
             </>
-          }} />
-        ) : (
-          <Line yAxisId="price" type="monotone" dataKey="close" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-        )}
-
-        <Bar yAxisId="volume" dataKey="volume" barSize={10} >
-          {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.close > entry.open ? 'hsla(var(--chart-2), 0.2)' : 'hsla(var(--chart-5), 0.2)'} />
-          ))}
-        </Bar>
+          }} />}
       </ComposedChart>
     </ResponsiveContainer>
+  );
+
+  const volumeChartElement = (
+      <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+             <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis
+                dataKey="time"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value, index) => index % 15 === 0 ? value : ''}
+                className="text-xs fill-muted-foreground"
+            />
+            <YAxis
+                yAxisId="volume"
+                orientation="right"
+                domain={volumeChartDomain}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `${(Number(value)/1000).toFixed(1)}k`}
+                className="text-xs fill-muted-foreground"
+            />
+            <Tooltip cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
+            <Bar yAxisId="volume" dataKey="volume" barSize={10} isAnimationActive={false}>
+                {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'rgba(22, 163, 74, 0.5)' : 'rgba(220, 38, 38, 0.5)'} />
+                ))}
+            </Bar>
+            <Line yAxisId="volume" type="monotone" dataKey="volMa5" stroke="#facc15" strokeWidth={1} dot={false} isAnimationActive={false} />
+            <Line yAxisId="volume" type="monotone" dataKey="volMa10" stroke="#8b5cf6" strokeWidth={1} dot={false} isAnimationActive={false} />
+          </ComposedChart>
+      </ResponsiveContainer>
+  )
+
+  const InfoBar = () => {
+      const data = hoverData || (chartData.length > 0 ? chartData[chartData.length - 1] : null);
+      if (!data) return <div className="h-6 text-xs text-muted-foreground p-2 flex items-center">Hover over the chart to see details</div>;
+
+      const change = data.close - data.open;
+      const changePercent = (change / data.open) * 100;
+      
+      const formatValue = (val: number | undefined, prefix = '') => val ? `${prefix}${val.toFixed(2)}` : 'N/A';
+
+      return (
+        <div className="text-xs text-muted-foreground p-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-foreground">{data.time}</span>
+            <span className="flex items-center gap-1">O<span className={getChangeColor(data.open - data.close)}>{formatValue(data.open)}</span></span>
+            <span className="flex items-center gap-1">H<span className={getChangeColor(data.high - data.close)}>{formatValue(data.high)}</span></span>
+            <span className="flex items-center gap-1">L<span className={getChangeColor(data.low - data.close)}>{formatValue(data.low)}</span></span>
+            <span className="flex items-center gap-1">C<span className={getChangeColor(change)}>{formatValue(data.close)}</span></span>
+            <span className={getChangeColor(change)}>{formatValue(changePercent)}%</span>
+            <span className="text-yellow-400">{formatValue(data.ma5, 'MA5: ')}</span>
+            <span className="text-purple-400">{formatValue(data.ma10, 'MA10: ')}</span>
+            <span className="text-blue-400">{formatValue(data.ma20, 'MA20: ')}</span>
+        </div>
+      )
+  };
+  
+  const DrawingToolbar = () => (
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 bg-card border-r border-t border-b rounded-r-md">
+        <div className="flex flex-col items-center">
+            <Button variant="ghost" size="icon" className="w-8 h-8 rounded-none"><GripVertical className="w-4 h-4" /></Button>
+            <Separator />
+            <Button variant="ghost" size="icon" className="w-8 h-8 rounded-none"><PenLine className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" className="w-8 h-8 rounded-none"><Sigma className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" className="w-8 h-8 rounded-none"><Milestone className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" className="w-8 h-8 rounded-none"><Search className="w-4 h-4" /></Button>
+        </div>
+      </div>
   );
 
 
@@ -419,15 +528,15 @@ export default function RatingsClient() {
 
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border rounded-lg bg-card text-card-foreground shadow-sm">
         <div className="lg:col-span-3 hidden lg:block">
             <OrderBook selectedCoin={selectedCoin} />
         </div>
-        <div className="lg:col-span-6 space-y-0">
+        <div className="lg:col-span-6 space-y-0 border-l border-r relative">
+            <DrawingToolbar />
             <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 p-2 border-b">
                 <div className='flex items-center gap-2'>
                     <h1 className="text-xl font-bold">{selectedCoin.symbol}/USDT</h1>
-                    <p className='text-xs text-muted-foreground'>{selectedCoin.name}</p>
                 </div>
                 <p className={`text-xl font-bold ${getChangeColor(selectedCoin.change)}`}>${selectedCoin.price.toFixed(4)}</p>
                 <div className='text-xs space-y-0.5'>
@@ -443,20 +552,20 @@ export default function RatingsClient() {
             <div className="flex items-center justify-between gap-2 p-2 border-b">
                 <Tabs defaultValue="1H" className="w-full">
                     <TabsList className="h-auto p-0 bg-transparent gap-2">
-                        <TabsTrigger value="Time" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none" disabled>Time</TabsTrigger>
-                        <TabsTrigger value="1H" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none">1H</TabsTrigger>
-                        <TabsTrigger value="4H" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none">4H</TabsTrigger>
-                        <TabsTrigger value="1D" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none">1D</TabsTrigger>
-                        <TabsTrigger value="1W" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-primary data-[state=active]:shadow-none">1W</TabsTrigger>
+                        <TabsTrigger value="Time" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none" disabled>Time</TabsTrigger>
+                        <TabsTrigger value="1H" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none">1H</TabsTrigger>
+                        <TabsTrigger value="4H" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none">4H</TabsTrigger>
+                        <TabsTrigger value="1D" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none">1D</TabsTrigger>
+                        <TabsTrigger value="1W" className="text-xs p-1 data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none">1W</TabsTrigger>
                     </TabsList>
                 </Tabs>
                 <div className="flex items-center gap-2 text-muted-foreground">
-                    <LineChartIcon className={cn("h-4 w-4 cursor-pointer hover:text-primary", chartType === 'line' && 'text-primary')} onClick={() => setChartType('line')} />
-                    <BarChart className={cn("h-4 w-4 cursor-pointer hover:text-primary", chartType === 'candlestick' && 'text-primary')} onClick={() => setChartType('candlestick')} />
-                    <Settings className="h-4 w-4 cursor-pointer hover:text-primary" />
+                    <LineChartIcon className={cn("h-4 w-4 cursor-pointer hover:text-foreground", chartType === 'line' && 'text-foreground')} onClick={() => setChartType('line')} />
+                    <BarChart className={cn("h-4 w-4 cursor-pointer hover:text-foreground", chartType === 'candlestick' && 'text-foreground')} onClick={() => setChartType('candlestick')} />
+                    <Settings className="h-4 w-4 cursor-pointer hover:text-foreground" />
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Expand className="h-4 w-4 cursor-pointer hover:text-primary" />
+                            <Expand className="h-4 w-4 cursor-pointer hover:text-foreground" />
                         </DialogTrigger>
                         <DialogContent className="max-w-[90vw] h-[90vh] p-1">
                             <DialogHeader className="sr-only">
@@ -467,14 +576,31 @@ export default function RatingsClient() {
                     </Dialog>
                 </div>
             </div>
+            
+            <InfoBar />
 
-            <div className="w-full bg-transparent h-[250px] p-4">
+            <div className="w-full bg-transparent h-[250px] pr-2">
                 {chartElement}
             </div>
+
+            <div className='w-full h-[100px] border-t pr-2'>
+                {volumeChartElement}
+            </div>
+
+             <Tabs defaultValue="vol" className="w-full border-t">
+                <TabsList className="h-8 p-0 bg-transparent gap-4 px-2">
+                    <TabsTrigger value="main" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none" disabled>Main</TabsTrigger>
+                    <TabsTrigger value="ma" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none">MA</TabsTrigger>
+                    <TabsTrigger value="ema" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none">EMA</TabsTrigger>
+                    <TabsTrigger value="boll" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none">BOLL</TabsTrigger>
+                    <Separator orientation="vertical" className="h-4 self-center"/>
+                    <TabsTrigger value="sub" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none" disabled>Sub</TabsTrigger>
+                    <TabsTrigger value="vol" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none">VOL</TabsTrigger>
+                    <TabsTrigger value="macd" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none">MACD</TabsTrigger>
+                </TabsList>
+            </Tabs>
             
-            <Separator />
-            
-            <div className="grid grid-cols-2 gap-4 p-4 mt-4">
+            <div className="grid grid-cols-2 gap-4 p-4 mt-2">
                  {/* Buy Form */}
                 <div className="space-y-2">
                     <p className='text-xs text-muted-foreground'>Avbl: {currency.toFixed(2)} USDT</p>
@@ -520,19 +646,22 @@ export default function RatingsClient() {
                         <Input type="number" placeholder='Total' value={tradeState.sell.total} onChange={e => handleTradeInputChange('sell', 'total', e.target.value)} className='pr-16' />
                         <span className='absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground'>USDT</span>
                     </div>
-                    <Button className="w-full" variant="destructive">Sell {selectedCoin.symbol}</Button>
+                    <Button className="w-full bg-red-600 hover:bg-red-700 text-white">Sell {selectedCoin.symbol}</Button>
                 </div>
             </div>
             
-            <Separator />
-            <div className="lg:hidden">
+            <div className="lg:hidden border-t">
               <OrderBook selectedCoin={selectedCoin} />
             </div>
         </div>
-        <div className="lg:col-span-3 space-y-0 border-l">
+        <div className="lg:col-span-3 space-y-0">
             <div className="border-b">
-                <div className='p-2'>
+                <div className='p-2 flex items-center justify-between'>
                     <h3 className="font-semibold text-sm">Market</h3>
+                    <div className="relative w-32">
+                        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                        <Input placeholder="Search" className="pl-6 h-7 text-xs" />
+                    </div>
                 </div>
                 <ScrollArea className='h-[270px]'>
                     <Table>
