@@ -212,6 +212,7 @@ export default function RatingsClient() {
   const [hoverData, setHoverData] = useState<CoinData | null>(null);
   const { currency } = useGame();
   const isMobile = useIsMobile();
+  const [searchTerm, setSearchTerm] = useState('');
   
   const [tradeState, setTradeState] = useState({
     buy: { price: '', amount: '', total: '' },
@@ -353,6 +354,13 @@ export default function RatingsClient() {
     if (change < 0) return <TrendingDown className="h-4 w-4" />;
     return <Minus className="h-4 w-4" />;
   };
+
+  const filteredCoins = useMemo(() => {
+    return coins.filter(coin => 
+      coin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      coin.symbol.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [coins, searchTerm]);
 
   const chartData = useMemo(() => selectedCoin?.history || [], [selectedCoin]);
   const mainChartDomain: [number, number] = useMemo(() => {
@@ -670,7 +678,7 @@ export default function RatingsClient() {
                   <h3 className="font-semibold text-sm">Market</h3>
                   <div className="relative w-32">
                       <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                      <Input placeholder="Search" className="pl-6 h-7 text-xs" />
+                      <Input placeholder="Search" className="pl-6 h-7 text-xs" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                   </div>
               </div>
               <ScrollArea className='h-[270px]'>
@@ -683,7 +691,7 @@ export default function RatingsClient() {
                       </TableRow>
                       </TableHeader>
                       <TableBody>
-                      {coins.map((coin) => (
+                      {filteredCoins.map((coin) => (
                           <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50 h-8">
                           <TableCell className='py-1 px-2'>
                               <div className="flex items-center gap-2">
@@ -734,7 +742,7 @@ export default function RatingsClient() {
                 <h3 className="font-semibold text-sm">Market</h3>
                 <div className="relative w-32">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                    <Input placeholder="Search" className="pl-6 h-7 text-xs" />
+                    <Input placeholder="Search" className="pl-6 h-7 text-xs" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
             </div>
             <Table>
@@ -746,7 +754,7 @@ export default function RatingsClient() {
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {coins.map((coin) => (
+                {filteredCoins.map((coin) => (
                     <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50 h-8">
                     <TableCell className='py-1 px-2'>
                         <div className="flex items-center gap-2">
@@ -794,10 +802,10 @@ export default function RatingsClient() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-card text-card-foreground">
-        <div className="lg:col-span-3 hidden lg:block">
+        <div className="lg:col-span-3 hidden lg:block border-b">
             <OrderBook selectedCoin={selectedCoin} />
         </div>
-        <div className="lg:col-span-6 border-l border-r">
+        <div className="lg:col-span-6 border">
             {chartSection}
         </div>
         {marketListSection}
