@@ -50,7 +50,10 @@ export function EconomicCalendar() {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+                const response = await fetch('/api/calendar');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch: ${response.statusText}`);
+                }
                 const data: CalendarEvent[] = await response.json();
                 
                 const allEvents = data
