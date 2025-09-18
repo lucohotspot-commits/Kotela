@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plane, Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, ChevronLeft } from 'lucide-react';
+import { Plane, Coins, Disc, Circle, CircleDollarSign, PlayCircle, Video, Award, Clock, CheckCircle, Hourglass, User, ChevronRight, Dice1, Dice2, Dice3, Dice4, Dice5, Dice6, ChevronLeft, BookOpenCheck, Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addCurrency, getCurrency, spendCurrency } from '@/lib/storage';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { getWisemanQuestion, verifyWisemanAnswer, WisemanQuestion } from '@/ai/flows/wiseman-game-flow';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -47,10 +48,10 @@ const gameDetails: { [key: string]: { name: string; description: string, icon: R
     description: 'Watch videos to earn rewards.',
     icon: <Video className="h-6 w-6" />
   },
-  'spin-the-wheel': {
-    name: 'Spin the Wheel',
-    description: 'Spin the wheel for a chance to win big!',
-    icon: <Disc className="h-6 w-6" />
+  'wiseman': {
+    name: 'WiseMan',
+    description: 'Stake your coins and answer the WiseMan\'s question. Win and get rewarded, fail and lose your stake.',
+    icon: <BookOpenCheck className="h-6 w-6" />
   },
   'lucky-dice': {
     name: 'Lucky Dice',
@@ -557,27 +558,14 @@ const VideoPlayGame = () => {
     );
 }
 
-const SpinWheelGame = () => {
+const WiseManGame = () => {
     const { toast } = useToast();
-    const [rotation, setRotation] = useState(0);
-    const [spinning, setSpinning] = useState(false);
+    const [gameState, setGameState] = useState<'idle' | 'playing' | 'verifying' | 'result'>('idle');
     const [betAmount, setBetAmount] = useState(10);
     const [balance, setBalance] = useState(0);
-    const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
-    const [spinResult, setSpinResult] = useState<{ multiplier: number; winnings: number } | null>(null);
-
-    const segments = useMemo(() => [
-        { value: 2, color: 'bg-green-500/50', textColor: 'text-green-50' },
-        { value: 0.5, color: 'bg-blue-500/50', textColor: 'text-blue-50' },
-        { value: 1.5, color: 'bg-yellow-500/50', textColor: 'text-yellow-50' },
-        { value: 0, color: 'bg-red-500/50', textColor: 'text-red-50' },
-        { value: 5, color: 'bg-purple-500/50', textColor: 'text-purple-50' },
-        { value: 0.2, color: 'bg-indigo-500/50', textColor: 'text-indigo-50' },
-        { value: 10, color: 'bg-pink-500/50', textColor: 'text-pink-50' },
-        { value: 1, color: 'bg-gray-500/50', textColor: 'text-gray-50' },
-    ].reverse(), []); // Reversed to match visual layout with calculation
-
-    const segmentAngle = 360 / segments.length;
+    const [questionData, setQuestionData] = useState<WisemanQuestion | null>(null);
+    const [userAnswer, setUserAnswer] = useState('');
+    const [result, setResult] = useState<{ isCorrect: boolean; explanation: string; winnings: number } | null>(null);
 
     const refreshBalance = useCallback(() => {
         setBalance(getCurrency());
@@ -589,119 +577,162 @@ const SpinWheelGame = () => {
         return () => window.removeEventListener('storage', refreshBalance);
     }, [refreshBalance]);
 
-    const handleSpin = () => {
-        if (spinning) return;
+    const handleStartGame = async () => {
         if (balance < betAmount) {
             toast({ variant: 'destructive', title: "Not enough coins", description: "You don't have enough coins to place this bet." });
             return;
         }
 
-        setSpinning(true);
+        setGameState('playing');
         spendCurrency(betAmount);
         refreshBalance();
-
-        const randomSpins = Math.floor(Math.random() * 5) + 8; // 8 to 13 full spins
-        const randomStop = Math.random() * 360;
-        const targetRotation = rotation + (randomSpins * 360) + randomStop;
         
-        setRotation(targetRotation);
+        try {
+            const question = await getWisemanQuestion();
+            setQuestionData(question);
+        } catch (error) {
+            console.error("Failed to get question:", error);
+            toast({ variant: 'destructive', title: "Failed to load question", description: "Please try again." });
+            addCurrency(betAmount); // Refund
+            setGameState('idle');
+        }
+    };
 
-        setTimeout(() => {
-            setSpinning(false);
-            const prizeIndex = Math.floor((targetRotation % 360) / segmentAngle);
-            const prizeMultiplier = segments[prizeIndex].value;
-            const winnings = betAmount * prizeMultiplier;
+    const handleAnswerSubmit = async () => {
+        if (!userAnswer || !questionData) return;
 
-            if (winnings > 0) {
+        setGameState('verifying');
+
+        try {
+            const verificationResult = await verifyWisemanAnswer({
+                question: questionData.question,
+                correctAnswer: questionData.answer,
+                userAnswer: userAnswer,
+            });
+
+            const winnings = verificationResult.isCorrect ? betAmount * 3 : 0;
+            if (verificationResult.isCorrect) {
                 addCurrency(winnings);
             }
             
-            setSpinResult({ multiplier: prizeMultiplier, winnings });
-            setIsResultDialogOpen(true);
+            setResult({ ...verificationResult, winnings });
+            setGameState('result');
             refreshBalance();
-        }, 7000); // Corresponds to the animation duration
+        } catch (error) {
+            console.error("Failed to verify answer:", error);
+            toast({ variant: 'destructive', title: "Failed to verify answer", description: "Please try again." });
+            setGameState('playing');
+        }
     };
     
     const handleBetChange = (amount: number) => {
-        setBetAmount(prev => Math.max(0, prev + amount));
+        setBetAmount(prev => Math.max(10, prev + amount));
+    };
+
+    const handlePlayAgain = () => {
+        setGameState('idle');
+        setQuestionData(null);
+        setUserAnswer('');
+        setResult(null);
+    };
+
+    if (gameState === 'playing' && !questionData) {
+        return (
+            <Card className="flex flex-col items-center justify-center p-6 min-h-[300px]">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">The WiseMan is thinking of a question...</p>
+            </Card>
+        );
+    }
+    
+    if (gameState === 'verifying') {
+        return (
+            <Card className="flex flex-col items-center justify-center p-6 min-h-[300px]">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">The WiseMan is pondering your answer...</p>
+            </Card>
+        );
     }
 
-    const closeDialog = () => {
-        setIsResultDialogOpen(false);
-        setSpinResult(null);
+    if (gameState === 'result' && result) {
+        return (
+             <Card className="text-center p-6">
+                <CardHeader>
+                    <CardTitle className={cn("text-3xl", result.isCorrect ? "text-green-500" : "text-destructive")}>
+                        {result.isCorrect ? "You are Wise!" : "Incorrect!"}
+                    </CardTitle>
+                    <CardDescription>
+                        {result.isCorrect 
+                            ? `You won ${result.winnings.toLocaleString()} coins!`
+                            : `You lost your stake of ${betAmount.toLocaleString()} coins.`
+                        }
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-lg">"{questionData?.question}"</p>
+                    <p className="font-bold">Correct Answer: {questionData?.answer}</p>
+                    <p className="text-muted-foreground text-sm">{result.explanation}</p>
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handlePlayAgain} className="w-full">Play Again</Button>
+                </CardFooter>
+            </Card>
+        );
     }
 
     return (
-        <>
-            <Card className='overflow-hidden'>
-                <CardContent className='p-6 flex flex-col items-center justify-center gap-6'>
-                    <div className="relative w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 flex items-center justify-center">
-                        <div className="absolute -top-3 w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[12px] border-t-primary z-20"></div>
-                        <div
-                            className={cn(
-                                "relative w-full h-full rounded-full border-8 border-primary/20",
-                                spinning ? "transition-transform ease-out duration-spin-wheel" : ""
-                            )}
-                            style={{ transform: `rotate(${rotation}deg)` }}
-                        >
-                            {segments.map((segment, i) => (
-                                <div
-                                    key={i}
-                                    className="absolute w-1/2 h-1/2 top-1/2 left-1/2 origin-top-left flex items-center justify-center"
-                                    style={{ transform: `rotate(${i * segmentAngle}deg)` }}
-                                >
-                                    <div
-                                        className={cn("w-full h-full text-center flex items-center justify-end", segment.color)}
-                                        style={{ clipPath: 'polygon(50% 50%, 100% 0, 100% 100%)' }}
-                                    >
-                                         <span
-                                            className={cn("transform font-bold text-sm sm:text-lg", segment.textColor)}
-                                            style={{ transform: `rotate(${segmentAngle/2}deg) translate(-50px, -50px)`}}
-                                        >
-                                            {segment.value}x
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
+        <Card className="w-full max-w-2xl mx-auto">
+            {gameState === 'idle' ? (
+                <>
+                    <CardHeader className="text-center">
+                        <CardTitle>Challenge the WiseMan</CardTitle>
+                        <CardDescription>Place your stake and test your knowledge.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                         <div className="w-full max-w-xs space-y-4 mx-auto">
+                            <div className="flex items-center space-x-2">
+                                <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)}>-</Button>
+                                <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center w-24" />
+                                <Button variant="outline" size="sm" onClick={() => handleBetChange(10)}>+</Button>
+                                <Input value={`Stake: ${betAmount.toLocaleString()}`} className="text-center flex-1" disabled />
+                            </div>
                         </div>
-                        <div className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-background rounded-full border-4 border-primary/20 flex items-center justify-center z-10">
-                            <Circle className="w-10 h-10 sm:w-12 sm:h-12 text-primary" />
-                        </div>
-                    </div>
-                    <div className="w-full max-w-xs space-y-4">
-                        <div className="flex items-center space-x-2">
-                            <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)} disabled={spinning}>-</Button>
-                            <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center w-24" disabled={spinning} />
-                            <Button variant="outline" size="sm" onClick={() => handleBetChange(10)} disabled={spinning}>+</Button>
-                            <Input value={`Bet: ${betAmount.toLocaleString()}`} className="text-center flex-1" disabled />
-                        </div>
-                        <Button size="lg" className='w-full bg-yellow-500 hover:bg-yellow-600 text-black text-lg h-12' onClick={handleSpin} disabled={spinning || betAmount <= 0}>
-                            {spinning ? 'Spinning...' : `Spin for ${betAmount.toLocaleString()}`}
+                    </CardContent>
+                    <CardFooter>
+                        <Button onClick={handleStartGame} disabled={betAmount <= 0} size="lg" className="w-full">
+                            Stake {betAmount.toLocaleString()} & Get Question
                         </Button>
-                    </div>
-                </CardContent>
-            </Card>
-            <AlertDialog open={isResultDialogOpen} onOpenChange={setIsResultDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className='text-center text-2xl'>
-                            {spinResult && spinResult.multiplier > 0 ? `You won ${spinResult.multiplier}x!` : 'Better luck next time!'}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className='text-center'>
-                            {spinResult && spinResult.winnings > 0 
-                                ? `Your ${betAmount} coin bet returned ${spinResult.winnings.toLocaleString()} coins.`
-                                : `You lost your ${betAmount.toLocaleString()} coin bet.`
-                            }
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <Button onClick={closeDialog} className="w-full">Play Again</Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </>
-    )
-}
+                    </CardFooter>
+                </>
+            ) : (
+                <>
+                    <CardHeader>
+                        <div className="flex justify-between items-center">
+                             <CardTitle>The WiseMan Asks...</CardTitle>
+                             <Badge variant="outline">{questionData?.category}</Badge>
+                        </div>
+                        <CardDescription className="text-lg pt-4">{questionData?.question}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            <Label htmlFor="answer">Your Answer</Label>
+                            <Input 
+                                id="answer" 
+                                placeholder="Type your answer here..." 
+                                value={userAnswer}
+                                onChange={(e) => setUserAnswer(e.target.value)}
+                            />
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <Button onClick={handleAnswerSubmit} disabled={!userAnswer} className="w-full">Submit Answer</Button>
+                    </CardFooter>
+                </>
+            )}
+        </Card>
+    );
+};
+
 
 const CoinFlipGame = () => {
     const { toast } = useToast();
@@ -968,8 +999,8 @@ export default function BonusGamePage() {
             return <AviatorGame />;
         case 'video-play':
             return <VideoPlayGame />;
-        case 'spin-the-wheel':
-            return <SpinWheelGame />;
+        case 'wiseman':
+            return <WiseManGame />;
         case 'coin-flip':
             return <CoinFlipGame />;
         case 'lucky-dice':

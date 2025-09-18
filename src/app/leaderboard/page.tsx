@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, PlayCircle, Plane, Disc, CircleDollarSign, Dice5 } from 'lucide-react';
+import { Search, PlayCircle, Plane, Disc, CircleDollarSign, Dice5, BookOpenCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -33,12 +33,12 @@ const bonusGames = [
     action: 'Play',
   },
   {
-    name: 'Spin the Wheel',
-    slug: 'spin-the-wheel',
-    icon: <Disc className="h-8 w-8 text-purple-500" />,
-    apr: '0.88%',
+    name: 'WiseMan',
+    slug: 'wiseman',
+    icon: <BookOpenCheck className="h-8 w-8 text-purple-500" />,
+    apr: '3x or 0x',
     isHot: false,
-    duration: ['Daily'],
+    duration: ['Per Question'],
     action: 'Play',
   },
   {
