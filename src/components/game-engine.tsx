@@ -53,14 +53,6 @@ export function GameEngine() {
     return 'text-foreground';
   }, [activeBoost, activeEffect]);
 
-  const getScoreFontSize = (score: number) => {
-    const scoreString = score.toFixed(4);
-    const scoreLength = scoreString.length;
-    if (scoreLength > 12) return 'text-3xl';
-    if (scoreLength > 9) return 'text-4xl';
-    return 'text-5xl';
-  };
-  
   const BoostStatus = () => {
     if (!activeEffect || gameState !== 'playing') return null;
   
@@ -124,9 +116,9 @@ export function GameEngine() {
             </div>
           )}
           {gameState === 'playing' && (
-            <div className="text-center">
+            <div className="text-center overflow-hidden">
               <div className="text-xs uppercase text-muted-foreground">Coins</div>
-              <div className={cn("font-bold", getScoreFontSize(score), boostTextColor)}>{score.toFixed(4)}</div>
+              <div className={cn("font-bold text-xl", boostTextColor)}>{score.toFixed(4)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
                 <TimerIcon className="h-3 w-3" />
                 <span>{timeLeft}s remaining</span>
@@ -135,9 +127,9 @@ export function GameEngine() {
             </div>
           )}
           {gameState === 'ended' && (
-            <div className='text-center'>
+            <div className='text-center overflow-hidden'>
               <div className="text-xs uppercase text-muted-foreground">Game Over</div>
-              <div className={cn("font-bold", getScoreFontSize(score), boostTextColor)}>{score.toFixed(4)}</div>
+              <div className={cn("font-bold text-xl", boostTextColor)}>{score.toFixed(4)}</div>
               <div className="text-xs text-muted-foreground mt-1">Final Coins</div>
             </div>
           )}
