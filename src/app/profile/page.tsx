@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const networks = [
     { id: 'eth', name: 'Ethereum' },
@@ -31,6 +32,15 @@ const networks = [
     { id: 'btc', name: 'Bitcoin' },
     { id: 'bnb', name: 'BNB Smart Chain' },
 ];
+
+const referralData = [
+  { user: 'CryptoKing', avatar: 'https://picsum.photos/seed/ref1/40/40', dateJoined: '2024-12-10', profit: 150.75 },
+  { user: 'SatoshiJr', avatar: 'https://picsum.photos/seed/ref2/40/40', dateJoined: '2024-11-25', profit: 75.50 },
+  { user: 'CoinDuchess', avatar: 'https://picsum.photos/seed/ref3/40/40', dateJoined: '2024-11-18', profit: 225.00 },
+  { user: 'MinerMike', avatar: 'https://picsum.photos/seed/ref4/40/40', dateJoined: '2024-10-30', profit: 50.25 },
+  { user: 'HodlHermit', avatar: 'https://picsum.photos/seed/ref5/40/40', dateJoined: '2024-10-15', profit: 300.00 },
+];
+
 
 export default function ProfilePage() {
   const [wallets, setWallets] = useState<WalletType[]>([]);
@@ -283,13 +293,47 @@ export default function ProfilePage() {
                 <ArrowRight className="h-4 w-4" />
               </div>
             </Link>
-            <Link href="#" className="p-4 flex items-center justify-between hover:bg-muted/50">
-              <div className="flex items-center gap-3">
-                <Users className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Referral</span>
-              </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            </Link>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
+                        <div className="flex items-center gap-3">
+                            <Users className="h-5 w-5 text-muted-foreground" />
+                            <span className="font-medium">Referral</span>
+                        </div>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Referral Details</DialogTitle>
+                        <DialogDescription>
+                            Here&apos;s a list of users you&apos;ve referred and the profit you&apos;ve earned.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-4 px-2 text-sm font-semibold text-muted-foreground">
+                        <span>User</span>
+                        <span>Date Joined</span>
+                        <span className="text-right">Profit (KTC)</span>
+                    </div>
+                    <ScrollArea className="h-72">
+                        <div className="space-y-4">
+                        {referralData.map((ref, index) => (
+                            <div key={index} className="grid grid-cols-[1fr_auto_auto] items-center gap-4 px-2">
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src={ref.avatar} alt={ref.user} />
+                                        <AvatarFallback>{ref.user.substring(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-medium text-sm">{ref.user}</span>
+                                </div>
+                                <span className="text-sm text-muted-foreground">{ref.dateJoined}</span>
+                                <span className="text-sm font-semibold text-green-500 text-right">{ref.profit.toFixed(2)}</span>
+                            </div>
+                        ))}
+                        </div>
+                    </ScrollArea>
+                </DialogContent>
+            </Dialog>
             <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <User className="h-5 w-5 text-muted-foreground" />
@@ -307,7 +351,6 @@ export default function ProfilePage() {
           </div>
         </Card>
       </div>
-
     </div>
   );
 }
