@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { addCurrency } from '@/lib/storage';
 
 const walletAddresses: { [key: string]: string } = {
     eth: "0x1a2b3c4d5e6f7g8h9i0jabcde12345fgh67890",
@@ -65,10 +66,22 @@ export default function DepositPage() {
     };
     
     const handleDeposit = () => {
+        const depositAmount = parseFloat(amount);
+        if (isNaN(depositAmount) || depositAmount <= 0) {
+            toast({
+                variant: "destructive",
+                title: "Invalid Amount",
+                description: "Please enter a valid amount to deposit.",
+            });
+            return;
+        }
+
+        addCurrency(depositAmount);
+        setAmount('');
         toast({
-            title: "Deposit Initiated",
-            description: `You have initiated a deposit of ${amount || 0} KTC to your ${networks.find(n=>n.id === selectedNetwork)?.name} wallet.`
-        })
+            title: "Deposit Successful!",
+            description: `You have successfully deposited ${depositAmount.toLocaleString()} KTC. Your balance has been updated.`
+        });
     }
     
     const amountAsUSD = (parseFloat(amount) || 0) * KTC_TO_USD_RATE;
@@ -164,7 +177,7 @@ export default function DepositPage() {
                 </CardContent>
                 <CardFooter>
                     <Button onClick={handleDeposit} className="w-full" size="lg">
-                        Deposit
+                        Confirm Deposit
                     </Button>
                 </CardFooter>
             </Card>
