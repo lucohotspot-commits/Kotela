@@ -134,8 +134,9 @@ const ArticleContent = ({ post }: { post: BlogPost }) => (
         
         {/* Comments for tablet view */}
         <div className="lg:hidden mt-8">
-            <Separator className="mb-8" />
-            <StandaloneCommentSection post={post} />
+            <Card>
+                <StandaloneCommentSection post={post} />
+            </Card>
         </div>
     </div>
 );
@@ -186,7 +187,9 @@ const MobileArticleContent = ({ post }: { post: BlogPost }) => (
 
             <Separator className="my-8" />
 
-             <StandaloneCommentSection post={post} />
+             <Card>
+                <StandaloneCommentSection post={post} />
+             </Card>
         </div>
     </ScrollArea>
 );
@@ -280,8 +283,8 @@ export default function NewsPage() {
                 <h1 className="text-2xl font-bold">News & Trends</h1>
             </div>
 
-            <Card className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-0 overflow-hidden h-[calc(100vh-15rem)]">
-                <div className="lg:col-span-1 border-r">
+            <Card className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-0 overflow-hidden h-[calc(100vh-15rem)]">
+                <div className="md:col-span-1 border-r">
                     <CardHeader className="p-4 border-b">
                         <CardTitle className="text-base">All Articles</CardTitle>
                     </CardHeader>
@@ -307,7 +310,7 @@ export default function NewsPage() {
                         </div>
                     </ScrollArea>
                 </div>
-                <div className="md:col-span-2 lg:col-span-3 border-r">
+                <div className="md:col-span-2 lg:col-span-2 border-r">
                      {selectedPost ? (
                         <ScrollArea className='h-[calc(100vh-15rem)]'>
                             <ArticleContent post={selectedPost} />
@@ -333,5 +336,3 @@ export default function NewsPage() {
         </div>
     );
 }
-
-    
