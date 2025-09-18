@@ -14,7 +14,7 @@ import { MarketTrades } from '@/components/market-trades';
 import { TopMovers } from '@/components/top-movers';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -352,47 +352,58 @@ export default function RatingsClient() {
               <OrderBook selectedCoin={selectedCoin} />
             </div>
         </div>
-        <div className="lg:col-span-3 space-y-2 border-l pl-2">
-            <ScrollArea className="h-[calc(100vh-10rem)]">
-                <div className="border-b">
-                    <div className='p-2'>
-                        <h3 className="font-semibold text-sm">Market</h3>
-                    </div>
-                    <ScrollArea className='h-[270px]'>
-                        <Table>
-                            <TableHeader>
-                            <TableRow className='h-8'>
-                                <TableHead className="text-xs h-auto p-2">Pair</TableHead>
-                                <TableHead className="text-xs h-auto p-2 text-right">Price</TableHead>
-                                <TableHead className="text-xs h-auto p-2 text-right">% Change</TableHead>
-                            </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                            {coins.map((coin) => (
-                                <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50 h-8">
-                                <TableCell className='py-1 px-2'>
-                                    <div className="flex items-center gap-2">
-                                        <Star className={`h-3 w-3 ${coin.symbol === selectedCoin.symbol ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/50'}`}/>
-                                        <div className="font-bold text-xs">{coin.symbol}/USDT</div>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-xs py-1 px-2">${coin.price.toFixed(4)}</TableCell>
-                                <TableCell className={`text-right font-mono text-xs py-1 px-2 ${getChangeColor(coin.change)}`}>
-                                    {coin.change > 0 ? '+' : ''}{((coin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%
-                                </TableCell>
-                                </TableRow>
-                            ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
+        <div className="lg:col-span-3 space-y-0 border-l">
+            <div className="border-b">
+                <div className='p-2'>
+                    <h3 className="font-semibold text-sm">Market</h3>
                 </div>
-                <MarketTrades selectedCoin={selectedCoin} />
-                <TopMovers />
-                <EconomicCalendar />
-            </ScrollArea>
+                <ScrollArea className='h-[270px]'>
+                    <Table>
+                        <TableHeader>
+                        <TableRow className='h-8'>
+                            <TableHead className="text-xs h-auto p-2">Pair</TableHead>
+                            <TableHead className="text-xs h-auto p-2 text-right">Price</TableHead>
+                            <TableHead className="text-xs h-auto p-2 text-right">% Change</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {coins.map((coin) => (
+                            <TableRow key={coin.symbol} onClick={() => setSelectedCoin(coin)} className="cursor-pointer hover:bg-muted/50 h-8">
+                            <TableCell className='py-1 px-2'>
+                                <div className="flex items-center gap-2">
+                                    <Star className={`h-3 w-3 ${coin.symbol === selectedCoin.symbol ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/50'}`}/>
+                                    <div className="font-bold text-xs">{coin.symbol}/USDT</div>
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-xs py-1 px-2">${coin.price.toFixed(4)}</TableCell>
+                            <TableCell className={`text-right font-mono text-xs py-1 px-2 ${getChangeColor(coin.change)}`}>
+                                {coin.change > 0 ? '+' : ''}{((coin.change / (selectedCoin.price - selectedCoin.change)) * 100).toFixed(2)}%
+                            </TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </ScrollArea>
+            </div>
+
+            <Tabs defaultValue="trades" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 h-9 p-0 border-b">
+                    <TabsTrigger value="trades" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Market Trades</TabsTrigger>
+                    <TabsTrigger value="movers" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Top Movers</TabsTrigger>
+                    <TabsTrigger value="calendar" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Calendar</TabsTrigger>
+                </TabsList>
+                <TabsContent value="trades">
+                    <MarketTrades selectedCoin={selectedCoin} />
+                </TabsContent>
+                <TabsContent value="movers">
+                    <TopMovers />
+                </TabsContent>
+                <TabsContent value="calendar">
+                    <EconomicCalendar />
+                </TabsContent>
+            </Tabs>
+
         </div>
     </div>
   );
 }
-
-    

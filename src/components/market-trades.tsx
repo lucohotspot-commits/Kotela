@@ -63,16 +63,8 @@ export function MarketTrades({ selectedCoin }: MarketTradesProps) {
     };
 
     return (
-        <div className='border-b'>
-             <div className='p-2'>
-                <Tabs defaultValue="market" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 h-8 p-0 px-1 bg-transparent">
-                        <TabsTrigger value="market" className="text-xs data-[state=active]:bg-muted data-[state=active]:shadow-none">Market Trades</TabsTrigger>
-                        <TabsTrigger value="my" className="text-xs data-[state=active]:bg-muted data-[state=active]:shadow-none">My Trades</TabsTrigger>
-                    </TabsList>
-                </Tabs>
-            </div>
-            <ScrollArea className='h-[240px]'>
+        <div>
+            <ScrollArea className='h-[calc(100vh-17rem)]'>
                 <Table>
                     <TableHeader>
                         <TableRow className='h-8'>

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
+import { ScrollArea } from './ui/scroll-area';
 
 type CalendarEvent = {
     title: string;
@@ -78,59 +79,44 @@ export function EconomicCalendar() {
     };
 
     return (
-        <div className="border-b">
-            <div className='p-2 flex items-center justify-between'>
-                <h3 className="font-semibold text-sm">Economic Calendar</h3>
-                <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <Calendar className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+        <div>
+            <ScrollArea className="h-[calc(100vh-17rem)]">
+                <div className="divide-y divide-border">
+                    {loading ? (
+                        Array.from({ length: 5 }).map((_, index) => (
+                            <div key={index} className="p-2 space-y-2">
+                               <Skeleton className="h-4 w-3/4" />
+                               <Skeleton className="h-4 w-1/2" />
+                            </div>
+                        ))
+                    ) : events.length > 0 ? (
+                        events.map((event, index) => (
+                            <div key={index} className="p-2 space-y-1 hover:bg-muted/50 transition-colors">
+                                <div className="grid grid-cols-[40px_35px_1fr] items-center gap-2">
+                                   <div className="text-xs text-muted-foreground">{formatTime(event.date)}</div>
+                                   <Badge variant="outline" className="text-xs font-bold w-fit">{event.country}</Badge>
+                                   <div className="text-xs font-semibold truncate">{event.title}</div>
+                                </div>
+                                <div className="grid grid-cols-[40px_1fr] items-center gap-2 pl-[43px]">
+                                     <div></div>
+                                     <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                        <ImpactBadge impact={event.impact} />
+                                        <div className="flex gap-2">
+                                            <span>Act: <span className="text-foreground">{event.actual || '-'}</span></span>
+                                            <span>Fore: <span className="text-foreground">{event.forecast || '-'}</span></span>
+                                            <span>Prev: <span className="text-foreground">{event.previous || '-'}</span></span>
+                                        </div>
+                                     </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="p-4 text-center text-xs text-muted-foreground">
+                            No events found for this week.
+                        </div>
+                    )}
                 </div>
-            </div>
-            <div className="divide-y divide-border">
-                {loading ? (
-                    Array.from({ length: 5 }).map((_, index) => (
-                        <div key={index} className="p-2 space-y-2">
-                           <Skeleton className="h-4 w-3/4" />
-                           <Skeleton className="h-4 w-1/2" />
-                        </div>
-                    ))
-                ) : events.length > 0 ? (
-                    events.slice(0, 10).map((event, index) => (
-                        <div key={index} className="p-2 space-y-1 hover:bg-muted/50 transition-colors">
-                            <div className="grid grid-cols-[40px_35px_1fr] items-center gap-2">
-                               <div className="text-xs text-muted-foreground">{formatTime(event.date)}</div>
-                               <Badge variant="outline" className="text-xs font-bold w-fit">{event.country}</Badge>
-                               <div className="text-xs font-semibold truncate">{event.title}</div>
-                            </div>
-                            <div className="grid grid-cols-[40px_1fr] items-center gap-2 pl-[43px]">
-                                 <div></div>
-                                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                    <ImpactBadge impact={event.impact} />
-                                    <div className="flex gap-2">
-                                        <span>Act: <span className="text-foreground">{event.actual || '-'}</span></span>
-                                        <span>Fore: <span className="text-foreground">{event.forecast || '-'}</span></span>
-                                        <span>Prev: <span className="text-foreground">{event.previous || '-'}</span></span>
-                                    </div>
-                                 </div>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <div className="p-4 text-center text-xs text-muted-foreground">
-                        No events found for this week.
-                    </div>
-                )}
-            </div>
-             <div className="p-2 border-t">
-                <Button variant="ghost" size="sm" className="w-full text-xs">
-                    Show More
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                </Button>
-            </div>
+            </ScrollArea>
         </div>
     );
 }
