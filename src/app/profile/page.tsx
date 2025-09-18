@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { getWallets, addWallet, deleteWallet as removeWallet, type Wallet as WalletType } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Upload, Download, Send, Repeat, PlusCircle, Globe, Trash2, EyeOff } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Upload, Download, Send, Repeat, PlusCircle, Globe, Trash2, EyeOff, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
