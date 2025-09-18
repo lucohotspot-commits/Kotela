@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { getCurrency, addCurrency } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon, Gift, Users, Wallet, PlusCircle, Globe } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon, Gift, Users, Wallet, PlusCircle, Globe, Repeat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -56,6 +56,13 @@ export default function ProfilePage() {
 
   useEffect(() => {
     refreshCurrency();
+    const handleStorageChange = () => {
+        refreshCurrency();
+    }
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    }
   }, []);
   
   const referralLink = "https://kotela.com/join/user123";
@@ -91,6 +98,8 @@ export default function ProfilePage() {
   const hiddenBalance = "********";
   
   const totalReferralProfit = referrals.reduce((acc, ref) => acc + ref.profit, 0);
+  const fiatAndSpotBalance = currency * 0.7;
+  const tradingBotsBalance = currency * 0.3;
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
@@ -125,6 +134,23 @@ export default function ProfilePage() {
                 </span>
             </div>
         </CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm border-t pt-4">
+                <div>
+                    <p className="text-muted-foreground">Fiat and Spot</p>
+                    <p className="font-semibold">{isBalanceVisible ? `${fiatAndSpotBalance.toLocaleString()} KTC` : hiddenBalance}</p>
+                </div>
+                <div>
+                    <p className="text-muted-foreground">Trading Bots</p>
+                    <p className="font-semibold">{isBalanceVisible ? `${tradingBotsBalance.toLocaleString()} KTC` : hiddenBalance}</p>
+                </div>
+                 <div className="sm:text-right">
+                    <Button variant="ghost" size="sm">
+                        Transfer <Repeat className="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        </CardContent>
       </Card>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-center">
