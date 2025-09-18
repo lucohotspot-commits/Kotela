@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TrendingUp, TrendingDown, Minus, Coins, Star, Settings, BarChart, Expand, LineChart as LineChartIcon } from 'lucide-react';
-import { ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line } from 'recharts';
+import { ComposedChart, Bar, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, Cell } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
@@ -383,11 +383,16 @@ export default function RatingsClient() {
             const candleWidth = 4;
             const candleX = x + width / 2 - candleWidth / 2;
 
-            const highY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.high) / (chartDomain[1] - chartDomain[0])) * (height || 0);
-            const lowY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - payload.low) / (chartDomain[1] - chartDomain[0])) * (height || 0);
+            const yAxis = props.yAxis;
+            if (!yAxis) return null;
 
-            const bodyY = chartDomain[1] === chartDomain[0] ? y : ((chartDomain[1] - Math.max(payload.open, payload.close)) / (chartDomain[1] - chartDomain[0])) * (height || 0);
-            const bodyHeight = (Math.abs(payload.open - payload.close) / (chartDomain[1] - chartDomain[0])) * (height || 1);
+            const getClientY = (val: number) => yAxis.scale(val);
+
+            const highY = getClientY(payload.high);
+            const lowY = getClientY(payload.low);
+
+            const bodyY = getClientY(Math.max(payload.open, payload.close));
+            const bodyHeight = Math.abs(getClientY(payload.open) - getClientY(payload.close));
 
             return <>
               <line x1={candleX + candleWidth / 2} y1={highY} x2={candleX + candleWidth / 2} y2={lowY} stroke={color} strokeWidth={1} />
@@ -400,7 +405,7 @@ export default function RatingsClient() {
 
         <Bar yAxisId="volume" dataKey="volume" barSize={10} >
           {chartData.map((entry, index) => (
-            <rect key={`cell-${index}`} fill={entry.close > entry.open ? 'hsla(var(--chart-2), 0.4)' : 'hsla(var(--chart-5), 0.4)'} />
+            <Cell key={`cell-${index}`} fill={entry.close > entry.open ? 'hsla(var(--chart-2), 0.2)' : 'hsla(var(--chart-5), 0.2)'} />
           ))}
         </Bar>
       </ComposedChart>
@@ -463,7 +468,7 @@ export default function RatingsClient() {
                 </div>
             </div>
 
-            <div className="w-full bg-transparent h-[250px] py-4 pl-4 pr-0">
+            <div className="w-full bg-transparent h-[250px] p-4">
                 {chartElement}
             </div>
             
@@ -579,5 +584,3 @@ export default function RatingsClient() {
     </div>
   );
 }
-
-    
