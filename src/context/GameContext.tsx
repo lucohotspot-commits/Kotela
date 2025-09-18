@@ -77,21 +77,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [refreshData]);
 
   const scoreIncrement = useMemo(() => {
-    if (activeBoost === 'rocket') return 2;
-    if (activeBoost === 'missile') return 3;
-    return 1;
-  }, [activeBoost]);
+    let increment = 1;
+    if (activeBoost === 'rocket') increment = 2;
+    if (activeBoost === 'missile') increment = 3;
+    if (activeEffect === 'frenzy') increment *= 10;
+    return increment;
+  }, [activeBoost, activeEffect]);
 
   const handleTap = useCallback(() => {
     if (gameState === "idle") {
       setGameState("playing");
-      if (timeBoostUsed) {
-        setTimeLeft(gameDuration);
-      }
-    } else if (gameState === 'playing') {
-        setScore(s => s + scoreIncrement);
     }
-  }, [gameState, timeBoostUsed, gameDuration, scoreIncrement]);
+  }, [gameState]);
 
   useEffect(() => {
     if (gameState !== "playing" || activeEffect === 'timeFreeze') return;
@@ -143,18 +140,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [gameState, score, refreshData]);
   
   useEffect(() => {
-    let frenzyInterval: NodeJS.Timeout | null = null;
-    if (activeEffect === 'frenzy' && gameState === 'playing') {
-        frenzyInterval = setInterval(() => {
-            setScore(s => s + 100);
-        }, 100); // Auto-tap every 100ms
+    let autoTapInterval: NodeJS.Timeout | null = null;
+    if (gameState === 'playing' && activeEffect !== 'timeFreeze') {
+        autoTapInterval = setInterval(() => {
+            setScore(s => s + scoreIncrement);
+        }, 100);
     }
     return () => {
-        if (frenzyInterval) {
-            clearInterval(frenzyInterval);
+        if (autoTapInterval) {
+            clearInterval(autoTapInterval);
         }
     };
-  }, [activeEffect, gameState]);
+  }, [gameState, activeEffect, scoreIncrement]);
 
   const useBoost = (boostType: string) => {
     if ((inventory[boostType] || 0) > 0) {
