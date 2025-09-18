@@ -416,7 +416,7 @@ export default function RatingsClient() {
           tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
           className="text-xs fill-muted-foreground"
         />
-        <Tooltip content={<></>} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
+        <Tooltip content={<div />} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
 
         {chartType === 'candlestick' ? (
           <Line yAxisId="price" type="linear" dataKey="close" stroke="transparent" dot={false} isAnimationActive={false} />
@@ -482,7 +482,7 @@ export default function RatingsClient() {
                 tickFormatter={(value) => `${(Number(value)/1000).toFixed(1)}k`}
                 className="text-xs fill-muted-foreground"
             />
-            <Tooltip content={<></>} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
+            <Tooltip content={<div />} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
             <Bar yAxisId="volume" dataKey="volume" barSize={10} isAnimationActive={false}>
                 {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'hsla(142.1, 76.2%, 36.3%, 0.5)' : 'hsla(355.7, 79.4%, 45.1%, 0.5)'} />
@@ -744,5 +744,3 @@ export default function RatingsClient() {
     </div>
   );
 }
-
-    
