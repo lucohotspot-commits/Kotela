@@ -376,21 +376,24 @@ export default function RatingsClient() {
     return [0, max * 1.5];
   }, [chartData]);
   
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      if (data) {
-        setHoverData(data);
-      }
-    } else {
-        setHoverData(null);
+  const handleChartMouseMove = (e: any) => {
+    if (e && e.activePayload && e.activePayload.length > 0) {
+      setHoverData(e.activePayload[0].payload);
     }
-    return null;
+  };
+
+  const handleChartMouseLeave = () => {
+    setHoverData(null);
   };
   
   const chartElement = (
     <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+      <ComposedChart 
+        data={chartData} 
+        margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+        onMouseMove={handleChartMouseMove}
+        onMouseLeave={handleChartMouseLeave}
+      >
         <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
         <XAxis
           dataKey="time"
@@ -411,7 +414,7 @@ export default function RatingsClient() {
           tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
           className="text-xs fill-muted-foreground"
         />
-        <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
+        <Tooltip content={<></>} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
 
         {chartType === 'candlestick' ? (
           <Line yAxisId="price" type="linear" dataKey="close" stroke="transparent" dot={false} isAnimationActive={false} />
@@ -452,7 +455,12 @@ export default function RatingsClient() {
 
   const volumeChartElement = (
       <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+          <ComposedChart 
+            data={chartData} 
+            margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+            onMouseMove={handleChartMouseMove}
+            onMouseLeave={handleChartMouseLeave}
+          >
              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="time"
@@ -472,7 +480,7 @@ export default function RatingsClient() {
                 tickFormatter={(value) => `${(Number(value)/1000).toFixed(1)}k`}
                 className="text-xs fill-muted-foreground"
             />
-            <Tooltip cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
+            <Tooltip content={<></>} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
             <Bar yAxisId="volume" dataKey="volume" barSize={10} isAnimationActive={false}>
                 {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'rgba(22, 163, 74, 0.5)' : 'rgba(220, 38, 38, 0.5)'} />
