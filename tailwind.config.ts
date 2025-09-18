@@ -13,12 +13,6 @@ export default {
       gridTemplateColumns: {
         '25': 'repeat(25, minmax(0, 1fr))',
       },
-      fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        serif: ['Lora', 'serif'],
-        code: ['monospace'],
-      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

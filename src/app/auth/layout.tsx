@@ -21,7 +21,7 @@ export default function AuthLayout({
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <Flame className="h-5 w-5" />
                   </div>
-                  <h1 className="text-3xl font-bold tracking-tight text-primary font-headline">
+                  <h1 className="text-3xl font-bold tracking-tight text-primary">
                     Kotela
                   </h1>
               </Link>

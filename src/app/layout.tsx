@@ -34,11 +34,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <title>Kotela</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased">
+      <body>
         <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -54,7 +51,7 @@ export default function RootLayout({
                         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground">
                           <Flame className="h-4 w-4" />
                         </div>
-                        <h1 className="text-xl font-bold tracking-tight text-primary font-headline">
+                        <h1 className="text-xl font-bold tracking-tight text-primary">
                           Kotela
                         </h1>
                     </Link>
