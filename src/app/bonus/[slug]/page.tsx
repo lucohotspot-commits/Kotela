@@ -702,7 +702,7 @@ const WiseManGame = () => {
                         <CardDescription>Place your stake and test your knowledge.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                         <div className="w-full max-w-xs space-y-4 mx-auto">
+                        <div className="w-full max-w-xs space-y-4 mx-auto">
                             <div className="flex items-center space-x-2">
                                 <Button variant="outline" size="sm" onClick={() => handleBetChange(-10)}>-</Button>
                                 <Input value={betAmount} onChange={(e) => setBetAmount(Number(e.target.value))} type="number" className="text-center w-24" />
