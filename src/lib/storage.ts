@@ -29,6 +29,8 @@ const CURRENCY_KEY = "kotela-currency";
 const INVENTORY_KEY = "kotela-inventory";
 const WITHDRAWALS_KEY = "kotela-withdrawals";
 const WALLETS_KEY = "kotela-wallets";
+const MAX_WALLETS = 5;
+
 
 const generateRandomAddress = () => {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -67,7 +69,7 @@ export function addWallet(networkName: string): void {
     if (typeof window === "undefined") return;
     try {
         const currentWallets = getWallets();
-        if (currentWallets.length >= 3) {
+        if (currentWallets.length >= MAX_WALLETS) {
             console.warn("Maximum number of wallets reached.");
             return;
         }
@@ -265,3 +267,5 @@ export function addWithdrawal(withdrawal: Omit<Withdrawal, 'id'>): void {
     console.error("Failed to save withdrawal:", error);
   }
 }
+
+    
