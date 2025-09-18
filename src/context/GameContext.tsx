@@ -9,7 +9,7 @@ const BASE_GAME_DURATION = 30; // 30 seconds
 
 type GameState = "idle" | "playing" | "ended";
 type Boost = "rocket" | "missile" | null;
-type ActiveBoostEffect = 'scoreMultiplier' | 'frenzy' | 'timeFreeze' | null;
+type ActiveBoostEffect = 'scoreMultiplier' | 'timeFreeze' | null;
 
 interface GameContextType {
   // State
@@ -35,7 +35,7 @@ interface GameContextType {
   handleTap: () => void;
   resetGame: () => void;
   activateBoost: (boostType: 'rocket' | 'missile') => void;
-  activateEffectBoost: (boostType: 'frenzy' | 'freezeTime') => void;
+  activateEffectBoost: (boostType: 'freezeTime') => void;
   activateInstantBoost: (boostType: 'scoreBomb') => void;
   activateTimeBoost: () => void;
   setIsModalOpen: (isOpen: boolean) => void;
@@ -82,30 +82,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return 1;
   }, [activeBoost]);
 
-  useEffect(() => {
-    if (gameState !== 'playing') return;
-
-    let scoreInterval: NodeJS.Timeout;
-
-    if (activeEffect === 'frenzy') {
-      scoreInterval = setInterval(() => {
-        setScore(s => s + 5 * scoreIncrement);
-      }, 100);
-    }
-
-    return () => clearInterval(scoreInterval);
-  }, [gameState, scoreIncrement, activeEffect]);
-
   const handleTap = useCallback(() => {
     if (gameState === "idle") {
       setGameState("playing");
       if (timeBoostUsed) {
         setTimeLeft(gameDuration);
       }
-    } else if (gameState === 'playing' && activeEffect !== 'frenzy') {
+    } else if (gameState === 'playing') {
         setScore(s => s + scoreIncrement);
     }
-  }, [gameState, timeBoostUsed, gameDuration, activeEffect, scoreIncrement]);
+  }, [gameState, timeBoostUsed, gameDuration, scoreIncrement]);
 
   useEffect(() => {
     if (gameState !== "playing" || activeEffect === 'timeFreeze') return;
@@ -173,10 +159,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const activateEffectBoost = (boostType: 'frenzy' | 'freezeTime') => {
+  const activateEffectBoost = (boostType: 'freezeTime') => {
     if (gameState === 'playing' && !activeEffect && useBoost(boostType)) {
       setActiveEffect(boostType);
-      setBoostTimeLeft(boostType === 'frenzy' ? 3 : 5);
+      setBoostTimeLeft(5);
     }
   };
   

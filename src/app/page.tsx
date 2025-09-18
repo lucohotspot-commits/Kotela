@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { GameEngine } from '@/components/game-engine';
 import { Leaderboard } from '@/components/leaderboard';
 import { Store } from '@/components/store';
 import { type Score } from '@/lib/storage';
 import { Separator } from '@/components/ui/separator';
-import { Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin, TrendingUp } from 'lucide-react';
+import { Bot, Github, ShoppingCart, Rocket, Bomb, Clock, Zap, Gift, Snowflake, Coins, MapPin, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
@@ -25,6 +26,7 @@ import { useGame } from '@/context/GameContext';
 
 export default function Home() {
   const { scores, currency, inventory, isStoreOpen, setIsStoreOpen, refreshData } = useGame();
+  const [isBotDialogOpen, setIsBotDialogOpen] = useState(false);
   const userLocation = useUserLocation();
 
   useEffect(() => {
@@ -58,6 +60,21 @@ export default function Home() {
                     <Coins className="w-5 h-5 text-yellow-500"/>
                     <span className='text-lg'>{currency.toLocaleString()}</span>
                 </div>
+                 <Dialog open={isBotDialogOpen} onOpenChange={setIsBotDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Bot className="mr-2" /> Bots
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Mining Bots</DialogTitle>
+                        <DialogDescription>
+                          Bot management will be here.
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                 </Dialog>
                  <Dialog open={isStoreOpen} onOpenChange={setIsStoreOpen}>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
@@ -110,10 +127,6 @@ export default function Home() {
                         <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                             <Snowflake className="w-4 h-4 text-cyan-400"/>
                             <span className="font-bold text-xs">Freeze Time x {inventory.freezeTime || 0}</span>
-                        </div>
-                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                            <Zap className="w-4 h-4 text-purple-500"/>
-                            <span className="font-bold text-xs">Frenzy x {inventory.frenzy || 0}</span>
                         </div>
                         <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
                             <Gift className="w-4 h-4 text-green-500"/>
