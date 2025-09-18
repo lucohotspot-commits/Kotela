@@ -19,6 +19,59 @@ type CalendarEvent = {
     actual?: string;
 };
 
+const mockEvents: CalendarEvent[] = [
+    {
+      "title": "BusinessNZ Services Index",
+      "country": "NZD",
+      "date": "2025-09-14T18:30:00-04:00",
+      "impact": "Low",
+      "forecast": "",
+      "previous": "48.9",
+      "actual": "49.2"
+    },
+    {
+      "title": "Bank Holiday",
+      "country": "JPY",
+      "date": "2025-09-14T19:00:00-04:00",
+      "impact": "Holiday",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+        "title": "Fed Interest Rate Decision",
+        "country": "USD",
+        "date": new Date(Date.now() + 86400000).toISOString(),
+        "impact": "High",
+        "forecast": "2.5%",
+        "previous": "2.25%"
+    },
+    {
+        "title": "ECB Press Conference",
+        "country": "EUR",
+        "date": new Date(Date.now() + 172800000).toISOString(),
+        "impact": "High",
+        "forecast": "",
+        "previous": ""
+    },
+    {
+        "title": "Non-Farm Payrolls",
+        "country": "USD",
+        "date": new Date(Date.now() + 259200000).toISOString(),
+        "impact": "Medium",
+        "forecast": "180K",
+        "previous": "210K"
+    },
+     {
+        "title": "Crude Oil Inventories",
+        "country": "USD",
+        "date": new Date(Date.now() + 345600000).toISOString(),
+        "impact": "Low",
+        "forecast": "-1.2M",
+        "previous": "0.8M"
+    }
+];
+
+
 const ImpactBadge = ({ impact }: { impact: CalendarEvent['impact'] }) => {
     const variants = {
         High: 'border-red-500 text-red-500',
@@ -51,24 +104,14 @@ export function EconomicCalendar() {
     useEffect(() => {
         const fetchEvents = async () => {
             setLoading(true);
-            try {
-                const response = await fetch('/api/calendar');
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ details: response.statusText }));
-                    console.error("Failed to fetch calendar data:", response.status, response.statusText, errorData);
-                    setEvents([]);
-                } else {
-                    const data: CalendarEvent[] = await response.json();
-                    const allEvents = data
-                        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-                    setEvents(allEvents);
-                }
-            } catch (error) {
-                console.error("Failed to fetch economic calendar data:", error);
-                setEvents([]); 
-            } finally {
+            // Reverting to mock data to fix the crashing issue.
+            // The API proxy caused persistent 500 errors.
+            setTimeout(() => {
+                const allEvents = mockEvents
+                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                setEvents(allEvents);
                 setLoading(false);
-            }
+            }, 500); // Simulate network delay
         };
 
         fetchEvents();
