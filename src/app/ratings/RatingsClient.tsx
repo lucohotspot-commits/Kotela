@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { cn } from '@/lib/utils';
+import { EconomicCalendar } from '@/components/economic-calendar';
 
 type CoinData = {
   time: string;
@@ -387,6 +388,7 @@ export default function RatingsClient() {
                 </div>
                 <MarketTrades selectedCoin={selectedCoin} />
                 <TopMovers />
+                <EconomicCalendar />
             </ScrollArea>
         </div>
     </div>
