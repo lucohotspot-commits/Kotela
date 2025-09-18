@@ -134,8 +134,8 @@ export default function ProfilePage() {
                 </span>
             </div>
         </CardHeader>
-        <CardContent>
-            <div className="border-t pt-6">
+        <CardContent className="p-0">
+            <div className="border-t p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                     <div>
                         <p className="text-muted-foreground">Fiat and Spot</p>
@@ -330,4 +330,5 @@ export default function ProfilePage() {
 
     </div>
   );
-}
+
+    
