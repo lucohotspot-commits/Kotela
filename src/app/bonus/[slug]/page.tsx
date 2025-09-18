@@ -685,7 +685,7 @@ const WiseManGame = () => {
             {gameState === 'idle' ? (
                 <>
                     <CardHeader className="text-center items-center">
-                        <Image
+                        <img
                             src="https://api.dicebear.com/9.x/bottts/svg"
                             alt="WiseMan Avatar"
                             width={80}
@@ -707,7 +707,7 @@ const WiseManGame = () => {
                     </CardContent>
                     <CardFooter>
                         <Button onClick={handleStartGame} disabled={betAmount <= 0} size="lg" className="w-full">
-                            Stake {betAmount.toLocaleString()} & Get Question
+                            Stake {betAmount.toLocaleString()} &amp; Get Question
                         </Button>
                     </CardFooter>
                 </>
@@ -719,7 +719,7 @@ const WiseManGame = () => {
                                 <CardTitle className="flex items-center gap-2">The WiseMan Asks...</CardTitle>
                                 <Badge variant="outline" className="mt-2">{questionData?.category}</Badge>
                             </div>
-                            <Image
+                            <img
                                 src="https://api.dicebear.com/9.x/bottts/svg"
                                 alt="WiseMan Avatar"
                                 width={60}
@@ -1062,5 +1062,3 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
-    
