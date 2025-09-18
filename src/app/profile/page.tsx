@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import { getCurrency, addCurrency } from '@/lib/storage';
+import { useState, useEffect, useCallback } from 'react';
+import { getWallets, addWallet, deleteWallet as removeWallet, type Wallet as WalletType } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Repeat, QrCode, EyeOff, Moon, Gift, Users, Wallet, PlusCircle, Globe } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Upload, Download, Send, Repeat, PlusCircle, Globe, Trash2, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -20,21 +20,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const KTC_TO_USD_RATE = 1.25;
-
-const referrals = [
-    { id: 1, user: 'CryptoKing', avatar: 'https://picsum.photos/seed/ref1/40/40', date: '2024-12-10', profit: 150.75 },
-    { id: 2, user: 'SatoshiJr', avatar: 'https://picsum.photos/seed/ref2/40/40', date: '2024-11-25', profit: 75.50 },
-    { id: 3, user: 'CoinDuchess', avatar: 'https://picsum.photos/seed/ref3/40/40', date: '2024-11-18', profit: 225.00 },
-    { id: 4, user: 'MinerMike', avatar: 'https://picsum.photos/seed/ref4/40/40', date: '2024-10-30', profit: 50.25 },
-    { id: 5, user: 'HodlHermit', avatar: 'https://picsum.photos/seed/ref5/40/40', date: '2024-10-15', profit: 300.00 },
-];
 
 const networks = [
     { id: 'eth', name: 'Ethereum' },
@@ -44,28 +32,28 @@ const networks = [
 ];
 
 export default function ProfilePage() {
-  const [currency, setCurrency] = useState(0);
+  const [wallets, setWallets] = useState<WalletType[]>([]);
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
   const [isCreateWalletOpen, setIsCreateWalletOpen] = useState(false);
+  const [isDeleteWalletOpen, setIsDeleteWalletOpen] = useState(false);
+  const [walletToDelete, setWalletToDelete] = useState<WalletType | null>(null);
   const [selectedNetwork, setSelectedNetwork] = useState('');
   const { toast } = useToast();
 
-  const refreshCurrency = () => {
-    setCurrency(getCurrency());
-  }
+  const refreshWallets = useCallback(() => {
+    setWallets(getWallets());
+  }, []);
 
   useEffect(() => {
-    refreshCurrency();
+    refreshWallets();
     const handleStorageChange = () => {
-        refreshCurrency();
+        refreshWallets();
     }
     window.addEventListener('storage', handleStorageChange);
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     }
-  }, []);
-  
-  const referralLink = "https://kotela.com/join/user123";
+  }, [refreshWallets]);
 
   const handleCopy = (text: string, type: string) => {
     navigator.clipboard.writeText(text);
@@ -80,26 +68,41 @@ export default function ProfilePage() {
           toast({ variant: 'destructive', title: 'Network required', description: 'Please select a network for your new wallet.' });
           return;
       }
-      const networkName = networks.find(n => n.id === selectedNetwork)?.name;
+      const networkName = networks.find(n => n.id === selectedNetwork)?.name || 'New';
+      addWallet(networkName);
+      refreshWallets();
       setIsCreateWalletOpen(false);
       setSelectedNetwork('');
       toast({
-          title: 'Wallet Creation Simulated',
+          title: 'Wallet Created',
           description: `A new ${networkName} wallet has been added to your account.`,
       });
   }
 
+  const openDeleteDialog = (wallet: WalletType) => {
+    setWalletToDelete(wallet);
+    setIsDeleteWalletOpen(true);
+  }
+
+  const handleDeleteWallet = () => {
+      if (walletToDelete) {
+          removeWallet(walletToDelete.id);
+          refreshWallets();
+          toast({
+              title: 'Wallet Deleted',
+              description: `${walletToDelete.networkName} wallet has been removed.`,
+          });
+      }
+      setIsDeleteWalletOpen(false);
+      setWalletToDelete(null);
+  }
 
   const toggleBalanceVisibility = () => {
     setIsBalanceVisible(!isBalanceVisible);
   };
   
-  const currencyAsUSD = (currency * KTC_TO_USD_RATE).toFixed(2);
+  const totalBalance = wallets.reduce((acc, wallet) => acc + wallet.balance, 0);
   const hiddenBalance = "********";
-  
-  const totalReferralProfit = referrals.reduce((acc, ref) => acc + ref.profit, 0);
-  const fiatAndSpotBalance = currency * 0.7;
-  const tradingBotsBalance = currency * 0.3;
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-8">
@@ -120,37 +123,46 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
             <div className='flex items-center justify-between'>
-                <CardDescription>Total Balance</CardDescription>
-                <button onClick={toggleBalanceVisibility} className="text-muted-foreground hover:text-primary">
-                  {isBalanceVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-            </div>
-            <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-3xl font-bold">
-                  {isBalanceVisible ? `${currency.toLocaleString()} KTC` : hiddenBalance}
-                </span>
-                <span className="text-muted-foreground">
-                  {isBalanceVisible ? `≈ $${currencyAsUSD}` : ''}
-                </span>
+                <CardTitle>My Wallets</CardTitle>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Total Balance:</span>
+                    <span className="text-lg font-bold">
+                        {isBalanceVisible ? `${totalBalance.toLocaleString()} KTC` : hiddenBalance}
+                    </span>
+                    <button onClick={toggleBalanceVisibility} className="text-muted-foreground hover:text-primary">
+                      {isBalanceVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                </div>
             </div>
         </CardHeader>
         <CardContent className="p-0">
-            <div className="border-t p-6">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                    <div>
-                        <p className="text-muted-foreground">Fiat and Spot</p>
-                        <p className="font-semibold">{isBalanceVisible ? `${fiatAndSpotBalance.toLocaleString()} KTC` : hiddenBalance}</p>
+            <div className="divide-y">
+                {wallets.map(wallet => (
+                    <div key={wallet.id} className="p-4 grid grid-cols-3 items-center gap-4">
+                        <div className="flex items-center gap-3">
+                            <Globe className="h-6 w-6 text-muted-foreground" />
+                            <div>
+                                <p className="font-semibold">{wallet.networkName}</p>
+                                <p className="text-xs text-muted-foreground font-mono">{`${wallet.address.substring(0, 6)}...${wallet.address.substring(wallet.address.length - 4)}`}</p>
+                            </div>
+                        </div>
+                        <div className="text-center font-mono">
+                            {isBalanceVisible ? `${wallet.balance.toLocaleString()} KTC` : hiddenBalance}
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            {wallet.networkName !== 'Kotela' ? (
+                                <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(wallet)}>
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            ) : (
+                                <div className="w-9 h-9"></div> // Placeholder for alignment
+                            )}
+                            <Button variant="ghost" size="icon" onClick={() => handleCopy(wallet.address, `${wallet.networkName} address`)}>
+                                <Copy className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-muted-foreground">Trading Bots</p>
-                        <p className="font-semibold">{isBalanceVisible ? `${tradingBotsBalance.toLocaleString()} KTC` : hiddenBalance}</p>
-                    </div>
-                    <div className="sm:text-right">
-                        <Button variant="ghost" size="sm">
-                            Transfer <Repeat className="ml-2 h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
+                ))}
             </div>
         </CardContent>
       </Card>
@@ -182,7 +194,7 @@ export default function ProfilePage() {
           </Button>
           <Dialog open={isCreateWalletOpen} onOpenChange={setIsCreateWalletOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="h-auto flex-col gap-2 p-4">
+                <Button variant="outline" className="h-auto flex-col gap-2 p-4" disabled={wallets.length >= 3}>
                     <PlusCircle className="h-6 w-6" />
                     <span>Create Wallet</span>
                 </Button>
@@ -200,7 +212,7 @@ export default function ProfilePage() {
                         </SelectTrigger>
                         <SelectContent>
                             {networks.map(network => (
-                                <SelectItem key={network.id} value={network.id}>
+                                <SelectItem key={network.id} value={network.id} disabled={wallets.some(w => w.networkName === network.name)}>
                                     <div className="flex items-center gap-2">
                                         <Globe className="h-4 w-4" />
                                         <span>{network.name}</span>
@@ -218,83 +230,20 @@ export default function ProfilePage() {
           </Dialog>
       </div>
 
-      
-      <Card>
-        <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-                <Gift className="h-5 w-5" />
-                Referrals
-            </CardTitle>
-            <CardDescription>Invite friends and earn rewards when they sign up and start mining.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="referral-link">Your Referral Link</Label>
-                <div className="flex items-center gap-2">
-                    <Input id="referral-link" value={referralLink} readOnly />
-                    <Button variant="outline" size="icon" onClick={() => handleCopy(referralLink, 'Referral link')}>
-                        <Copy className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-center border-t pt-4">
-                <div>
-                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Users className="h-4 w-4" /> Friends Invited</p>
-                    <p className="text-2xl font-bold">{referrals.length}</p>
-                </div>
-                <div>
-                    <p className="text-sm text-muted-foreground flex items-center justify-center gap-1"><Coins className="h-4 w-4" /> Total Earnings</p>
-                    <p className="text-2xl font-bold flex items-center justify-center gap-1">{totalReferralProfit.toLocaleString()}</p>
-                </div>
-            </div>
-        </CardContent>
-        <CardFooter>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                        View Referral Details
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md w-full">
-                    <DialogHeader>
-                        <DialogTitle>Referral Details</DialogTitle>
-                        <DialogDescription>
-                            Here's a list of users you've referred and the profit you've earned.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className='max-h-[60vh]'>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="text-xs">User</TableHead>
-                                    <TableHead className="text-xs">Date Joined</TableHead>
-                                    <TableHead className="text-right text-xs">Profit (KTC)</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {referrals.map((referral) => (
-                                    <TableRow key={referral.id}>
-                                        <TableCell>
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-8 w-8">
-                                                    <AvatarImage src={referral.avatar} alt={referral.user} />
-                                                    <AvatarFallback>{referral.user.substring(0,2)}</AvatarFallback>
-                                                </Avatar>
-                                                <span className="font-medium text-sm">{referral.user}</span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground text-xs">{referral.date}</TableCell>
-                                        <TableCell className="text-right font-semibold text-green-500 text-sm">{referral.profit.toFixed(2)}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </ScrollArea>
-                </DialogContent>
-            </Dialog>
-        </CardFooter>
-      </Card>
+       <Dialog open={isDeleteWalletOpen} onOpenChange={setIsDeleteWalletOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Delete Wallet</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete the {walletToDelete?.networkName} wallet? This action cannot be undone.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button variant="ghost" onClick={() => setIsDeleteWalletOpen(false)}>Cancel</Button>
+                    <Button variant="destructive" onClick={handleDeleteWallet}>Delete</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
       
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Account</h3>
@@ -312,7 +261,7 @@ export default function ProfilePage() {
             </Link>
             <div className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <Moon className="h-5 w-5 text-muted-foreground" />
+                    <User className="h-5 w-5 text-muted-foreground" />
                     <span className="font-medium">Dark Mode</span>
                 </div>
                 <ThemeToggle />
@@ -331,5 +280,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
