@@ -48,7 +48,7 @@ const StandaloneCommentSection = ({ post }: { post: BlogPost }) => {
                     Comments ({comments.length})
                 </CardTitle>
             </CardHeader>
-            <ScrollArea className="h-[calc(100vh-25rem)]">
+            <ScrollArea className="h-[calc(100%-15rem)] md:h-[calc(100vh-25rem)]">
                 <div className="p-4 space-y-4">
                     {comments.map((comment, index) => (
                         <div key={index} className="flex gap-3">
@@ -275,7 +275,7 @@ export default function NewsPage() {
                 </BreadcrumbSeparator>
                 <BreadcrumbItem>
                     <BreadcrumbPage>News</BreadcrumbPage>
-                </BreadcrumbItem>
+                    </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
              <div className="flex items-center gap-2">
@@ -336,3 +336,5 @@ export default function NewsPage() {
         </div>
     );
 }
+
+    
