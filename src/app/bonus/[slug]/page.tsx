@@ -566,12 +566,7 @@ const WiseManGame = () => {
     const [questionData, setQuestionData] = useState<WisemanQuestion | null>(null);
     const [userAnswer, setUserAnswer] = useState('');
     const [result, setResult] = useState<{ isCorrect: boolean; explanation: string; winnings: number } | null>(null);
-    const [avatarSeed, setAvatarSeed] = useState('wiseman');
-
-    useEffect(() => {
-        setAvatarSeed(Math.random().toString(36).substring(7));
-    }, []);
-
+    
     const refreshBalance = useCallback(() => {
         setBalance(getCurrency());
     }, []);
@@ -639,7 +634,6 @@ const WiseManGame = () => {
         setQuestionData(null);
         setUserAnswer('');
         setResult(null);
-        setAvatarSeed(Math.random().toString(36).substring(7));
     };
 
     if (gameState === 'playing' && !questionData) {
@@ -692,7 +686,7 @@ const WiseManGame = () => {
                 <>
                     <CardHeader className="text-center items-center">
                         <Image
-                            src={`https://api.dicebear.com/9.x/bottts/svg?seed=${avatarSeed}`}
+                            src="https://api.dicebear.com/9.x/bottts/svg"
                             alt="WiseMan Avatar"
                             width={80}
                             height={80}
@@ -726,7 +720,7 @@ const WiseManGame = () => {
                                 <Badge variant="outline" className="mt-2">{questionData?.category}</Badge>
                             </div>
                             <Image
-                                src={`https://api.dicebear.com/9.x/bottts/svg?seed=${avatarSeed}`}
+                                src="https://api.dicebear.com/9.x/bottts/svg"
                                 alt="WiseMan Avatar"
                                 width={60}
                                 height={60}
