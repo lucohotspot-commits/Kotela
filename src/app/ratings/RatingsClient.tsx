@@ -114,7 +114,7 @@ function generateInitialCoinState(coin: Omit<Coin, 'history' | 'change' | 'high'
 
 
 const TradingInterfaceSkeleton = () => (
-  <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 animate-pulse">
+  <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 animate-pulse border rounded-lg">
       <div className="lg:col-span-3 hidden lg:block border-r">
           <div className='p-2 border-b'>
               <Skeleton className="h-5 w-2/4" />
@@ -162,7 +162,7 @@ const TradingInterfaceSkeleton = () => (
           
           <Separator />
           
-          <div className="grid grid-cols-2 gap-4 p-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 mt-4">
               <div className="space-y-2">
                   <Skeleton className="h-4 w-20" />
                   <Skeleton className="h-9 w-full" />
@@ -223,11 +223,6 @@ export default function RatingsClient() {
     setCoins(initialCoins);
     const ktcCoin = initialCoins.find(c => c.symbol === 'KTC') || initialCoins[0];
     setSelectedCoin(ktcCoin);
-     setTradeState(prevState => ({
-      ...prevState,
-      buy: { ...prevState.buy, price: ktcCoin.price.toFixed(4) },
-      sell: { ...prevState.sell, price: ktcCoin.price.toFixed(4) }
-    }));
   }, []);
   
   useEffect(() => {
@@ -599,11 +594,11 @@ export default function RatingsClient() {
             {chartElement}
         </div>
 
-        <div className='w-full h-[100px] border-t pr-2'>
+        <div className='w-full h-[100px] border-y pr-2'>
             {volumeChartElement}
         </div>
 
-         <Tabs defaultValue="vol" className="w-full border-t">
+         <Tabs defaultValue="vol" className="w-full">
             <TabsList className="h-8 p-0 bg-transparent gap-2 px-2">
                 <TabsTrigger value="main" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none" disabled>Main</TabsTrigger>
                 <TabsTrigger value="ma" className="text-xs p-1 data-[state=active]:text-foreground data-[state=active]:shadow-none data-[state=active]:border-b-2 border-primary rounded-none">MA</TabsTrigger>
@@ -728,9 +723,10 @@ export default function RatingsClient() {
 
   const mobileMarketSection = (
     <Tabs defaultValue="market" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-9 p-0 border-b">
+        <TabsList className="grid w-full grid-cols-4 h-9 p-0 border-b">
             <TabsTrigger value="market" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Market</TabsTrigger>
             <TabsTrigger value="movers" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Top Movers</TabsTrigger>
+            <TabsTrigger value="trades" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Trades</TabsTrigger>
             <TabsTrigger value="calendar" className="text-xs h-full rounded-none data-[state=active]:bg-muted data-[state=active]:shadow-none">Calendar</TabsTrigger>
         </TabsList>
         <TabsContent value="market">
@@ -769,6 +765,9 @@ export default function RatingsClient() {
         </TabsContent>
         <TabsContent value="movers">
             <TopMovers />
+        </TabsContent>
+        <TabsContent value="trades">
+            <MarketTrades selectedCoin={selectedCoin} />
         </TabsContent>
         <TabsContent value="calendar">
             <EconomicCalendar />
