@@ -566,6 +566,11 @@ const WiseManGame = () => {
     const [questionData, setQuestionData] = useState<WisemanQuestion | null>(null);
     const [userAnswer, setUserAnswer] = useState('');
     const [result, setResult] = useState<{ isCorrect: boolean; explanation: string; winnings: number } | null>(null);
+    const [avatarSeed, setAvatarSeed] = useState('wiseman');
+
+    useEffect(() => {
+        setAvatarSeed(Math.random().toString(36).substring(7));
+    }, []);
 
     const refreshBalance = useCallback(() => {
         setBalance(getCurrency());
@@ -634,6 +639,7 @@ const WiseManGame = () => {
         setQuestionData(null);
         setUserAnswer('');
         setResult(null);
+        setAvatarSeed(Math.random().toString(36).substring(7));
     };
 
     if (gameState === 'playing' && !questionData) {
@@ -684,7 +690,14 @@ const WiseManGame = () => {
         <Card className="w-full max-w-2xl mx-auto">
             {gameState === 'idle' ? (
                 <>
-                    <CardHeader className="text-center">
+                    <CardHeader className="text-center items-center">
+                        <Image
+                            src={`https://api.dicebear.com/8.x/bottts/svg?seed=${avatarSeed}`}
+                            alt="WiseMan Avatar"
+                            width={80}
+                            height={80}
+                            className="rounded-full bg-muted mb-4"
+                        />
                         <CardTitle>Challenge the WiseMan</CardTitle>
                         <CardDescription>Place your stake and test your knowledge.</CardDescription>
                     </CardHeader>
@@ -707,9 +720,18 @@ const WiseManGame = () => {
             ) : (
                 <>
                     <CardHeader>
-                        <div className="flex justify-between items-center">
-                             <CardTitle>The WiseMan Asks...</CardTitle>
-                             <Badge variant="outline">{questionData?.category}</Badge>
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <CardTitle className="flex items-center gap-2">The WiseMan Asks...</CardTitle>
+                                <Badge variant="outline" className="mt-2">{questionData?.category}</Badge>
+                            </div>
+                            <Image
+                                src={`https://api.dicebear.com/8.x/bottts/svg?seed=${avatarSeed}`}
+                                alt="WiseMan Avatar"
+                                width={60}
+                                height={60}
+                                className="rounded-full bg-muted"
+                            />
                         </div>
                         <CardDescription className="text-lg pt-4">{questionData?.question}</CardDescription>
                     </CardHeader>
@@ -1046,6 +1068,3 @@ export default function BonusGamePage() {
     </div>
   );
 }
-
-    
-    
