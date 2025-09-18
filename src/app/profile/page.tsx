@@ -128,15 +128,12 @@ export default function ProfilePage() {
       </Card>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-center">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="h-auto flex-col gap-2 p-4">
-                <Upload className="h-6 w-6" />
-                <span>Deposit</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent><DialogHeader><DialogTitle>Deposit</DialogTitle></DialogHeader><p>Deposit functionality here.</p></DialogContent>
-          </Dialog>
+          <Button variant="outline" asChild className="h-auto flex-col gap-2 p-4">
+            <Link href="/profile/deposit">
+              <Upload className="h-6 w-6" />
+              <span>Deposit</span>
+            </Link>
+          </Button>
           <Button variant="outline" asChild className="h-auto flex-col gap-2 p-4">
             <Link href="/profile/withdraw">
               <Download className="h-6 w-6" />
