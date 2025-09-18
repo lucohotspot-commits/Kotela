@@ -117,7 +117,7 @@ export function GameEngine() {
           {gameState === 'playing' && (
             <div className="text-center">
               <div className="text-xs uppercase text-muted-foreground">Coins</div>
-              <div className={`text-6xl font-bold ${boostTextColor}`}>{score.toLocaleString()}</div>
+              <div className={`text-5xl font-bold ${boostTextColor}`}>{score.toFixed(4)}</div>
               <div className="text-xs text-muted-foreground mt-1 flex items-center justify-center gap-1">
                 <TimerIcon className="h-3 w-3" />
                 <span>{timeLeft}s remaining</span>
@@ -128,7 +128,7 @@ export function GameEngine() {
           {gameState === 'ended' && (
             <div className='text-center'>
               <div className="text-xs uppercase text-muted-foreground">Game Over</div>
-              <div className={`text-5xl font-bold ${boostTextColor}`}>{score.toLocaleString()}</div>
+              <div className={`text-5xl font-bold ${boostTextColor}`}>{score.toFixed(4)}</div>
               <div className="text-xs text-muted-foreground mt-1">Final Coins</div>
             </div>
           )}

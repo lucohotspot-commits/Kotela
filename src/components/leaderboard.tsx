@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -73,7 +74,7 @@ export function Leaderboard({ scores }: LeaderboardProps) {
               {scoresToShow.map((score, index) => (
                 <TableRow key={`${score.date}-${score.score}-${index}`} className="h-10">
                   <TableCell className="font-medium text-xs p-2">{index + 1}</TableCell>
-                  <TableCell className="text-xs p-2">{score.score.toLocaleString()}</TableCell>
+                  <TableCell className="text-xs p-2">{score.score.toFixed(4)}</TableCell>
                   <TableCell className="text-right text-xs text-muted-foreground p-2">
                     {new Date(score.date).toLocaleDateString()}
                   </TableCell>
@@ -126,7 +127,7 @@ export function Leaderboard({ scores }: LeaderboardProps) {
                                     {scores.map((score, index) => (
                                         <TableRow key={`${score.date}-${score.score}-${index}`}>
                                         <TableCell className="font-medium">{index + 1}</TableCell>
-                                        <TableCell>{score.score.toLocaleString()}</TableCell>
+                                        <TableCell>{score.score.toFixed(4)}</TableCell>
                                         <TableCell className="text-right text-muted-foreground">
                                             {new Date(score.date).toLocaleDateString()}
                                         </TableCell>

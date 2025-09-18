@@ -6,6 +6,7 @@ import { addScore, getScores, getCurrency, getInventory, useBoost as consumeBoos
 import { checkForPrivacyIssues } from "@/app/actions";
 
 const BASE_GAME_DURATION = 30; // 30 seconds
+const BASE_SCORE_INCREMENT = 0.001;
 
 type GameState = "idle" | "playing" | "ended";
 type Boost = "rocket" | "missile" | null;
@@ -143,7 +144,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     let autoTapInterval: NodeJS.Timeout | null = null;
     if (gameState === 'playing' && activeEffect !== 'timeFreeze') {
         autoTapInterval = setInterval(() => {
-            setScore(s => s + scoreIncrement);
+            setScore(s => s + (BASE_SCORE_INCREMENT * scoreIncrement));
         }, 100);
     }
     return () => {
@@ -180,7 +181,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const activateInstantBoost = (boostType: 'scoreBomb') => {
     if (gameState === 'playing' && useBoost(boostType)) {
       if (boostType === 'scoreBomb') {
-        setScore(s => s + 1000);
+        setScore(s => s + 10);
       }
     }
   };
@@ -227,7 +228,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     activateBoost,
     activateEffectBoost,
     activateInstantBoost,
-    activateTimeBoost,
+activateTimeBoost,
     setIsModalOpen,
     refreshData,
     setIsStoreOpen,
