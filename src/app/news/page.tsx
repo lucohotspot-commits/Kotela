@@ -62,7 +62,7 @@ const ArticleContent = ({ post }: { post: BlogPost }) => (
             <Separator className="my-8" />
             
             <div className="text-xs text-muted-foreground">
-                <p>
+                <p className="italic">
                     Kotela aims to publish information that is factual and accurate as of the date of publication. For specific information about a cryptocurrency exchange or trading platform please visit that provider's website. This information is general in nature and is for education purposes only. Kotela does not provide financial advice nor does it take into account your personal financial situation. We encourage you to seek financial advice from an independent financial advisor where appropriate and make your own inquiries.
                 </p>
             </div>
