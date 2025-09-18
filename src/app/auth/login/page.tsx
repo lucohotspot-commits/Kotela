@@ -10,8 +10,8 @@ import { Github, Chrome } from "lucide-react";
 export default function LoginPage() {
     return (
         <div className="grid gap-6">
-            <div className="grid gap-2 text-center">
-                <h1 className="text-3xl font-bold">Login</h1>
+            <div className="grid gap-2 text-left">
+                <h1 className="text-2xl font-bold">Login</h1>
                 <p className="text-sm text-muted-foreground">
                     Enter your email below to login to your account
                 </p>
