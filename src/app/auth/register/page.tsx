@@ -16,6 +16,24 @@ export default function RegisterPage() {
                 </p>
             </div>
             <div className="grid gap-4">
+                 <div className="grid gap-2">
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                        id="username"
+                        type="text"
+                        placeholder="yourusername"
+                        required
+                    />
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+1 234 567 890"
+                        required
+                    />
+                </div>
                 <div className="grid gap-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
