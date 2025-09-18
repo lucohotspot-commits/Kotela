@@ -374,48 +374,58 @@ export default function ProfilePage() {
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">Account</h3>
         <Card>
-          <div className="divide-y">
-            <Link href="/profile/verify" className="p-4 flex items-center justify-between hover:bg-muted/50">
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">KYC Verification</span>
-              </div>
-               <div className="flex items-center gap-2 text-yellow-600">
-                <span className="text-sm">Unverified</span>
-                <ArrowRight className="h-4 w-4" />
-              </div>
-            </Link>
-            <Dialog>
-                <DialogTrigger asChild>
-                    <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
-                        <div className="flex items-center gap-3">
-                            <Users className="h-5 w-5 text-muted-foreground" />
-                            <span className="font-medium">Referral</span>
+            <div className="divide-y">
+                <Link href="/profile/verify" className="p-4 flex items-center justify-between hover:bg-muted/50">
+                    <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="font-medium">KYC Verification</p>
+                            <p className="text-xs text-muted-foreground">Required for full feature access.</p>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </div>
-                </DialogTrigger>
-                <ReferralDialogContent />
-            </Dialog>
-            <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-medium">Dark Mode</span>
+                    <div className="flex items-center gap-2 text-yellow-600">
+                        <span className="text-sm">Unverified</span>
+                        <ArrowRight className="h-4 w-4" />
+                    </div>
+                </Link>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
+                            <div className="flex items-center gap-3">
+                                <Users className="h-5 w-5 text-muted-foreground" />
+                                <div>
+                                    <p className="font-medium">Referral</p>
+                                    <p className="text-xs text-muted-foreground">Invite friends and earn rewards.</p>
+                                </div>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                    </DialogTrigger>
+                    <ReferralDialogContent />
+                </Dialog>
+                <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <User className="h-5 w-5 text-muted-foreground" />
+                         <div>
+                            <p className="font-medium">Dark Mode</p>
+                            <p className="text-xs text-muted-foreground">Toggle between light and dark themes.</p>
+                        </div>
+                    </div>
+                    <ThemeToggle />
                 </div>
-                <ThemeToggle />
+                <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
+                    <div className="flex items-center gap-3">
+                        <Settings className="h-5 w-5 text-muted-foreground" />
+                         <div>
+                            <p className="font-medium">Settings</p>
+                            <p className="text-xs text-muted-foreground">Manage your account settings.</p>
+                        </div>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </div>
             </div>
-             <div className="p-4 flex items-center justify-between hover:bg-muted/50 cursor-pointer">
-              <div className="flex items-center gap-3">
-                <Settings className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Settings</span>
-              </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-          </div>
         </Card>
       </div>
     </div>
   );
 }
-
-    
