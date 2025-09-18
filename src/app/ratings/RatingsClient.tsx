@@ -416,7 +416,6 @@ export default function RatingsClient() {
           tickFormatter={(value) => `$${Number(value).toFixed(2)}`}
           className="text-xs fill-muted-foreground"
         />
-        <Tooltip content={<div/>} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
 
         {chartType === 'candlestick' ? (
           <Line yAxisId="price" type="linear" dataKey="close" stroke="transparent" dot={false} isAnimationActive={false} />
@@ -432,7 +431,7 @@ export default function RatingsClient() {
             const { x, y, width, height, payload } = props;
             if (x === undefined || y === undefined || width === undefined || height === undefined) return null;
             const isUp = payload.close >= payload.open;
-            const color = isUp ? 'hsl(142.1 76.2% 36.3%)' : 'hsl(355.7 79.4% 45.1%)';
+            const color = isUp ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-1))';
             const candleWidth = 6;
             const candleX = x + width / 2 - candleWidth / 2;
             const yAxis = props.yAxis;
@@ -482,10 +481,9 @@ export default function RatingsClient() {
                 tickFormatter={(value) => `${(Number(value)/1000).toFixed(1)}k`}
                 className="text-xs fill-muted-foreground"
             />
-            <Tooltip content={<div />} cursor={{ stroke: 'hsl(var(--foreground))', strokeDasharray: '3 3' }} />
             <Bar yAxisId="volume" dataKey="volume" barSize={10} isAnimationActive={false}>
                 {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'hsla(142.1, 76.2%, 36.3%, 0.2)' : 'hsla(355.7, 79.4%, 45.1%, 0.2)'} />
+                    <Cell key={`cell-${index}`} fill={entry.close >= entry.open ? 'hsla(120, 60%, 50%, 0.2)' : 'hsla(0, 60%, 50%, 0.2)'} />
                 ))}
             </Bar>
             <Line yAxisId="volume" type="monotone" dataKey="volMa5" stroke="#facc15" strokeWidth={1} dot={false} isAnimationActive={false} />
