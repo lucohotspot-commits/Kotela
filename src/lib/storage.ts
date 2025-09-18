@@ -1,4 +1,5 @@
 
+
 "use client";
 
 export type Score = {
@@ -173,5 +174,3 @@ export function addWithdrawal(withdrawal: Omit<Withdrawal, 'id'>): void {
     console.error("Failed to save withdrawal:", error);
   }
 }
-
-    
