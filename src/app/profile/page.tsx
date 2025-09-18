@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { getCurrency, addCurrency } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon, Gift, Users, Wallet } from 'lucide-react';
+import { Coins, Eye, Copy, ShieldCheck, Settings, ArrowRight, User, Pickaxe, Trophy, Upload, Download, Send, Replace, QrCode, EyeOff, Moon, Gift, Users, Wallet, PlusCircle, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -24,7 +24,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const KTC_TO_USD_RATE = 1.25;
 
@@ -36,11 +36,18 @@ const referrals = [
     { id: 5, user: 'HodlHermit', avatar: 'https://picsum.photos/seed/ref5/40/40', date: '2024-10-15', profit: 300.00 },
 ];
 
+const networks = [
+    { id: 'eth', name: 'Ethereum' },
+    { id: 'sol', name: 'Solana' },
+    { id: 'btc', name: 'Bitcoin' },
+    { id: 'bnb', name: 'BNB Smart Chain' },
+];
+
 export default function ProfilePage() {
   const [currency, setCurrency] = useState(0);
-  const [depositAmount, setDepositAmount] = useState('');
-  const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isBalanceVisible, setIsBalanceVisible] = useState(false);
+  const [isCreateWalletOpen, setIsCreateWalletOpen] = useState(false);
+  const [selectedNetwork, setSelectedNetwork] = useState('');
   const { toast } = useToast();
 
   const refreshCurrency = () => {
@@ -51,7 +58,6 @@ export default function ProfilePage() {
     refreshCurrency();
   }, []);
   
-  const walletAddress = "0x1a2b3c4d5e6f7g8h9i0jabcde12345fgh67890";
   const referralLink = "https://kotela.com/join/user123";
 
   const handleCopy = (text: string, type: string) => {
@@ -62,25 +68,20 @@ export default function ProfilePage() {
     });
   };
 
-  const handleDeposit = () => {
-    const amount = parseFloat(depositAmount);
-    if (!isNaN(amount) && amount > 0) {
-      addCurrency(amount);
-      refreshCurrency();
-      setDepositAmount('');
-      setIsDepositOpen(false);
+  const handleCreateWallet = () => {
+      if (!selectedNetwork) {
+          toast({ variant: 'destructive', title: 'Network required', description: 'Please select a network for your new wallet.' });
+          return;
+      }
+      const networkName = networks.find(n => n.id === selectedNetwork)?.name;
+      setIsCreateWalletOpen(false);
+      setSelectedNetwork('');
       toast({
-        title: "Deposit Successful!",
-        description: `${amount.toLocaleString()} KTC has been added to your wallet.`,
+          title: 'Wallet Creation Simulated',
+          description: `A new ${networkName} wallet has been added to your account.`,
       });
-    } else {
-       toast({
-        variant: 'destructive',
-        title: "Invalid Amount",
-        description: "Please enter a valid number of coins to deposit.",
-      });
-    }
   }
+
 
   const toggleBalanceVisibility = () => {
     setIsBalanceVisible(!isBalanceVisible);
@@ -92,165 +93,106 @@ export default function ProfilePage() {
   const totalReferralProfit = referrals.reduce((acc, ref) => acc + ref.profit, 0);
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
-            <Wallet className="h-6 w-6" /> My Wallet
-        </h1>
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
-          <Dialog open={isDepositOpen} onOpenChange={setIsDepositOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Upload className="mr-2" />
-                Deposit
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md h-full sm:h-auto flex flex-col">
-              <DialogHeader>
-                <DialogTitle>Deposit KTC</DialogTitle>
-                <DialogDescription>
-                  This is a simulation. Enter an amount to add coins to your balance.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full pr-6 -mr-6">
-                  <div className="space-y-4 py-4">
-                      <div className="flex flex-col items-center justify-center space-y-2">
-                          <div className='p-4 bg-white rounded-lg'>
-                              <QrCode className="h-32 w-32 text-black" />
-                          </div>
-                          <p className='text-xs text-muted-foreground text-center max-w-xs'>
-                              Send only KTC to this deposit address. This address does not support NFT deposits.
-                          </p>
-                      </div>
-                      <div className="space-y-1">
-                        <Label htmlFor="wallet-address-deposit">Wallet Address</Label>
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <span id="wallet-address-deposit" className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
-                          <Button variant="ghost" size="icon" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
-                              <Copy className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <Label>Network</Label>
-                        <p className='font-semibold'>Kotela Network</p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="amount">Amount</Label>
-                        <Input
-                          id="amount"
-                          type="number"
-                          placeholder="Enter amount to deposit"
-                          value={depositAmount}
-                          onChange={(e) => setDepositAmount(e.target.value)}
-                        />
-                      </div>
-                  </div>
-                </ScrollArea>
-              </div>
-              <DialogFooter className="flex-col-reverse sm:flex-row mt-auto pt-4 border-t">
-                <Button type="button" variant="outline" onClick={() => setIsDepositOpen(false)} className='sm:w-auto w-full'>Cancel</Button>
-                <Button type="submit" onClick={handleDeposit} className='sm:w-auto w-full'>Deposit</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Button variant="outline" asChild>
-            <Link href="/profile/withdraw">
-              <Download className="mr-2" />
-              Withdraw
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/profile/send">
-              <Send className="mr-2" />
-              Send
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/profile/p2p">
-              <Users className="mr-2" />
-              P2P
-            </Link>
-          </Button>
+    <div className="w-full max-w-4xl mx-auto space-y-8">
+      <div className="flex items-center gap-4">
+        <Avatar className="h-20 w-20">
+            <AvatarImage src="https://api.dicebear.com/9.x/bottts/svg?seed=kotela-user-123" alt="User Avatar" />
+            <AvatarFallback>KU</AvatarFallback>
+        </Avatar>
+        <div>
+            <h1 className="text-2xl font-bold">User Profile</h1>
+            <div className="flex items-center gap-2 mt-1">
+                <ShieldCheck className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm text-yellow-500 font-semibold">KYC Unverified</span>
+            </div>
         </div>
       </div>
 
       <Card>
         <CardHeader>
             <div className='flex items-center justify-between'>
-                <CardDescription>Estimated Balance</CardDescription>
+                <CardDescription>Total Balance</CardDescription>
                 <button onClick={toggleBalanceVisibility} className="text-muted-foreground hover:text-primary">
                   {isBalanceVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
             </div>
             <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="text-3xl font-bold">
-                  {isBalanceVisible ? `${currency.toFixed(8)} KTC` : hiddenBalance}
+                  {isBalanceVisible ? `${currency.toLocaleString()} KTC` : hiddenBalance}
                 </span>
                 <span className="text-muted-foreground">
                   {isBalanceVisible ? `≈ $${currencyAsUSD}` : ''}
                 </span>
             </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
-            <div>
-                <p className='text-sm text-muted-foreground'>Spot balance</p>
-                <p className="font-semibold">{isBalanceVisible ? `${currency.toFixed(8)} KTC` : hiddenBalance}</p>
-                <p className="text-sm text-muted-foreground">{isBalanceVisible ? `≈ $${currencyAsUSD}`: ''}</p>
-            </div>
-             <div>
-                <p className='text-sm text-muted-foreground'>Fiat balance</p>
-                <p className="font-semibold">{isBalanceVisible ? '0.00000000 KTC' : hiddenBalance}</p>
-                <p className="text-sm text-muted-foreground">{isBalanceVisible ? '≈ $0.00' : ''}</p>
-            </div>
-        </CardContent>
       </Card>
       
-      <Dialog>
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Wallet className="h-5 w-5" />
-                    Wallet Address
-                </CardTitle>
-                <CardDescription>Use this address to receive KTC tokens.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <DialogTrigger asChild>
-                    <button className="flex items-center justify-between p-3 bg-muted rounded-lg w-full text-left">
-                        <span className="font-mono text-sm text-muted-foreground truncate">{walletAddress}</span>
-                        <div className="flex items-center gap-2">
-                            <QrCode className="h-4 w-4" />
-                            <Copy className="h-4 w-4" />
-                        </div>
-                    </button>
-                </DialogTrigger>
-            </CardContent>
-        </Card>
-        <DialogContent className="max-w-sm">
-            <DialogHeader>
-                <DialogTitle>Your Wallet Address</DialogTitle>
-            </DialogHeader>
-            <div className="flex flex-col items-center justify-center space-y-4 pt-4">
-                <div className='p-4 bg-white rounded-lg'>
-                    <QrCode className="h-48 w-48 text-black" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-center">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="h-auto flex-col gap-2 p-4">
+                <Upload className="h-6 w-6" />
+                <span>Deposit</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent><DialogHeader><DialogTitle>Deposit</DialogTitle></DialogHeader><p>Deposit functionality here.</p></DialogContent>
+          </Dialog>
+          <Button variant="outline" asChild className="h-auto flex-col gap-2 p-4">
+            <Link href="/profile/withdraw">
+              <Download className="h-6 w-6" />
+              <span>Withdraw</span>
+            </Link>
+          </Button>
+          <Button variant="outline" asChild className="h-auto flex-col gap-2 p-4">
+            <Link href="/profile/send">
+              <Send className="h-6 w-6" />
+              <span>Send</span>
+            </Link>
+          </Button>
+          <Button variant="outline" asChild className="h-auto flex-col gap-2 p-4">
+            <Link href="/profile/p2p">
+              <Users className="h-6 w-6" />
+              <span>P2P</span>
+            </Link>
+          </Button>
+          <Dialog open={isCreateWalletOpen} onOpenChange={setIsCreateWalletOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" className="h-auto flex-col gap-2 p-4">
+                    <PlusCircle className="h-6 w-6" />
+                    <span>Create Wallet</span>
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Create a New Wallet</DialogTitle>
+                    <DialogDescription>Select a network to create a new wallet address for deposits and withdrawals.</DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-4">
+                    <Label htmlFor="network">Network</Label>
+                    <Select onValueChange={setSelectedNetwork} value={selectedNetwork}>
+                        <SelectTrigger id="network">
+                            <SelectValue placeholder="Select a network" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {networks.map(network => (
+                                <SelectItem key={network.id} value={network.id}>
+                                    <div className="flex items-center gap-2">
+                                        <Globe className="h-4 w-4" />
+                                        <span>{network.name}</span>
+                                    </div>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
-                <p className='text-sm text-muted-foreground break-all text-center'>{walletAddress}</p>
-            </div>
-            <DialogFooter className="grid grid-cols-2 gap-2 pt-4">
-                <Button variant="outline" onClick={() => handleCopy(walletAddress, 'Wallet address')}>
-                    <Copy className="mr-2" />
-                    Copy
-                </Button>
-                <Button>
-                    <Download className="mr-2" />
-                    Save
-                </Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsCreateWalletOpen(false)}>Cancel</Button>
+                    <Button onClick={handleCreateWallet}>Create Wallet</Button>
+                </DialogFooter>
+            </DialogContent>
+          </Dialog>
+      </div>
+
       
       <Card>
         <CardHeader>
@@ -363,4 +305,5 @@ export default function ProfilePage() {
 
     </div>
   );
-}
+
+    
