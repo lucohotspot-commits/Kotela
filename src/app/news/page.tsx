@@ -125,6 +125,9 @@ export default function NewsPage() {
                                 </CardFooter>
                             </Card>
                             <DialogContent className="w-[95vw] h-[90vh] max-w-2xl p-0">
+                               <DialogHeader className="sr-only">
+                                    <DialogTitle>{post.title}</DialogTitle>
+                                </DialogHeader>
                                <ArticleContent post={post} />
                             </DialogContent>
                         </Dialog>
