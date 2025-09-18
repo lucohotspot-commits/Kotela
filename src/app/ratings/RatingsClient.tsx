@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { EconomicCalendar } from '@/components/economic-calendar';
 import { useGame } from '@/context/GameContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 
 type CoinData = {
   time: string;
@@ -793,7 +793,7 @@ export default function RatingsClient() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border rounded-lg bg-card text-card-foreground shadow-sm">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-card text-card-foreground">
         <div className="lg:col-span-3 hidden lg:block">
             <OrderBook selectedCoin={selectedCoin} />
         </div>
